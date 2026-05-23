@@ -27,6 +27,24 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+let dbSynced = false;
+const syncDb = async () => {
+  if (dbSynced) return;
+  await sequelize.authenticate();
+  await sequelize.sync({ force: false });
+  dbSynced = true;
+  console.log('Admin DB synced');
+};
+
+app.use(async (req, res, next) => {
+  try {
+    await syncDb();
+  } catch (error) {
+    console.error('Admin DB sync error:', error);
+  }
+  next();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -48,24 +66,6 @@ app.use((err, req, res, next) => {
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
-});
-
-let dbSynced = false;
-const syncDb = async () => {
-  if (dbSynced) return;
-  await sequelize.authenticate();
-  await sequelize.sync({ force: false });
-  dbSynced = true;
-  console.log('Admin DB synced');
-};
-
-app.use(async (req, res, next) => {
-  try {
-    await syncDb();
-  } catch (error) {
-    console.error('Admin DB sync error:', error);
-  }
-  next();
 });
 
 if (!process.env.VERCEL) {

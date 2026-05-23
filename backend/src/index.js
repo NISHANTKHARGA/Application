@@ -5,9 +5,13 @@ const path = require('path');
 const fs = require('fs');
 const { sequelize } = require('./models');
 
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  const uploadsDir = path.join(__dirname, '../uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (e) {
+  console.log('Note: uploads dir not writable (expected on Vercel)');
 }
 
 const authRoutes = require('./routes/auth');
@@ -36,6 +40,24 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+let dbSynced = false;
+const syncDb = async () => {
+  if (dbSynced) return;
+  await sequelize.authenticate();
+  await sequelize.sync({ force: false });
+  dbSynced = true;
+  console.log('Database synced');
+};
+
+app.use(async (req, res, next) => {
+  try {
+    await syncDb();
+  } catch (error) {
+    console.error('DB sync error:', error);
+  }
+  next();
+});
+
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api/auth', authRoutes);
@@ -61,24 +83,6 @@ app.use((err, req, res, next) => {
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
-});
-
-let dbSynced = false;
-const syncDb = async () => {
-  if (dbSynced) return;
-  await sequelize.authenticate();
-  await sequelize.sync({ force: false });
-  dbSynced = true;
-  console.log('Database synced');
-};
-
-app.use(async (req, res, next) => {
-  try {
-    await syncDb();
-  } catch (error) {
-    console.error('DB sync error:', error);
-  }
-  next();
 });
 
 if (!process.env.VERCEL) {
