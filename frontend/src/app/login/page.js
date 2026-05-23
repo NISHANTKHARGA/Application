@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Mail, Lock, Eye, EyeOff, User, Briefcase, Phone, AlertCircle } from 'lucide-react';
+import { Scale, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
 
