@@ -1,6 +1,6 @@
 {
   "name": "kanoonsathi",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "start": "concurrently \"npm run backend\" \"npm run frontend\"",
     "backend": "cd backend && node src/index.js",
