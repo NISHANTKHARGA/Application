@@ -17,7 +17,7 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.some(a => origin.startsWith(a))) return callback(null, true);
+    if (allowedOrigins.some(a => origin && origin.startsWith(a))) return callback(null, true);
     if (origin.endsWith('.vercel.app')) return callback(null, true);
     callback(null, true);
   },
@@ -28,39 +28,36 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let dbSynced = false;
+let syncPromise = null;
+
 const syncDb = async () => {
   if (dbSynced) return;
-  await sequelize.authenticate();
-  await sequelize.sync({ force: false });
-  dbSynced = true;
-  console.log('Admin DB synced');
+  if (syncPromise) return syncPromise;
+  syncPromise = (async () => {
+    await sequelize.authenticate();
+    await sequelize.sync({ force: false });
+    dbSynced = true;
+    console.log('Admin DB synced');
+  })();
+  return syncPromise;
 };
 
-app.use(async (req, res, next) => {
-  try {
-    await syncDb();
-  } catch (error) {
-    console.error('Admin DB sync error:', error);
-  }
+app.use((req, res, next) => {
+  syncDb().catch(err => console.error('Admin DB sync error:', err?.message));
   next();
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'KanoonSathi Admin API is running' });
 });
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'KanoonSathi Admin API is running',
-    timestamp: new Date().toISOString()
-  });
-});
-
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
-    message: err.message || 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err : {}
+    message: err.message || 'Internal Server Error'
   });
 });
 
@@ -72,7 +69,6 @@ if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5001;
   app.listen(PORT, () => {
     console.log(`KanoonSathi Admin Backend running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     syncDb().catch(console.error);
   });
 }

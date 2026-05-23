@@ -30,7 +30,7 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.some(a => origin.startsWith(a))) return callback(null, true);
+    if (allowedOrigins.some(a => origin && origin.startsWith(a))) return callback(null, true);
     if (origin.endsWith('.vercel.app')) return callback(null, true);
     callback(null, true);
   },
@@ -41,43 +41,40 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let dbSynced = false;
+let syncPromise = null;
+
 const syncDb = async () => {
   if (dbSynced) return;
-  await sequelize.authenticate();
-  await sequelize.sync({ force: false });
-  dbSynced = true;
-  console.log('Database synced');
+  if (syncPromise) return syncPromise;
+  syncPromise = (async () => {
+    await sequelize.authenticate();
+    await sequelize.sync({ force: false });
+    dbSynced = true;
+    console.log('Database synced');
+  })();
+  return syncPromise;
 };
 
-app.use(async (req, res, next) => {
-  try {
-    await syncDb();
-  } catch (error) {
-    console.error('DB sync error:', error);
-  }
+app.use((req, res, next) => {
+  syncDb().catch(err => console.error('DB sync error:', err?.message));
   next();
 });
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'KanoonSathi API is running' });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/lawyer', lawyerRoutes);
 app.use('/api/appointment', appointmentRoutes);
 app.use('/api/chat', chatRoutes);
 
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'KanoonSathi API is running',
-    timestamp: new Date().toISOString()
-  });
-});
-
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
-    message: err.message || 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err : {}
+    message: err.message || 'Internal Server Error'
   });
 });
 
@@ -89,7 +86,6 @@ if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`KanoonSathi Backend Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     syncDb().catch(console.error);
   });
 }
