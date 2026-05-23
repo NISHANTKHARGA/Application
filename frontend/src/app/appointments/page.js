@@ -1,0 +1,299 @@
+'use client';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Scale, Calendar, Clock, Video, LogOut, Home, MessageSquare, Users, ChevronRight, X, Check, XCircle } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
+
+export default function AppointmentsPage() {
+  const { user, isAuthenticated, isLoading, logout, role } = useAuth();
+  const router = useRouter();
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [cancelModal, setCancelModal] = useState(null);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchAppointments();
+    }
+  }, [user]);
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await api.get(`/appointment/user/${user.id}`);
+      setAppointments(response.data.appointments || []);
+    } catch (error) {
+      console.error('Failed to fetch appointments:', error);
+      toast.error('Failed to load appointments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = async (appointmentId) => {
+    try {
+      await api.put(`/appointment/${appointmentId}/cancel`);
+      toast.success('Appointment cancelled');
+      fetchAppointments();
+      setCancelModal(null);
+    } catch (error) {
+      toast.error('Failed to cancel appointment');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed': return 'badge-approved';
+      case 'pending': return 'badge-pending';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'cancelled': return 'badge-rejected';
+      default: return 'badge-pending';
+    }
+  };
+
+  const menuItems = role === 'lawyer' ? [
+    { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard' },
+    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+    { icon: Calendar, label: 'Appointments', href: '/appointments', active: true },
+  ] : [
+    { icon: Home, label: 'Dashboard', href: '/dashboard' },
+    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+    { icon: Users, label: 'Find Lawyers', href: '/lawyers' },
+    { icon: Calendar, label: 'Appointments', href: '/appointments', active: true },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const upcomingAppointments = appointments.filter(a => 
+    new Date(a.dateTime) >= new Date() && !['cancelled', 'completed'].includes(a.status)
+  );
+  const pastAppointments = appointments.filter(a => 
+    new Date(a.dateTime) < new Date() || ['cancelled', 'completed'].includes(a.status)
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="flex items-center gap-2">
+                <Scale className="w-8 h-8 text-primary" />
+                <span className="text-xl font-bold text-secondary">KanoonSathi</span>
+              </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              {isAuthenticated ? (
+                <>
+                  <Link href="/dashboard" className="text-gray-600 hover:text-primary">
+                    Dashboard
+                  </Link>
+                  <button onClick={logout} className="text-gray-600 hover:text-red-500">
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </>
+              ) : (
+                <Link href="/login" className="btn-primary !py-2">
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="pt-24 pb-12 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-secondary">My Appointments</h1>
+              <p className="text-gray-600">Manage your legal consultations</p>
+            </div>
+            <Link href="/lawyers" className="btn-primary">
+              Book New Appointment
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-xl p-6 animate-pulse">
+                  <div className="h-24 bg-gray-100 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : appointments.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-xl">
+              <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">No appointments yet</h3>
+              <p className="text-gray-500 mb-6">Book your first consultation with a lawyer</p>
+              <Link href="/lawyers" className="btn-primary">
+                Find a Lawyer
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {upcomingAppointments.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold mb-4">Upcoming Appointments</h2>
+                  <div className="space-y-4">
+                    {upcomingAppointments.map((apt) => (
+                      <div key={apt.id} className="bg-white rounded-xl p-6 shadow-sm">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                          <div className="w-16 h-16 bg-gradient-to-br from-secondary to-secondary-800 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-lg font-bold">
+                              {apt.lawyer?.name?.charAt(0)?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="font-semibold text-lg">{apt.lawyer?.name}</h3>
+                                <p className="text-primary text-sm">{apt.lawyer?.specialization}</p>
+                              </div>
+                              <span className={`badge ${getStatusColor(apt.status)}`}>
+                                {apt.status}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-600">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(apt.dateTime).toLocaleDateString('en-US', {
+                                  weekday: 'long',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                {new Date(apt.dateTime).toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Video className="w-4 h-4" />
+                                {apt.duration} minutes
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            {apt.meetingLink && apt.status !== 'cancelled' && (
+                              <Link
+                                href={`/video/${apt.id}`}
+                                className="btn-primary !py-2 !px-4 flex items-center gap-1"
+                              >
+                                <Video className="w-4 h-4" />
+                                Join Meeting
+                              </Link>
+                            )}
+                            {apt.status === 'pending' && (
+                              <button
+                                onClick={() => setCancelModal(apt)}
+                                className="btn-outline !py-2 !px-4 text-red-500 border-red-500 hover:bg-red-50"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {pastAppointments.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold mb-4">Past Appointments</h2>
+                  <div className="space-y-4">
+                    {pastAppointments.map((apt) => (
+                      <div key={apt.id} className="bg-white rounded-xl p-6 shadow-sm opacity-75">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-gray-500 text-lg font-bold">
+                              {apt.lawyer?.name?.charAt(0)?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="font-semibold text-lg">{apt.lawyer?.name}</h3>
+                                <p className="text-gray-500 text-sm">{apt.lawyer?.specialization}</p>
+                              </div>
+                              <span className={`badge ${getStatusColor(apt.status)}`}>
+                                {apt.status}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(apt.dateTime).toLocaleDateString()}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                {new Date(apt.dateTime).toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {cancelModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <XCircle className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Cancel Appointment?</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to cancel your appointment with {cancelModal.lawyer?.name}?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setCancelModal(null)}
+                  className="flex-1 btn-outline"
+                >
+                  Keep Appointment
+                </button>
+                <button
+                  onClick={() => handleCancel(cancelModal.id)}
+                  className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600"
+                >
+                  Yes, Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

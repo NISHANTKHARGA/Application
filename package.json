@@ -1,0 +1,12 @@
+{
+  "name": "kanoonsathi",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && node src/index.js",
+    "frontend": "cd frontend && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

@@ -1,0 +1,265 @@
+'use client';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Scale, Calendar, Clock, Video, Check, X, Home, MessageSquare, LogOut } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
+
+export default function LawyerAppointmentsPage() {
+  const { user, isAuthenticated, isLoading, logout, role } = useAuth();
+  const router = useRouter();
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [actionLoading, setActionLoading] = useState(null);
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.push('/login');
+      } else if (role !== 'lawyer') {
+        router.push('/dashboard');
+      }
+    }
+  }, [isLoading, isAuthenticated, role, router]);
+
+  useEffect(() => {
+    if (user && role === 'lawyer') {
+      fetchAppointments();
+    }
+  }, [user, role]);
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await api.get('/appointment/lawyer/me');
+      setAppointments(response.data.appointments || []);
+    } catch (error) {
+      console.error('Failed to fetch appointments:', error);
+      toast.error('Failed to load appointments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStatus = async (appointmentId, status) => {
+    setActionLoading(appointmentId);
+    try {
+      await api.put(`/appointment/${appointmentId}/status`, { status });
+      toast.success(`Appointment ${status}`);
+      fetchAppointments();
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
+    setActionLoading(null);
+  };
+
+  const filteredAppointments = appointments.filter(apt => {
+    if (filter === 'all') return true;
+    if (filter === 'upcoming') {
+      return new Date(apt.dateTime) >= new Date() && !['cancelled', 'completed'].includes(apt.status);
+    }
+    return apt.status === filter;
+  });
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'confirmed': return 'badge-approved';
+      case 'pending': return 'badge-pending';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'cancelled': return 'badge-rejected';
+      default: return 'badge-pending';
+    }
+  };
+
+  if (isLoading || role !== 'lawyer') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const menuItems = [
+    { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard' },
+    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+    { icon: Calendar, label: 'Appointments', href: '/lawyer/appointments', active: true },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="flex items-center gap-2">
+                <Scale className="w-8 h-8 text-primary" />
+                <span className="text-xl font-bold text-secondary">KanoonSathi</span>
+              </Link>
+              <span className="hidden sm:inline px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
+                Lawyer Panel
+              </span>
+            </div>
+            <button onClick={logout} className="text-gray-600 hover:text-red-500">
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="flex pt-16">
+        <aside className="hidden md:flex fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-100 flex-col">
+          <div className="p-6 flex-1">
+            <nav className="space-y-1">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`sidebar-link ${item.active ? 'sidebar-link-active' : ''}`}
+                >
+                  <item.icon className="w-5 h-5" />
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </aside>
+
+        <main className="flex-1 md:ml-64 p-6 lg:p-8">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-secondary">My Appointments</h1>
+              <p className="text-gray-600">Manage your client consultations</p>
+            </div>
+
+            <div className="flex gap-2 mb-6 flex-wrap">
+              {['all', 'upcoming', 'pending', 'confirmed', 'completed', 'cancelled'].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${
+                    filter === f
+                      ? 'bg-primary text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : filteredAppointments.length === 0 ? (
+              <div className="bg-white rounded-xl p-16 text-center">
+                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-600 mb-2">No appointments found</h3>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredAppointments.map((apt) => (
+                  <div key={apt.id} className="bg-white rounded-xl p-6 shadow-sm">
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
+                      <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-lg font-bold">
+                          {apt.user?.name?.charAt(0)?.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold text-lg">{apt.user?.name}</h3>
+                            <p className="text-gray-500">{apt.user?.email}</p>
+                            {apt.user?.phone && (
+                              <p className="text-sm text-gray-500">{apt.user.phone}</p>
+                            )}
+                          </div>
+                          <span className={`badge ${getStatusBadge(apt.status)}`}>
+                            {apt.status}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(apt.dateTime).toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            {new Date(apt.dateTime).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Video className="w-4 h-4" />
+                            {apt.duration} minutes
+                          </div>
+                        </div>
+                        {apt.notes && (
+                          <p className="mt-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                            <strong>Notes:</strong> {apt.notes}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {apt.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => updateStatus(apt.id, 'confirmed')}
+                              disabled={actionLoading === apt.id}
+                              className="btn-primary !py-2 !px-4 flex items-center justify-center gap-1 disabled:opacity-50"
+                            >
+                              <Check className="w-4 h-4" />
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => updateStatus(apt.id, 'cancelled')}
+                              disabled={actionLoading === apt.id}
+                              className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 flex items-center justify-center gap-1 disabled:opacity-50"
+                            >
+                              <X className="w-4 h-4" />
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {apt.meetingLink && !['cancelled'].includes(apt.status) && (
+                          <a
+                            href={apt.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-outline !py-2 !px-4 flex items-center justify-center gap-1"
+                          >
+                            <Video className="w-4 h-4" />
+                            Join Meeting
+                          </a>
+                        )}
+                        {apt.status === 'confirmed' && (
+                          <button
+                            onClick={() => updateStatus(apt.id, 'completed')}
+                            className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center gap-1"
+                          >
+                            Mark Complete
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

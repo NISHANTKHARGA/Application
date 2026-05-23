@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-secondary-700 focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary text-primary px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-primary hover:text-white;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary outline-none transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-md p-6 transition-all duration-200 hover:shadow-lg;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg transition-all duration-200 hover:bg-gray-100 hover:text-primary;
+  }
+
+  .sidebar-link-active {
+    @apply bg-primary-50 text-primary font-semibold;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-pending {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-approved {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .badge-rejected {
+    @apply bg-red-100 text-red-800;
+  }
+}
+
+.chat-bubble-user {
+  @apply bg-primary text-white px-4 py-3 rounded-2xl rounded-br-md max-w-[80%] ml-auto;
+}
+
+.chat-bubble-bot {
+  @apply bg-gray-100 text-gray-800 px-4 py-3 rounded-2xl rounded-bl-md max-w-[80%];
+}
+
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+.typing-dot {
+  @apply w-2 h-2 bg-gray-400 rounded-full mx-0.5;
+  animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
