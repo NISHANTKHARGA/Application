@@ -5,10 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Scale, Mail, Lock, Eye, EyeOff, User, Briefcase, Phone, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
-const demoAccounts = {
-  user: { email: 'demo@user.com', password: 'demo123' },
-  lawyer: { email: 'demo@lawyer.com', password: 'demo123' }
-};
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -46,25 +43,6 @@ export default function LoginPage() {
       }
     } else {
       setError(result.message || 'Invalid credentials');
-    }
-
-    setLoading(false);
-  };
-
-  const handleDemoLogin = async (type) => {
-    setLoading(true);
-    setUserType(type);
-    setEmail(demoAccounts[type].email);
-    setPassword(demoAccounts[type].password);
-
-    const result = await login(demoAccounts[type].email, demoAccounts[type].password, type);
-
-    if (result.success) {
-      if (type === 'lawyer') {
-        router.push('/lawyer/dashboard');
-      } else {
-        router.push('/dashboard');
-      }
     }
 
     setLoading(false);
@@ -114,7 +92,7 @@ export default function LoginPage() {
           </div>
 
           <h2 className="text-3xl font-bold text-secondary mb-2">Sign In</h2>
-          <p className="text-gray-600 mb-6">Enter your credentials or use demo account</p>
+          <p className="text-gray-600 mb-6">Sign in to your account</p>
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 mb-6">
@@ -122,28 +100,6 @@ export default function LoginPage() {
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           )}
-
-          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-4 mb-6">
-            <p className="text-sm font-medium text-gray-700 mb-3">Quick Demo Login:</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => handleDemoLogin('user')}
-                disabled={loading}
-                className="flex flex-col items-center gap-2 p-3 bg-white rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <User className="w-6 h-6 text-primary" />
-                <span className="text-xs font-medium">User</span>
-              </button>
-              <button
-                onClick={() => handleDemoLogin('lawyer')}
-                disabled={loading}
-                className="flex flex-col items-center gap-2 p-3 bg-white rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <Briefcase className="w-6 h-6 text-secondary" />
-                <span className="text-xs font-medium">Lawyer</span>
-              </button>
-            </div>
-          </div>
 
           <div className="flex gap-2 mb-6">
             {[
