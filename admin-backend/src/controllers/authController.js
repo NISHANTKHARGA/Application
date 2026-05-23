@@ -24,7 +24,7 @@ const adminLogin = async (req, res) => {
 
     res.status(401).json({ message: 'Invalid admin credentials' });
   } catch (error) {
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    res.status(500).json({ message: error.message || 'Login failed' });
   }
 };
 

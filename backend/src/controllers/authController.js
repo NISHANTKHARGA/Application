@@ -69,7 +69,7 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Registration failed', error: error.message });
+    res.status(500).json({ message: error.message || 'Registration failed' });
   }
 };
 
@@ -114,7 +114,7 @@ const login = async (req, res) => {
     res.status(401).json({ message: 'Invalid email/phone or password' });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    res.status(500).json({ message: error.message || 'Login failed' });
   }
 };
 
@@ -187,7 +187,7 @@ const lawyerRegister = async (req, res) => {
     });
   } catch (error) {
     console.error('Lawyer registration error:', error);
-    res.status(500).json({ message: 'Registration failed', error: error.message });
+    res.status(500).json({ message: error.message || 'Registration failed' });
   }
 };
 
@@ -230,7 +230,7 @@ const lawyerLogin = async (req, res) => {
     res.status(401).json({ message: 'Invalid email or password' });
   } catch (error) {
     console.error('Lawyer login error:', error);
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    res.status(500).json({ message: error.message || 'Login failed' });
   }
 };
 
@@ -257,7 +257,7 @@ const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error('Update profile error:', error);
-    res.status(500).json({ message: 'Failed to update profile', error: error.message });
+    res.status(500).json({ message: error.message || 'Failed to update profile' });
   }
 };
 
@@ -285,7 +285,7 @@ const changePassword = async (req, res) => {
     res.json({ success: true, message: 'Password changed successfully' });
   } catch (error) {
     console.error('Change password error:', error);
-    res.status(500).json({ message: 'Failed to change password', error: error.message });
+    res.status(500).json({ message: error.message || 'Failed to change password' });
   }
 };
 
