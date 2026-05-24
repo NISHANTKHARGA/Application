@@ -24,6 +24,11 @@ const allowedOrigins = [
   'http://localhost:3001',
 ].filter(Boolean);
 
+app.use((req, res, next) => {
+  console.log('Request:', req.method, req.url);
+  next();
+});
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -45,9 +50,7 @@ const fixSchema = async () => {
     await sequelize.query(`ALTER TABLE users ALTER COLUMN email DROP NOT NULL;`);
     await sequelize.query(`ALTER TABLE lawyers ALTER COLUMN email DROP NOT NULL;`);
     await sequelize.query(`ALTER TABLE lawyers ALTER COLUMN phone DROP NOT NULL;`);
-  } catch (e) {
-    // Tables might not exist yet, that's fine
-  }
+  } catch (e) {}
 };
 
 app.use(async (req, res, next) => {
@@ -70,10 +73,31 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'KanoonSathi API is running', db: dbReady ? 'connected' : (dbError || 'pending') });
 });
 
-if (authRoutes) app.use('/api/auth', authRoutes);
+if (authRoutes) {
+  app.use('/api/auth', authRoutes);
+  console.log('Auth routes registered');
+} else {
+  app.all('/api/auth/*', (req, res) => res.status(500).json({ message: 'Auth module failed to load' }));
+}
 if (lawyerRoutes) app.use('/api/lawyer', lawyerRoutes);
 if (appointmentRoutes) app.use('/api/appointment', appointmentRoutes);
 if (chatRoutes) app.use('/api/chat', chatRoutes);
+
+app.get('/api/debug', async (req, res) => {
+  const info = { dbConnected: dbReady, dbError, dbSequelize: !!sequelize };
+  if (sequelize) {
+    try {
+      await sequelize.authenticate();
+      info.dbAuthOk = true;
+      const tables = await sequelize.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+      info.tables = tables[0]?.map(t => t.table_name) || [];
+    } catch (e) {
+      info.dbAuthOk = false;
+      info.dbAuthError = e?.message;
+    }
+  }
+  res.json(info);
+});
 
 app.use((err, req, res, next) => {
   console.error('Error:', err?.message);
@@ -101,29 +125,9 @@ if (!process.env.VERCEL) {
   });
 }
 
-app.get('/api/debug', async (req, res) => {
-  const info = { dbConnected: dbReady, dbError, dbSequelize: !!sequelize };
-  if (sequelize) {
-    try {
-      await sequelize.authenticate();
-      info.dbAuthOk = true;
-      const tables = await sequelize.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-      info.tables = tables[0]?.map(t => t.table_name) || [];
-    } catch (e) {
-      info.dbAuthOk = false;
-      info.dbAuthError = e?.message;
-    }
-  }
-  res.json(info);
-});
-
-const handler = (req, res) => {
-  try {
-    app(req, res);
-  } catch (e) {
-    console.error('Fatal handler error:', e);
+module.exports = (req, res) => {
+  try { app(req, res); } catch (e) {
+    console.error('Fatal:', e);
     if (!res.headersSent) res.status(500).json({ message: 'Internal server error' });
   }
 };
-
-module.exports = handler;
