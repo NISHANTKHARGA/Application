@@ -1,10 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { sequelize } = require('./models');
 
-const authRoutes = require('./routes/auth');
-const adminRoutes = require('./routes/admin');
+let sequelize = null;
+let authRoutes, adminRoutes;
+try {
+  const models = require('./models');
+  sequelize = models.sequelize;
+} catch (e) {
+  console.error('Model load error:', e?.message);
+}
+try { authRoutes = require('./routes/auth'); } catch (e) { console.error('Auth routes error:', e?.message); }
+try { adminRoutes = require('./routes/admin'); } catch (e) { console.error('Admin routes error:', e?.message); }
 
 const app = express();
 
@@ -27,24 +34,30 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-let synced = false;
-app.use((req, res, next) => {
-  if (!synced) {
-    synced = true;
-    sequelize.authenticate()
-      .then(() => sequelize.sync({ force: false }))
-      .then(() => console.log('Admin DB synced'))
-      .catch(e => { synced = false; console.error('Admin DB sync error:', e?.message); });
+let dbReady = false;
+let dbError = null;
+
+app.use(async (req, res, next) => {
+  if (!dbReady && sequelize && !dbError) {
+    try {
+      await sequelize.authenticate();
+      await sequelize.sync({ force: false });
+      dbReady = true;
+      console.log('Admin DB synced');
+    } catch (e) {
+      dbError = e?.message || 'DB sync failed';
+      console.error('Admin DB sync error:', dbError);
+    }
   }
   next();
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'KanoonSathi Admin API is running' });
+  res.json({ status: 'ok', message: 'KanoonSathi Admin API is running', db: dbReady ? 'connected' : (dbError || 'pending') });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
+if (authRoutes) app.use('/api/auth', authRoutes);
+if (adminRoutes) app.use('/api/admin', adminRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Error:', err?.message);
@@ -59,12 +72,15 @@ if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5001;
   app.listen(PORT, async () => {
     console.log(`KanoonSathi Admin Backend running on port ${PORT}`);
-    try {
-      await sequelize.authenticate();
-      await sequelize.sync({ force: false });
-      console.log('Admin DB synced');
-    } catch (e) {
-      console.error('Admin DB init error:', e?.message);
+    if (sequelize) {
+      try {
+        await sequelize.authenticate();
+        await sequelize.sync({ force: false });
+        dbReady = true;
+        console.log('Admin DB synced');
+      } catch (e) {
+        console.error('Admin DB init error:', e?.message);
+      }
     }
   });
 }
@@ -74,9 +90,7 @@ const handler = (req, res) => {
     app(req, res);
   } catch (e) {
     console.error('Fatal handler error:', e);
-    if (!res.headersSent) {
-      res.status(500).json({ message: 'Internal server error' });
-    }
+    if (!res.headersSent) res.status(500).json({ message: 'Internal server error' });
   }
 };
 

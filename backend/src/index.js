@@ -37,20 +37,26 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-let synced = false;
-app.use((req, res, next) => {
-  if (!synced && sequelize) {
-    synced = true;
-    sequelize.authenticate()
-      .then(() => sequelize.sync({ force: false }))
-      .then(() => console.log('DB synced'))
-      .catch(e => { synced = false; console.error('DB sync error:', e?.message); });
+let dbReady = false;
+let dbError = null;
+
+app.use(async (req, res, next) => {
+  if (!dbReady && sequelize && !dbError) {
+    try {
+      await sequelize.authenticate();
+      await sequelize.sync({ force: false });
+      dbReady = true;
+      console.log('Database synced');
+    } catch (e) {
+      dbError = e?.message || 'DB sync failed';
+      console.error('DB sync error:', dbError);
+    }
   }
   next();
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'KanoonSathi API is running' });
+  res.json({ status: 'ok', message: 'KanoonSathi API is running', db: dbReady ? 'connected' : (dbError || 'pending') });
 });
 
 if (authRoutes) app.use('/api/auth', authRoutes);
@@ -71,12 +77,15 @@ if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, async () => {
     console.log(`KanoonSathi Backend running on port ${PORT}`);
-    try {
-      await sequelize.authenticate();
-      await sequelize.sync({ force: false });
-      console.log('Database synced');
-    } catch (e) {
-      console.error('DB init error:', e?.message);
+    if (sequelize) {
+      try {
+        await sequelize.authenticate();
+        await sequelize.sync({ force: false });
+        dbReady = true;
+        console.log('Database synced');
+      } catch (e) {
+        console.error('DB init error:', e?.message);
+      }
     }
   });
 }
@@ -86,9 +95,7 @@ const handler = (req, res) => {
     app(req, res);
   } catch (e) {
     console.error('Fatal handler error:', e);
-    if (!res.headersSent) {
-      res.status(500).json({ message: 'Internal server error' });
-    }
+    if (!res.headersSent) res.status(500).json({ message: 'Internal server error' });
   }
 };
 
