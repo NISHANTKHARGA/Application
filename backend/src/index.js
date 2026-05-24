@@ -1,23 +1,66 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+
+let sequelize = null;
+let authRoutes, lawyerRoutes, appointmentRoutes, chatRoutes;
+try {
+  const models = require('./models');
+  sequelize = models.sequelize;
+} catch (e) {
+  console.error('Model load error:', e?.message);
+}
+try { authRoutes = require('./routes/auth'); } catch (e) { console.error('Auth routes error:', e?.message); }
+try { lawyerRoutes = require('./routes/lawyer'); } catch (e) { console.error('Lawyer routes error:', e?.message); }
+try { appointmentRoutes = require('./routes/appointment'); } catch (e) { console.error('Appt routes error:', e?.message); }
+try { chatRoutes = require('./routes/chat'); } catch (e) { console.error('Chat routes error:', e?.message); }
 
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.some(a => origin && origin.startsWith(a))) return callback(null, true);
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    callback(null, true);
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+let synced = false;
+app.use((req, res, next) => {
+  if (!synced && sequelize) {
+    synced = true;
+    sequelize.authenticate()
+      .then(() => sequelize.sync({ force: false }))
+      .then(() => console.log('DB synced'))
+      .catch(e => { synced = false; console.error('DB sync error:', e?.message); });
+  }
+  next();
+});
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'KanoonSathi API is running' });
 });
 
-app.get('/api/test', (req, res) => {
-  res.json({ success: true, message: 'Serverless function works' });
-});
+if (authRoutes) app.use('/api/auth', authRoutes);
+if (lawyerRoutes) app.use('/api/lawyer', lawyerRoutes);
+if (appointmentRoutes) app.use('/api/appointment', appointmentRoutes);
+if (chatRoutes) app.use('/api/chat', chatRoutes);
 
 app.use((err, req, res, next) => {
-  res.status(err.status || 500).json({ message: err?.message || 'Error' });
+  console.error('Error:', err?.message);
+  res.status(err.status || 500).json({ message: err?.message || 'Internal Server Error' });
 });
 
 app.use((req, res) => {
@@ -26,12 +69,27 @@ app.use((req, res) => {
 
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+  app.listen(PORT, async () => {
+    console.log(`KanoonSathi Backend running on port ${PORT}`);
+    try {
+      await sequelize.authenticate();
+      await sequelize.sync({ force: false });
+      console.log('Database synced');
+    } catch (e) {
+      console.error('DB init error:', e?.message);
+    }
+  });
 }
 
-module.exports = (req, res) => {
-  try { app(req, res); } catch (e) {
-    console.error('Handler error:', e);
-    if (!res.headersSent) res.status(500).json({ message: 'Error' });
+const handler = (req, res) => {
+  try {
+    app(req, res);
+  } catch (e) {
+    console.error('Fatal handler error:', e);
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Internal server error' });
+    }
   }
 };
+
+module.exports = handler;
