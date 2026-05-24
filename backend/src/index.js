@@ -5,16 +5,17 @@ const path = require('path');
 
 let sequelize = null;
 let authRoutes, lawyerRoutes, appointmentRoutes, chatRoutes;
+let authRoutesError, lawyerRoutesError, apptRoutesError, chatRoutesError;
 try {
   const models = require('./models');
   sequelize = models.sequelize;
 } catch (e) {
   console.error('Model load error:', e?.message);
 }
-try { authRoutes = require('./routes/auth'); } catch (e) { console.error('Auth routes error:', e?.message); }
-try { lawyerRoutes = require('./routes/lawyer'); } catch (e) { console.error('Lawyer routes error:', e?.message); }
-try { appointmentRoutes = require('./routes/appointment'); } catch (e) { console.error('Appt routes error:', e?.message); }
-try { chatRoutes = require('./routes/chat'); } catch (e) { console.error('Chat routes error:', e?.message); }
+try { authRoutes = require('./routes/auth'); } catch (e) { authRoutesError = e; console.error('Auth routes error:', e?.message); }
+try { lawyerRoutes = require('./routes/lawyer'); } catch (e) { lawyerRoutesError = e; console.error('Lawyer routes error:', e?.message); }
+try { appointmentRoutes = require('./routes/appointment'); } catch (e) { apptRoutesError = e; console.error('Appt routes error:', e?.message); }
+try { chatRoutes = require('./routes/chat'); } catch (e) { chatRoutesError = e; console.error('Chat routes error:', e?.message); }
 
 const app = express();
 
@@ -77,14 +78,29 @@ if (authRoutes) {
   app.use('/api/auth', authRoutes);
   console.log('Auth routes registered');
 } else {
-  app.all('/api/auth/*', (req, res) => res.status(500).json({ message: 'Auth module failed to load' }));
+  app.all('/api/auth/*', (req, res) => res.status(500).json({
+    message: 'Auth module failed to load',
+    error: authRoutesError?.message || authRoutesError?.code || 'Unknown error',
+    stack: authRoutesError?.stack?.split('\n')?.slice(0, 3)?.join(' | ')
+  }));
 }
 if (lawyerRoutes) app.use('/api/lawyer', lawyerRoutes);
 if (appointmentRoutes) app.use('/api/appointment', appointmentRoutes);
 if (chatRoutes) app.use('/api/chat', chatRoutes);
 
 app.get('/api/debug', async (req, res) => {
-  const info = { dbConnected: dbReady, dbError, dbSequelize: !!sequelize };
+  const info = {
+    dbConnected: dbReady,
+    dbError,
+    dbSequelize: !!sequelize,
+    routes: {
+      auth: !!authRoutes,
+      authError: authRoutesError?.message || null,
+      lawyer: !!lawyerRoutes,
+      appointment: !!appointmentRoutes,
+      chat: !!chatRoutes
+    }
+  };
   if (sequelize) {
     try {
       await sequelize.authenticate();
