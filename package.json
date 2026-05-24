@@ -1,6 +1,11 @@
 {
   "name": "kanoonsathi",
   "version": "1.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "build": "echo done",
     "start": "concurrently \"npm run backend\" \"npm run frontend\"",
