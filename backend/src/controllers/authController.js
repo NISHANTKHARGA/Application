@@ -68,8 +68,8 @@ const register = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ message: error.message || 'Registration failed' });
+    console.error('Registration error:', error?.message, error?.stack);
+    res.status(500).json({ message: error?.message || error?.name || 'Registration failed' });
   }
 };
 

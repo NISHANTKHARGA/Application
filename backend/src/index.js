@@ -40,11 +40,22 @@ app.use(express.urlencoded({ extended: true }));
 let dbReady = false;
 let dbError = null;
 
+const fixSchema = async () => {
+  try {
+    await sequelize.query(`ALTER TABLE users ALTER COLUMN email DROP NOT NULL;`);
+    await sequelize.query(`ALTER TABLE lawyers ALTER COLUMN email DROP NOT NULL;`);
+    await sequelize.query(`ALTER TABLE lawyers ALTER COLUMN phone DROP NOT NULL;`);
+  } catch (e) {
+    // Tables might not exist yet, that's fine
+  }
+};
+
 app.use(async (req, res, next) => {
   if (!dbReady && sequelize && !dbError) {
     try {
       await sequelize.authenticate();
       await sequelize.sync({ force: false });
+      await fixSchema();
       dbReady = true;
       console.log('Database synced');
     } catch (e) {
