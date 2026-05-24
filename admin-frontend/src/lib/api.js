@@ -1,7 +1,13 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:5001/api';
+const getApiUrl = () => {
+  if (process.env.NEXT_PUBLIC_ADMIN_API_URL) return process.env.NEXT_PUBLIC_ADMIN_API_URL;
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') return '/admin/api';
+  return 'http://localhost:5001/api';
+};
+
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL,

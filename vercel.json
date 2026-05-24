@@ -1,0 +1,27 @@
+{
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "admin-frontend/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "backend/src/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "admin-backend/src/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/admin/api/(.*)", "dest": "admin-backend/src/index.js" },
+    { "src": "/admin/(.*)", "dest": "admin-frontend/$1" },
+    { "src": "/admin", "dest": "admin-frontend/" },
+    { "src": "/api/(.*)", "dest": "backend/src/index.js" },
+    { "src": "/(.*)", "dest": "frontend/$1" }
+  ]
+}
