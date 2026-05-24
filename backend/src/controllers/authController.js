@@ -69,7 +69,8 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error?.message, error?.stack);
-    res.status(500).json({ message: error?.message || error?.name || 'Registration failed' });
+    const detail = error?.original?.message || error?.parent?.message || error?.stack?.substring(0, 300) || null;
+    res.status(500).json({ message: error?.message || error?.name || 'Registration failed', detail });
   }
 };
 

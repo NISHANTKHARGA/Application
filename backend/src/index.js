@@ -101,6 +101,22 @@ if (!process.env.VERCEL) {
   });
 }
 
+app.get('/api/debug', async (req, res) => {
+  const info = { dbConnected: dbReady, dbError, dbSequelize: !!sequelize };
+  if (sequelize) {
+    try {
+      await sequelize.authenticate();
+      info.dbAuthOk = true;
+      const tables = await sequelize.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+      info.tables = tables[0]?.map(t => t.table_name) || [];
+    } catch (e) {
+      info.dbAuthOk = false;
+      info.dbAuthError = e?.message;
+    }
+  }
+  res.json(info);
+});
+
 const handler = (req, res) => {
   try {
     app(req, res);
