@@ -1,8 +1,12 @@
 import axios from 'axios';
 
-let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_API_URL && window.location.hostname !== 'localhost') {
-  console.warn('KanoonSathi: NEXT_PUBLIC_API_URL not set. Set it in Vercel project settings to your backend URL.');
+let API_URL;
+if (process.env.NEXT_PUBLIC_API_URL) {
+  API_URL = process.env.NEXT_PUBLIC_API_URL;
+} else if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+  API_URL = '/api';
+} else {
+  API_URL = 'http://localhost:5000/api';
 }
 
 const api = axios.create({
