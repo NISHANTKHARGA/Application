@@ -122,9 +122,11 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
-      toast.error(message);
-      return { success: false, message };
+      const data = error.response?.data || {};
+      const message = data.message || 'Registration failed';
+      const detail = data.error || data.stack || null;
+      toast.error(detail ? `${message}: ${detail}` : message);
+      return { success: false, message: detail ? `${message}: ${detail}` : message };
     }
   };
 
