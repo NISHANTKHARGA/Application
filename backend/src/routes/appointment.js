@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const path = require('path');
 const { protect, adminOnly, lawyerOnly, userOnly } = require('../middleware/auth');
 const {
@@ -13,29 +12,40 @@ const {
   cancelAppointment
 } = require('../controllers/appointmentController');
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, `chat-${Date.now()}${path.extname(file.originalname)}`);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /pdf|txt|doc|docx/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    if (extname) {
-      return cb(null, true);
+let upload = null;
+let multerAvailable = false;
+try {
+  const multer = require('multer');
+  const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+      cb(null, `chat-${Date.now()}${path.extname(file.originalname)}`);
     }
-    cb(new Error('Only PDF, TXT, and DOC files are allowed'));
-  }
-});
+  });
+  upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = /pdf|txt|doc|docx/;
+      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+      if (extname) {
+        return cb(null, true);
+      }
+      cb(new Error('Only PDF, TXT, and DOC files are allowed'));
+    }
+  });
+  multerAvailable = true;
+} catch (e) {
+  console.error('Multer not available for appointment routes:', e?.message);
+}
 
-router.post('/book', protect, userOnly, upload.single('chatFile'), bookAppointment);
+if (upload) {
+  router.post('/book', protect, userOnly, upload.single('chatFile'), bookAppointment);
+} else {
+  router.post('/book', protect, userOnly, bookAppointment);
+}
 router.get('/user/:userId', protect, getUserAppointments);
 router.get('/lawyer/me', protect, lawyerOnly, getLawyerAppointments);
 router.get('/lawyer/:lawyerId', protect, lawyerOnly, getLawyerAppointments);
