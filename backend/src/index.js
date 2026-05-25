@@ -76,7 +76,11 @@ app.get('/api/health', (req, res) => {
 
 if (authRoutes) {
   app.use('/api/auth', authRoutes);
-  console.log('Auth routes registered');
+  const routeCount = authRoutes.stack ? authRoutes.stack.filter(s => s.route).length : '?';
+  console.log('Auth routes registered (' + routeCount + ' routes)');
+  if (!authRoutes.stack || authRoutes.stack.length === 0) {
+    console.error('Auth routes has empty stack!');
+  }
 } else {
   app.all('/api/auth/*', (req, res) => res.status(500).json({
     message: 'Auth module failed to load',
@@ -121,7 +125,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ message: 'Route not found', url: req.url, method: req.method, authLoaded: !!authRoutes });
 });
 
 if (!process.env.VERCEL) {
