@@ -25,6 +25,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3000',
   'http://localhost:3001',
+  'https://frontend-nu-ochre.vercel.app',
 ].filter(Boolean);
 
 app.use((req, res, next) => {
