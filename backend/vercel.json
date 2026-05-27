@@ -1,16 +1,4 @@
 {
-  "env": {
-    "NODE_ENV": "production",
-    "DB_HOST": "aws-1-ap-southeast-2.pooler.supabase.com",
-    "DB_PORT": "6543",
-    "DB_USER": "postgres.kppikjqkeytxzlzivpvx",
-    "DB_PASSWORD": "Kharga#1122",
-    "DB_NAME": "postgres",
-    "JWT_SECRET": "kanoonsathi_super_secret_jwt_key_2024",
-    "JWT_EXPIRES_IN": "7d",
-    "GROQ_API_KEY": "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",
-    "FRONTEND_URL": "https://backend-theta-black-20.vercel.app"
-  },
   "builds": [
     {
       "src": "src/index.js",

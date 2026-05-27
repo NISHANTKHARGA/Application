@@ -1,10 +1,10 @@
 require('dotenv').config();
 
 const dbConfig = {
-  host: process.env.DB_HOST,
+  host: process.env.DB_HOST || 'aws-1-ap-southeast-2.pooler.supabase.com',
   port: parseInt(process.env.DB_PORT || '6543'),
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  username: process.env.DB_USER || 'postgres.kppikjqkeytxzlzivpvx',
+  password: process.env.DB_PASSWORD || 'Kharga#1122',
   database: process.env.DB_NAME || 'postgres',
   dialect: 'postgres',
   logging: false,

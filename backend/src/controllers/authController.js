@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const { User, Lawyer } = require('../models');
 
 const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET || 'kanoonsathi_super_secret_jwt_key_2024', {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   });
 };
