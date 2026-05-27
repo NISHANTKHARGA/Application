@@ -98,32 +98,6 @@ if (lawyerRoutes) app.use('/api/lawyer', lawyerRoutes);
 if (appointmentRoutes) app.use('/api/appointment', appointmentRoutes);
 if (chatRoutes) app.use('/api/chat', chatRoutes);
 
-app.get('/api/test-model', async (req, res) => {
-  try {
-    const models = require('./models');
-    const conn = require('./config/connection');
-    let userReq, userErr;
-    try { userReq = require('./models/User'); } catch (e) { userErr = e.message; }
-    let lawyerReq, lawyerErr;
-    try { lawyerReq = require('./models/Lawyer'); } catch (e) { lawyerErr = e.message; }
-    res.json({
-      userModelExists: !!models.User,
-      userDirectRequire: userReq === undefined ? 'undefined' : typeof userReq,
-      userError: userErr,
-      lawyerDirectRequire: lawyerReq === undefined ? 'undefined' : typeof lawyerReq,
-      lawyerError: lawyerErr,
-      connIsSequelize: typeof conn === 'object' && conn?.constructor?.name === 'Sequelize',
-      connType: typeof conn,
-      connConstructor: conn?.constructor?.name || 'none',
-      sequelizeExists: !!models.sequelize,
-      sequelizeError: models.sequelizeError,
-      modelKeys: Object.keys(models)
-    });
-  } catch (e) {
-    res.json({ error: e.message, stack: e.stack?.split('\n').slice(0, 3).join(' | ') });
-  }
-});
-
 app.get('/api/debug', async (req, res) => {
   const info = {
     dbConnected: dbReady,
