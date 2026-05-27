@@ -101,12 +101,20 @@ if (chatRoutes) app.use('/api/chat', chatRoutes);
 app.get('/api/test-model', async (req, res) => {
   try {
     const models = require('./models');
-    let userReq = null;
-    try { userReq = require('./models/User'); } catch (e) { userReq = { error: e.message }; }
+    const conn = require('./config/connection');
+    let userReq, userErr;
+    try { userReq = require('./models/User'); } catch (e) { userErr = e.message; }
+    let lawyerReq, lawyerErr;
+    try { lawyerReq = require('./models/Lawyer'); } catch (e) { lawyerErr = e.message; }
     res.json({
       userModelExists: !!models.User,
-      userDirectRequire: typeof userReq,
-      userDirectRequireKeys: userReq && typeof userReq === 'object' ? Object.keys(userReq).join(',') : null,
+      userDirectRequire: userReq === undefined ? 'undefined' : typeof userReq,
+      userError: userErr,
+      lawyerDirectRequire: lawyerReq === undefined ? 'undefined' : typeof lawyerReq,
+      lawyerError: lawyerErr,
+      connIsSequelize: typeof conn === 'object' && conn?.constructor?.name === 'Sequelize',
+      connType: typeof conn,
+      connConstructor: conn?.constructor?.name || 'none',
       sequelizeExists: !!models.sequelize,
       sequelizeError: models.sequelizeError,
       modelKeys: Object.keys(models)
