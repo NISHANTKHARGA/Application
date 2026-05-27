@@ -24,8 +24,11 @@ try {
   console.error('Model definition error:', e?.message);
 }
 
+const sequelizeError = sequelize?.error || null;
+
 module.exports = {
   sequelize,
+  sequelizeError,
   User,
   Lawyer,
   Appointment,

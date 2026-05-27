@@ -5,6 +5,7 @@ const env = process.env.NODE_ENV || 'development';
 const dbConfig = config[env];
 
 let sequelize;
+let sequelizeError = null;
 try {
   sequelize = new Sequelize(
     dbConfig.database,
@@ -20,8 +21,10 @@ try {
     }
   );
 } catch (e) {
-  console.error('Sequelize init failed (will be null):', e?.message);
+  sequelizeError = e?.message || e?.code || 'Unknown Sequelize init error';
+  console.error('Sequelize init failed:', sequelizeError);
   sequelize = null;
 }
 
 module.exports = sequelize;
+module.exports.error = sequelizeError;

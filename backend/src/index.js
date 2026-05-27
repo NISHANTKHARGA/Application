@@ -4,11 +4,13 @@ const cors = require('cors');
 const path = require('path');
 
 let sequelize = null;
+let sequelizeInitError = null;
 let authRoutes, lawyerRoutes, appointmentRoutes, chatRoutes;
 let authRoutesError, lawyerRoutesError, apptRoutesError, chatRoutesError;
 try {
   const models = require('./models');
   sequelize = models.sequelize;
+  sequelizeInitError = models.sequelizeError;
 } catch (e) {
   console.error('Model load error:', e?.message);
 }
@@ -101,6 +103,7 @@ app.get('/api/debug', async (req, res) => {
     dbConnected: dbReady,
     dbError,
     dbSequelize: !!sequelize,
+    sequelizeInitError,
     routes: {
       auth: !!authRoutes,
       authError: authRoutesError?.message || null,
