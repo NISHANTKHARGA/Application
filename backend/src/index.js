@@ -100,8 +100,13 @@ if (chatRoutes) app.use('/api/chat', chatRoutes);
 
 app.get('/api/test-model', async (req, res) => {
   try {
-    const { User } = require('./models');
-    res.json({ userModelExists: !!User, userModelKeys: User ? Object.keys(User.prototype).slice(0, 5) : null });
+    const models = require('./models');
+    res.json({
+      userModelExists: !!models.User,
+      sequelizeExists: !!models.sequelize,
+      sequelizeError: models.sequelizeError,
+      modelKeys: Object.keys(models)
+    });
   } catch (e) {
     res.json({ error: e.message, stack: e.stack?.split('\n').slice(0, 3).join(' | ') });
   }
