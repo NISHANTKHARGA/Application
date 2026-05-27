@@ -101,8 +101,12 @@ if (chatRoutes) app.use('/api/chat', chatRoutes);
 app.get('/api/test-model', async (req, res) => {
   try {
     const models = require('./models');
+    let userReq = null;
+    try { userReq = require('./models/User'); } catch (e) { userReq = { error: e.message }; }
     res.json({
       userModelExists: !!models.User,
+      userDirectRequire: typeof userReq,
+      userDirectRequireKeys: userReq && typeof userReq === 'object' ? Object.keys(userReq).join(',') : null,
       sequelizeExists: !!models.sequelize,
       sequelizeError: models.sequelizeError,
       modelKeys: Object.keys(models)
