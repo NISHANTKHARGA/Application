@@ -70,6 +70,10 @@ app.use(async (req, res, next) => {
   next();
 });
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'KanoonSathi Backend is running', version: '1.1.0' });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'KanoonSathi API is running', db: dbReady ? 'connected' : (dbError || 'pending') });
 });
@@ -125,7 +129,14 @@ app.use((err, req, res, next) => {
 });
 
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found', url: req.url, method: req.method, authLoaded: !!authRoutes });
+  res.status(404).json({
+    message: 'Route not found',
+    url: req.url,
+    method: req.method,
+    authLoaded: !!authRoutes,
+    authError: authRoutesError?.message || null,
+    modelError: typeof sequelize === 'undefined' || sequelize === null ? 'Models failed to load' : null
+  });
 });
 
 if (!process.env.VERCEL) {
