@@ -1,5 +1,4 @@
-const conn = require('../config/connection');
-const sequelize = conn.sequelize;
+const sequelize = require('../config/connection');
 
 let User, Lawyer, Appointment, ChatMessage;
 
@@ -27,7 +26,7 @@ try {
 
 module.exports = {
   sequelize,
-  sequelizeError: conn.error,
+  sequelizeError: sequelize?.initError || null,
   User,
   Lawyer,
   Appointment,
