@@ -4,8 +4,8 @@ const config = require('./database');
 const env = process.env.NODE_ENV || 'development';
 const dbConfig = config[env];
 
-let sequelize;
-let sequelizeError = null;
+let sequelize = null;
+const result = { sequelize: null, error: null };
 try {
   sequelize = new Sequelize(
     dbConfig.database,
@@ -20,11 +20,10 @@ try {
       pool: dbConfig.pool
     }
   );
+  result.sequelize = sequelize;
 } catch (e) {
-  sequelizeError = e?.message || e?.code || 'Unknown Sequelize init error';
-  console.error('Sequelize init failed:', sequelizeError);
-  sequelize = null;
+  result.error = e?.message || e?.code || 'Unknown Sequelize init error';
+  console.error('Sequelize init failed:', result.error);
 }
 
-module.exports = sequelize;
-module.exports.error = sequelizeError;
+module.exports = result;

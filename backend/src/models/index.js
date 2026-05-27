@@ -1,4 +1,5 @@
-const sequelize = require('../config/connection');
+const conn = require('../config/connection');
+const sequelize = conn.sequelize;
 
 let User, Lawyer, Appointment, ChatMessage;
 
@@ -24,11 +25,9 @@ try {
   console.error('Model definition error:', e?.message);
 }
 
-const sequelizeError = sequelize?.error || null;
-
 module.exports = {
   sequelize,
-  sequelizeError,
+  sequelizeError: conn.error,
   User,
   Lawyer,
   Appointment,
