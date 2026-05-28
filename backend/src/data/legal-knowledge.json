@@ -383,5 +383,257 @@
     "title": "Citizen Charter and Public Service Rights",
     "content": "Public service offices in Nepal are required to publish Citizen Charters specifying services, response times, fees, and grievance mechanisms. The Citizen Charter must be displayed prominently at every public office. If a service is not provided within the specified time, the concerned officer must compensate the citizen. The Grievance Handling Act 2075 provides for filing complaints against public officials. Complaints can be filed at the office itself, the Ministry, or the Commission for Investigation of Abuse of Authority (CIAA). The CIAA investigates corruption and abuse of authority. Citizen awareness of these rights is essential for accountable governance.",
     "keywords": ["citizen charter", "public service", "grievance", "CIAA", "corruption", "नागरिक बडापत्र", "सार्वजनिक सेवा", "उजुरी", "भ्रष्टाचार"]
+  },
+  {
+    "id": "constitution-1",
+    "caseType": "Constitutional",
+    "title": "Constitution of Nepal 2015 - Overview and Structure",
+    "content": "The Constitution of Nepal 2015 (Nepal Sashan Bidhan 2072) is the supreme law of Nepal, enacted on September 20, 2015. It replaced the Interim Constitution of 2007. The Constitution establishes Nepal as a federal democratic republic with seven provinces. It consists of 35 parts, 308 articles, and 9 schedules. The Constitution guarantees sovereignty vested in the Nepali people. Key features include constitutional supremacy, fundamental rights, three levels of government (federal, provincial, local), independent judiciary, and an inclusive electoral system. The Constitution can be amended by a two-thirds majority of both houses of the federal parliament.",
+    "keywords": ["constitution", "constitution of nepal", "nepal constitution 2015", "sashan bidhan", "supreme law", "संविधान", "नेपालको संविधान २०७२", "संविधान सर्वोपरि"]
+  },
+  {
+    "id": "constitution-2",
+    "caseType": "Constitutional",
+    "title": "Fundamental Rights under the Constitution of Nepal",
+    "content": "Part 3 (Articles 16-46) of the Constitution of Nepal 2015 guarantees comprehensive fundamental rights enforceable in the Supreme Court. These include: Right to life (Article 16), Right to dignity (Article 16), Right to freedom (Article 17), Right to equality (Article 18), Right to communication (Article 19), Right to justice (Article 20), Right of a victim of crime (Article 21), Right against torture (Article 22), Right against preventive detention (Article 23), Right against untouchability and discrimination (Article 24), Right to education (Article 31), Right to language and culture (Article 32), Right to employment and social security (Article 33-34), Right to health (Article 35), Right to food (Article 36), Right to housing (Article 37), Right to a clean environment (Article 30), Right to information (Article 27), and Right to constitutional remedies (Article 46). Any law inconsistent with fundamental rights is void.",
+    "keywords": ["fundamental rights", "constitutional rights", "human rights", "right to life", "right to equality", "मौलिक हक", "संवैधानिक हक", "मानव अधिकार", "समानताको हक"]
+  },
+  {
+    "id": "constitution-3",
+    "caseType": "Constitutional",
+    "title": "Federal Structure of Nepal - Three Levels of Government",
+    "content": "The Constitution establishes three levels of government: Federal (Sanghiya), Provincial (Pradesh), and Local (Sthaniya). The Federal level consists of the President, Vice-President, Prime Minister, Council of Ministers, and the Federal Parliament (House of Representatives and National Assembly). The 7 provinces each have a Provincial Assembly and Chief Minister. The 753 local levels include Metropolitan cities, Sub-Metropolitan cities, Municipalities, and Rural Municipalities (Gaunpalika). Schedule 5-9 of the Constitution define the powers and responsibilities of each level. The federal government handles defense, foreign affairs, central banking, and national infrastructure. Provincial governments handle provincial police, health, and education. Local governments handle local development, agriculture, and community services.",
+    "keywords": ["federal", "province", "local government", "three levels", "federal structure", "सङ्घीय", "प्रदेश", "स्थानीय", "सङ्घीय संरचना", "तीन तहको सरकार"]
+  },
+  {
+    "id": "constitution-4",
+    "caseType": "Constitutional",
+    "title": "Supreme Court and Judicial System of Nepal",
+    "content": "The judicial system of Nepal comprises the Supreme Court, seven High Courts (one per province), and 77 District Courts. The Supreme Court is the highest court with final appellate jurisdiction and extraordinary constitutional jurisdiction through writ petitions (habeas corpus, mandamus, certiorari, prohibition, and quo warranto). The Chief Justice heads the Supreme Court. The Judicial Council recommends appointments and oversees judicial conduct. The Judicial Service Commission handles promotions. The Constitutional Bench of the Supreme Court hears constitutional disputes. Specialized courts include Administrative Court, Revenue Tribunal, Debt Recovery Tribunal, Labor Court, and Special Court for corruption cases. Lower courts include the Juvenile Bench and the Court of Appeal at the District level.",
+    "keywords": ["supreme court", "high court", "district court", "judiciary", "chief justice", "writ", "सर्वोच्च अदालत", "उच्च अदालत", "जिल्ला अदालत", "न्यायपालिका", "रिट"]
+  },
+  {
+    "id": "criminal-8",
+    "caseType": "Criminal",
+    "title": "Muluki Criminal Code 2017 - Key Provisions",
+    "content": "The Muluki Criminal Code (Muluki Aparadh Sanhita) 2074 came into effect on August 17, 2018, replacing the old Muluki Ain. It contains 299 sections covering criminal offenses and punishments. Key offenses include murder (Section 173 - life imprisonment), attempted murder, culpable homicide, assault, kidnapping, rape (Section 219 - 10-15 years imprisonment), theft (Section 249 - up to 7 years), robbery (Section 253), dacoity, fraud (Section 259 - up to 7 years), defamation (Section 269), and perjury. The Code recognizes both acts and omissions as criminal. Attempt to commit an offense is punishable with half the maximum punishment. The principle of nulla poena sine lege (no punishment without law) is followed. Corporate criminal liability is recognized.",
+    "keywords": ["muluki criminal code", "criminal code", "penal code", "crime", "punishment", "मुलुकी अपराध संहिता", "फौजदारी", "अपराध", "सजाय"]
+  },
+  {
+    "id": "criminal-9",
+    "caseType": "Criminal",
+    "title": "Criminal Procedure Code 2074 - Court Process",
+    "content": "The Criminal Procedure Code (Muluki Aparadh Karobari Sanhita) 2074 governs criminal procedure in Nepal. It covers investigation, arrest, bail, trial, and appeal. The criminal process begins with FIR registration (Jahari), police investigation, filing of charge sheet (Abhiyog Patra), preliminary hearing, trial (full bench or jury), and judgment. Types of trials include summary trial for minor offenses, warrant trial for serious offenses, and sessions trial for capital offenses. Limitation periods: 6 months for summary offenses, 1 year for warrant offenses, and no limitation for serious crimes like murder. Appeal lies to the High Court within 70 days from the District Court judgment. Further appeal to the Supreme Court requires leave.",
+    "keywords": ["criminal procedure", "court process", "trial", "appeal", "charge sheet", "फौजदारी कार्यविधि", "अभियोग पत्र", "मुद्दा", "पुनरावेदन"]
+  },
+  {
+    "id": "civil-6",
+    "caseType": "Civil",
+    "title": "Civil Procedure Code 2074 - Civil Litigation",
+    "content": "The Civil Procedure Code (Muluki Dewani Karobari Sanhita) 2074 governs civil litigation including property disputes, contract enforcement, and tort claims. A civil suit begins with filing a plaint at the District Court with court fees based on the claim amount. The court issues summons to the defendant who must file a written statement within 15-35 days. The court holds a preliminary hearing to frame issues, followed by evidence (documentary and witness), argument, and judgment. Mediation and settlement are encouraged at any stage. Limitation periods: 6 months for movable property recovery, 1 year for breach of contract, 3 years for immovable property, and 12 years for adverse possession. Appeals must be filed within 90 days to the High Court.",
+    "keywords": ["civil procedure", "civil suit", "litigation", "court case", "plaint", "देवानी कार्यविधि", "देवानी मुद्दा", "मुद्दा", "अदालत"]
+  },
+  {
+    "id": "family-1",
+    "caseType": "Family",
+    "title": "Marriage Laws in Nepal",
+    "content": "Marriage in Nepal is governed by the Muluki Civil Code 2074. The legal marriage age is 20 years for both men and women. Marriage registration is mandatory and must be done within 35 days at the Ward Office or District Administration Office. Types of marriage include court marriage, religious marriage, and traditional marriage. Inter-caste marriage is legally recognized and incentivized with a NPR 100,000 cash incentive from the government. Polygamy is prohibited for all except under specific circumstances (first wife's consent for infertility or incurable disease). Dowry is illegal under the Social Practices Reform Act. Marriages must be voluntarily consented. Child marriage (below 20) is a criminal offense.",
+    "keywords": ["marriage", "wedding", "marriage registration", "court marriage", "inter-caste", "विवाह", "विवाह दर्ता", "अन्तरजातीय विवाह", "कोर्ट म्यारिज"]
+  },
+  {
+    "id": "family-2",
+    "caseType": "Family",
+    "title": "Divorce and Legal Separation in Nepal",
+    "content": "Divorce in Nepal is governed by the Muluki Civil Code 2074. A divorce petition can be filed in the District Court. Grounds for divorce include mutual consent, cruelty, adultery, desertion for 3+ years, irreconcilable differences, and incurable mental illness. Mutual consent divorce requires both parties to file jointly. After divorce, the wife is entitled to half of the property acquired during marriage (not ancestral property). Child custody is determined based on the child's best interest. Children under 5 years are usually with the mother. Maintenance (alimony) is determined based on the spouse's income and standard of living. The court attempts mediation first. A 6-month cooling-off period is required for mutual consent divorce.",
+    "keywords": ["divorce", "separation", "legal separation", "alimony", "child custody", "सम्बन्ध विच्छेद", "पारपाचुके", "गुजारा भत्ता", "बालबालिकाको हिरासत"]
+  },
+  {
+    "id": "family-3",
+    "caseType": "Family",
+    "title": "Succession and Inheritance Rights in Nepal",
+    "content": "Succession in Nepal is governed by the Muluki Civil Code 2074. The law provides equal inheritance rights to sons and daughters. Ancestral property (Kulani) is divided equally among children. Self-acquired property can be disposed by will to anyone. The surviving spouse inherits a share equal to the children. If there is no will, property is distributed according to the rules of intestate succession. Stepchildren adopted under Nepali law have inheritance rights equal to biological children. A will (Vasiyathnama) should be registered at the District Court or signed by two witnesses. Testamentary succession allows a person to distribute their property according to their wishes. Women's right to parental property is fully protected under Article 18 of the Constitution.",
+    "keywords": ["inheritance", "succession", "will", "property", "ancestral property", "उत्तराधिकार", "वंशज", "जग्गा", "वसीयत", "पैतृक सम्पत्ति"]
+  },
+  {
+    "id": "family-4",
+    "caseType": "Family",
+    "title": "Adoption Laws in Nepal",
+    "content": "Adoption in Nepal is governed by the Muluki Civil Code 2074 and the Children's Act 2075. Both domestic and inter-country adoption are regulated. Domestic adoption: a married couple can adopt if they have no children of their own. Single women can adopt a female child. Foreign adoption is handled through authorized organizations. The adoptive parents must be at least 30 years old and at most 55 years old, financially stable, and of good character. The adopted child has the same inheritance rights as a biological child. The adoption must be registered at the District Administration Office. The consent of biological parents (if living) and the child (if above 10 years) is required. Abandoned children can be adopted through the Child Welfare Board.",
+    "keywords": ["adoption", "child adoption", "foster care", "guardian", "धर्मपुत्र", "धर्मपुत्री", "बालबालिका धर्मपुत्र", "अभिभावक"]
+  },
+  {
+    "id": "labor-1",
+    "caseType": "Labor",
+    "title": "Labor Act 2017 - Employee Rights",
+    "content": "The Labor Act 2074 (2017) is the primary law governing employment in Nepal. Key provisions: Maximum 8 hours work per day (48 hours per week), overtime paid at 1.5 times regular pay, 20 days annual leave, 13 days public holiday leave, 12 days sick leave, 60 days maternity leave (fully paid), and 15 days paternity leave for male employees. Employees cannot be terminated without 30 days' notice or payment in lieu. Severance includes gratuity (8.33% of salary per year) and provident fund (10% employee + 10% employer). Minimum wage is set by the government and revised periodically. Employers must provide safe working conditions, accident insurance, and social security contributions. The Labor Office handles employee complaints.",
+    "keywords": ["labor law", "employment", "employee rights", "wages", "overtime", "श्रम ऐन", "रोजगार", "कर्मचारी अधिकार", "ज्याला", "ओभरटाइम"]
+  },
+  {
+    "id": "labor-2",
+    "caseType": "Labor",
+    "title": "Social Security Act - Employee Benefits",
+    "content": "The Social Security Act 2075 established the Social Security Fund (SSF) for formal sector employees. Both employer and employee contribute 10% each of basic salary to the SSF. The SSF provides five schemes: Medical, Health and Maternity Protection Scheme; Accidents and Disability Protection Scheme; Dependent Family Protection Scheme; Old Age Protection Scheme; and Unemployment Protection Scheme. Registration is mandatory for all employers with employees. Unregistered employers face fines. The SSF is managed by the Social Security Fund Board. Employees can withdraw a portion of their old age contributions after age 60 or in case of permanent disability. The scheme also provides accident insurance coverage during employment.",
+    "keywords": ["social security", "SSF", "provident fund", "pension", "employee benefits", "सामाजिक सुरक्षा", "कोष", "पेन्सन", "कर्मचारी लाभ"]
+  },
+  {
+    "id": "labor-3",
+    "caseType": "Labor",
+    "title": "Termination and Redundancy in Nepal",
+    "content": "Employment termination in Nepal is regulated by the Labor Act 2074. Permanent employees can only be terminated for cause (misconduct, negligence, criminal offense) or redundancy (retrenchment). For-cause termination requires three written warnings within a year followed by a domestic inquiry. Redundancy requires the employer to prove economic necessity and follow a last-in-first-out principle. Notice period: 30 days for monthly employees, 7 days for daily wages. Severance pay: 30 days' basic salary per year of service as gratuity plus provident fund. Retrenched employees get additional compensation of 1 month salary per year of service (minimum 3 months, maximum 12 months). Wrongful termination can be challenged at the Labor Court, which can order reinstatement or compensation up to 36 months salary.",
+    "keywords": ["termination", "redundancy", "retrenchment", "dismissal", "severance", "रोजगारी अन्त्य", "बर्खास्त", "कटौती", "क्षतिपूर्ति"]
+  },
+  {
+    "id": "tax-1",
+    "caseType": "Tax",
+    "title": "Personal Income Tax in Nepal",
+    "content": "Personal income tax in Nepal is governed by the Income Tax Act 2058. The tax year runs from mid-July to mid-July (Nepali fiscal year). Tax rates (2024/25): Income up to NPR 500,000 - 1% (with social security contribution), NPR 500,001 to NPR 700,000 - 10%, NPR 700,001 to NPR 1,000,000 - 20%, NPR 1,000,001 to NPR 2,000,000 - 30%, above NPR 2,000,000 - 36%. Taxpayers with professional income (business, investment capital) get a 50% deduction on first NPR 500,000. Married couples can file separately. Tax is deducted at source (TDS) from salaries. Individuals must file annual tax returns by Kartik end (November) with penalties for late filing. Capital gains tax: 5% for shares (short-term), 7.5% for immovable property held less than 5 years.",
+    "keywords": ["income tax", "personal tax", "tax return", "TDS", "salary tax", "आयकर", "व्यक्तिगत कर", "कर फिर्ता", "तलब कर"]
+  },
+  {
+    "id": "tax-2",
+    "caseType": "Tax",
+    "title": "Business and VAT Registration in Nepal",
+    "content": "Business registration in Nepal is required at the Department of Commerce (Company) or Department of Cottage and Small Industries. VAT registration is mandatory for businesses with annual turnover exceeding NPR 5 million. Voluntary registration is allowed for smaller businesses. VAT rate is 13% on most goods and services (standard rate). Zero-rated supplies include exports, certain agricultural products, and services. VAT returns must be filed monthly (by 25th of following month). Late filing penalty is 2% per month with minimum NPR 1,000. PAN (Permanent Account Number) registration is required for all businesses. Advance Tax Payment (estimated tax) is payable in four installments during the fiscal year. Corporate tax rate: 25% for most businesses, 20% for industrial sectors, 10% for export businesses.",
+    "keywords": ["business registration", "VAT", "PAN", "tax registration", "corporate tax", "व्यवसाय दर्ता", "मूल्य अभिवृद्धि कर", "प्यान", "कर्पोरेट कर"]
+  },
+  {
+    "id": "property-6",
+    "caseType": "Property",
+    "title": "Land Measurement Units and Survey in Nepal",
+    "content": "Land in Nepal is measured in traditional units: Ropani, Aana, Paisa, Daam (1 Ropani = 16 Aana = 508.72 sq meters) used in hilly regions, and Bigha, Kattha, Dhur (1 Bigha = 20 Kattha = 6772.41 sq meters) used in Terai. Land survey is conducted by the Survey Department. A cadastral survey creates the land map (Naksa) showing exact boundaries. The Land Revenue Office issues the Lalpurja (land ownership certificate). Land measurement disputes can be resolved through re-survey application. Land classification categories include: Aabbal, Doyam, Sim, Chahar (based on productivity). Land use classification under the Land Use Act: agricultural, residential, commercial, industrial, forest, and public use. Conversion of agricultural land to other uses requires approval from the Land Use Council.",
+    "keywords": ["land measurement", "ropani", "bigha", "kattha", "survey", "जग्गा नापी", "रोपनी", "बिघा", "कठ्ठा", "नक्सा", "लालपुर्जा"]
+  },
+  {
+    "id": "property-7",
+    "caseType": "Property",
+    "title": "Land Acquisition and Compensation",
+    "content": "Land acquisition by the government is governed by the Land Acquisition Act 2034. The government can acquire private land for public purposes (infrastructure, roads, schools, hospitals). The acquisition process: publication of notice, survey and valuation, compensation determination, objection hearing, and final award. Compensation is based on market value plus 50% solatium. Displaced persons get additional rehabilitation allowance. If the acquired land is not used for the stated purpose within 5 years, the original owner has the right to recover it at the same price. Objections to compensation can be filed at the District Court. Landowners cannot refuse acquisition but can contest the compensation amount. The Land Acquisition Act Amendment 2069 increased compensation rates.",
+    "keywords": ["land acquisition", "compensation", "expropriation", "government land", "जग्गा अधिग्रहण", "मुआब्जा", "जग्गा प्राप्ति", "सरकारी जग्गा"]
+  },
+  {
+    "id": "contract-1",
+    "caseType": "Civil",
+    "title": "Contract Law in Nepal",
+    "content": "Contracts in Nepal are governed by the Muluki Civil Code 2074 (Chapter on Contract). Essential elements of a valid contract: offer and acceptance, lawful consideration, capacity to contract (age 18+, sound mind), free consent, lawful object, and certainty of terms. Written contracts with registration are preferred for legal enforceability. Performance of contract must be as per agreed terms. Breach of contract remedies include specific performance, damages (actual loss + consequential loss), and rescission. Interest on delayed payment is 10% per annum unless otherwise agreed. Limitation for contract enforcement is 1 year from breach. Contracts involving immovable property must be registered at the Land Revenue Office. Unregistered contracts for immovable property are not enforceable in court.",
+    "keywords": ["contract", "agreement", "breach of contract", "legal contract", "enforcement", "सम्झौता", "करार", "सम्झौता उल्लंघन", "कानुनी करार"]
+  },
+  {
+    "id": "business-2",
+    "caseType": "Business",
+    "title": "Company Registration in Nepal",
+    "content": "Companies in Nepal are registered under the Companies Act 2063 at the Office of Company Registrar (OCR), Tripureshwar, Kathmandu. Types: Private Limited Company (minimum 1 director, up to 101 shareholders), Public Limited Company (minimum 3 directors, 7+ shareholders, public can buy shares), and One Person Company (OPC). Registration process: Name reservation (online), document submission (MOA, AOA, etc.), incorporation certificate, PAN registration, and VAT registration. Minimum paid-up capital: Private Limited NPR 100,000, Public Limited NPR 10 million, OPC NPR 50,000. Foreign investment companies need approval from the Department of Industry. Annual requirements: AGM within 6 months of fiscal year end, annual return filing, and tax return. Non-compliance leads to fines and potential strike-off.",
+    "keywords": ["company registration", "private limited", "OPC", "public limited", "company act", "कम्पनी दर्ता", "निजी लिमिटेड", "कम्पनी ऐन", "कम्पनी रजिस्ट्रार"]
+  },
+  {
+    "id": "immigration-1",
+    "caseType": "Immigration",
+    "title": "Passport and Citizenship in Nepal",
+    "content": "Nepali passports are issued by the Department of Passports under the Passport Act 2076. Machine Readable Passports (MRP) are valid for 10 years. Application is online through the Department of Passports website with appointment booking. Required documents: citizenship certificate, birth certificate, and photographs. Emergency passport is available for urgent medical treatment and foreign employment. Citizenship in Nepal is governed by the Citizenship Act 2063. Citizenship by descent: persons born to Nepali citizen parents. Citizenship by birth: persons born in Nepal before 1990. Naturalized citizenship: available to foreign women married to Nepali citizens (after 7 years residence) and others with special contribution. Dual citizenship is not recognized. Non-Resident Nepali (NRN) status allows visa-free entry and economic rights without political rights.",
+    "keywords": ["passport", "citizenship", "visa", "NRN", "nepali passport", "राहदानी", "नागरिकता", "भिसा", "गैरआवासीय नेपाली"]
+  },
+  {
+    "id": "consumer-5",
+    "caseType": "Consumer",
+    "title": "Consumer Rights and Protection in Nepal",
+    "content": "Consumer rights in Nepal are protected under the Consumer Protection Act 2075. The act provides for: right to safety, right to information, right to choose, right to be heard, and right to redress. The Department of Commerce, Supplies and Consumer Protection (DoCSCP) handles consumer complaints. Grievances can be filed through the toll-free number 1136 or online portal. Compensation for defective products: up to NPR 50,000 per complaint without court, and higher amounts through the Consumer Court. Black marketing, hoarding, and overcharging are punishable with imprisonment up to 10 years and fines up to NPR 300,000. Traders must display prices and expiry dates. Substandard products can be confiscated and destroyed. Right to return goods within 7 days is recognized for online purchases.",
+    "keywords": ["consumer rights", "consumer protection", "complaint", "black marketing", "overcharging", "उपभोक्ता अधिकार", "उपभोक्ता संरक्षण", "गुनासो", "कालोबजारी"]
+  },
+  {
+    "id": "traffic-1",
+    "caseType": "Traffic",
+    "title": "Driving License and Traffic Rules in Nepal",
+    "content": "Driving licenses in Nepal are issued by the Department of Transport Management (DoTM). Categories: A (Motorcycle), B (Car/Taxi), C (Light Truck), D (Heavy Truck), E (Bus/Heavy Vehicle). Minimum age: 16 for motorcycle, 18 for car. Written test followed by driving test. License is valid for 5 years (renewable). Traffic rules: Left-hand drive, speed limits (40 km/h in cities, 80 km/h on highways), seat belts mandatory for front seats, helmet mandatory for motorcycle riders and pillion, no mobile phone while driving, zero tolerance for drunk driving (blood alcohol > 80mg/100ml is offense). Traffic violation fines range from NPR 500 to NPR 5,000. Accident procedures: Stop, help injured, inform police (100), inform insurance company, do not move vehicles until police arrive.",
+    "keywords": ["driving license", "traffic rules", "traffic violation", "road accident", "driving", "सवारी चालक अनुमति", "ट्राफिक नियम", "सवारी दुर्घटना", "जरिवाना"]
+  },
+  {
+    "id": "human-rights-1",
+    "caseType": "Constitutional",
+    "title": "Human Rights and National Human Rights Commission",
+    "content": "The National Human Rights Commission (NHRC) Nepal was established under the Human Rights Commission Act 2053. It is an independent constitutional body under Article 248 of the Constitution. Functions: investigate human rights violations, recommend compensation, visit detention centers, and recommend legal reforms. Complaints can be filed at NHRC offices in Kathmandu (Harihar Bhawan) and all provincial offices. The NHRC can summon officials, order investigations, and recommend action. However, its recommendations are not automatically enforceable. Victims can file cases in court based on NHRC findings. The NHRC has special procedures for women's rights, children's rights, and the rights of marginalized groups. Key rights protected: right against torture, right against enforced disappearance, right to fair trial, and freedom from discrimination.",
+    "keywords": ["human rights", "NHRC", "human rights commission", "torture", "discrimination", "मानव अधिकार", "राष्ट्रिय मानव अधिकार आयोग", "यातना", "भेदभाव"]
+  },
+  {
+    "id": "human-rights-2",
+    "caseType": "Constitutional",
+    "title": "Right to Information in Nepal",
+    "content": "The Right to Information Act 2064 (2007) gives every citizen the right to access information held by public bodies. The National Information Commission (NIC) oversees implementation. Citizens can file information requests at any public office. The office must provide information within 15 days (3 days for matters involving life or liberty). Rejection requires written reasons (national security, privacy, ongoing investigation). If denied, appeal to the National Information Commission within 60 days. The Commission can impose fines up to NPR 25,000 and order the release of information. Annual reporting by all public bodies on proactive disclosure is mandatory. Public bodies must publish manuals, citizen charters, annual reports, and budgets proactively. The RTI Act has significantly increased government transparency in Nepal.",
+    "keywords": ["right to information", "RTI", "information commission", "transparency", "सूचनाको हक", "सूचना आयोग", "पारदर्शिता"]
+  },
+  {
+    "id": "education-1",
+    "caseType": "Constitutional",
+    "title": "Education Rights and Law in Nepal",
+    "content": "The right to education is a fundamental right under Article 31 of the Constitution. The Education Act 2028 governs the education system. Free and compulsory basic education (Grade 1-8) for all citizens is guaranteed. The government provides free textbooks and scholarships to marginalized students. The School Leaving Certificate (SEE) exam is conducted at Grade 10. Higher education is governed by the universities and their affiliated colleges. Key universities: Tribhuvan University, Kathmandu University, Pokhara University, Purbanchal University, and Nepal Sanskrit University. The University Grants Commission (UGC) funds and regulates higher education. Technical and vocational education is under the Council for Technical Education and Vocational Training (CTEVT). Private schools must be registered with the Ministry of Education and cannot charge fees arbitrarily.",
+    "keywords": ["education", "school", "college", "university", "right to education", "शिक्षा", "विद्यालय", "कलेज", "विश्वविद्यालय", "शिक्षाको हक"]
+  },
+  {
+    "id": "health-1",
+    "caseType": "Constitutional",
+    "title": "Health Rights and Public Health Law in Nepal",
+    "content": "The right to health is guaranteed under Article 35 of the Constitution. Every citizen has the right to free basic health services from government health facilities. The Public Health Service Act 2075 governs health service delivery. The Health Insurance Board operates the National Health Insurance Program providing health coverage for NPR 3,500 per family (5 members) per year with coverage up to NPR 100,000. Essential medicines are provided free at government hospitals. The Nepal Medical Council regulates doctors, Nepal Nursing Council regulates nurses, and the Nepal Health Professional Council regulates other health professionals. Medical malpractice liability is established under the Muluki Civil Code. Patients can file complaints with the Health Professional Councils. Government health facilities must provide emergency services free of charge.",
+    "keywords": ["health rights", "health insurance", "medical", "hospital", "public health", "स्वास्थ्यको हक", "स्वास्थ्य बीमा", "अस्पताल", "स्वास्थ्य सेवा"]
+  },
+  {
+    "id": "environment-2",
+    "caseType": "Constitutional",
+    "title": "Forest and Wildlife Protection Laws",
+    "content": "Forest management in Nepal is governed by the Forest Act 2049 and the Forest Regulation 2051. The Community Forestry program gives local user groups management rights over forest areas. Nepal has 6 national parks, 12 wildlife reserves, and 10 conservation areas covering 24% of land. The National Parks and Wildlife Conservation Act 2029 protects endangered species. Poaching penalties: 5-15 years imprisonment and fines up to NPR 1 million. Protected animals include the Bengal tiger, snow leopard, one-horned rhinoceros, red panda, and elephant. The Department of National Parks and Wildlife Conservation enforces wildlife laws. Buffer zone communities receive 50% of park revenue for development. Forest product harvesting requires permits from the Division Forest Office. Timber transportation requires a transportation permit.",
+    "keywords": ["forest", "wildlife", "national park", "community forestry", "poaching", "वन", "वन्यजन्तु", "राष्ट्रिय निकुञ्ज", "सामुदायिक वन", "सिकार"]
+  },
+  {
+    "id": "election-1",
+    "caseType": "Constitutional",
+    "title": "Election Laws and Voting Rights in Nepal",
+    "content": "Elections in Nepal are governed by the Constitution and the Election Commission Act 2073. The Election Commission conducts federal, provincial, and local elections. All citizens aged 18+ can vote. The House of Representatives has 275 members (165 first-past-the-post + 110 proportional representation). National Assembly has 59 members (56 elected by provincial assemblies + 3 nominated). Voting rights: Every citizen 18+ can register to vote at the local Election Office. Voting is done through Electronic Voting Machines (EVMs) or ballot papers. Voter registration requires citizenship certificate. Vote buying and selling is punishable by up to 2 years imprisonment and NPR 50,000 fine. Election campaigning has expenditure limits per candidate. The election code of conduct prohibits using public resources for campaigning.",
+    "keywords": ["election", "voting", "election commission", "voter registration", "vote", "निर्वाचन", "मतदान", "निर्वाचन आयोग", "मतदाता", "भोट"]
+  },
+  {
+    "id": "media-1",
+    "caseType": "Constitutional",
+    "title": "Media and Press Freedom in Nepal",
+    "content": "Press freedom is guaranteed under Article 17 of the Constitution (Right to Freedom: includes press freedom). The Press Council Act 2049 established the Press Council Nepal to maintain ethical standards. Media registration is done at the Department of Information. The Working Journalist Act 2073 protects journalist rights including minimum wage, social security, and professional safety. Broadcasting is regulated by the Nepal Telecommunications Authority. The Media Council Bill proposes a self-regulatory mechanism. The Communication and Information Technology Act 2075 covers digital media. Defamation laws still apply through the Muluki Civil Code. Sedition provisions in the Criminal Code can restrict speech in limited circumstances. Journalists cannot be compelled to disclose sources except under court order for national security.",
+    "keywords": ["media", "press", "journalist", "freedom of press", "broadcasting", "सञ्चार", "प्रेस", "पत्रकार", "प्रेस स्वतन्त्रता", "प्रसारण"]
+  },
+  {
+    "id": "women-1",
+    "caseType": "Constitutional",
+    "title": "Women's Rights and Gender Equality in Nepal",
+    "content": "The Constitution guarantees women's rights under Article 38 including the right to equal lineage (pass citizenship to children), equal property rights, access to education and health, and employment with equal pay for equal work. Women must constitute 33% of federal parliament, 50% of provincial assemblies, and 40% of local government. The Gender Equality Act 2063 prohibits gender discrimination. Sexual harassment is punishable under the Criminal Code (Section 224 - up to 3 years imprisonment). The Domestic Violence Act 2066 provides protection orders. The Trafficking and Transportation (Control) Act 2064 addresses human trafficking. Women's right to parental property is equal to sons. Maternity leave: 60 days paid. The Women Development Program provides skill training and micro-credit. She contributes to women's legal awareness.",
+    "keywords": ["women rights", "gender equality", "women", "sexual harassment", "maternity", "महिला अधिकार", "लैङ्गिक समानता", "महिला", "यौन दुर्व्यवहार", "प्रसूति"]
+  },
+  {
+    "id": "land-1",
+    "caseType": "Property",
+    "title": "Land Tenure and Tenancy Rights in Nepal",
+    "content": "The Land Tenancy Act 2052 and Land Act 2021 govern landlord-tenant relationships. A registered tenancy (Mohi) gives the tenant rights to cultivate the land. Types of tenants: Adhiya (crop-sharing tenant) and Kuti (fixed-rent tenant). The landlord cannot evict a tenant without court order. Grounds for eviction: non-payment of rent for 2+ years, subletting without permission, misuse of land, and landlord's bona fide need for personal cultivation. The crop share is generally 50-50 for Adhiya tenants. Tenants have preference rights (Purvadhikar) to purchase the land if the landlord sells. Land ceiling limits: 10 Bigha (6.77 ha) in Terai, 25 Ropani (1.27 ha) in Kathmandu Valley, 70 Ropani (3.56 ha) elsewhere hills. Excess land can be confiscated and distributed to landless. The Land Reform Commission handles redistribution.",
+    "keywords": ["tenancy", "landlord", "tenant", "mohi", "cropshare", "जग्गा बन्डा", "मोही", "भाडामा", "बाली", "जग्गा सुधार"]
+  },
+  {
+    "id": "local-1",
+    "caseType": "Constitutional",
+    "title": "Local Government Operations and Services",
+    "content": "Local government in Nepal operates under the Local Government Operation Act 2074. Each of the 753 local units (Metropolitan, Sub-Metropolitan, Municipality, Rural Municipality) has a Village/Municipal Assembly and a Ward Committee. Local governments handle: local infrastructure (roads, water, electricity), agriculture extension, basic health services, basic education (primary schools), local tax collection (property tax, house rent tax, entertainment tax), land use planning, local economic development, and social welfare programs. Local governments can make laws, collect revenue, and implement development projects. The Ward Office provides citizen services: birth registration, marriage registration, death registration, citizenship recommendation, and income certificate. Local tax includes property tax (up to 2.5% of assessed value) and house rent tax (10% of annual rent). Monthly ward meetings are open to citizens.",
+    "keywords": ["local government", "municipality", "ward", "rural municipality", "local tax", "स्थानीय सरकार", "नगरपालिका", "वडा", "गाउँपालिका", "स्थानीय कर"]
+  },
+  {
+    "id": "banking-1",
+    "caseType": "Business",
+    "title": "Banking Laws and Regulations in Nepal",
+    "content": "The banking sector in Nepal is regulated by Nepal Rastra Bank (NRB) under the Nepal Rastra Bank Act 2058 and the Bank and Financial Institution Act (BFIA) 2073. Types of institutions: Commercial Banks (Class A), Development Banks (Class B), Finance Companies (Class C), and Microfinance Institutions (Class D). NRB sets monetary policy, regulates interest rates, and supervises banks. Key regulations: minimum capital requirement, statutory liquidity ratio (SLR), cash reserve ratio (CRR), and loan loss provisioning. Interest rates are determined by each bank's lending rate (Base Rate + premium). Deposit insurance covers up to NPR 500,000 per depositor per bank. NRB's directives limit maximum loan-to-value ratios for housing (60%) and vehicle (50%) loans. Consumer protection: banks must disclose all fees and interest clearly. Complaints can be filed at NRB's Banking and Financial Institution Regulation Department.",
+    "keywords": ["banking", "NRB", "central bank", "bank", "finance", "बैंकिङ", "नेपाल राष्ट्र बैंक", "केन्द्रीय बैंक", "बैंक", "वित्त"]
+  },
+  {
+    "id": "media-2",
+    "caseType": "Constitutional",
+    "title": "Cyber Law and Digital Rights in Nepal",
+    "content": "The Electronic Transaction Act 2065 (ETA) is the primary cyber law in Nepal. It recognizes digital signatures and electronic records as legally valid. Key provisions: Unauthorized access to computer systems (up to 5 years imprisonment + NPR 200,000 fine), Hacking (up to 5 years + NPR 200,000 fine), Damage to computer system (up to 5 years + NPR 300,000 fine), Publication of illegal content (up to 5 years + NPR 200,000 fine). The Information Technology Emergency Response Team (ITERT) handles cyber incident response. The Nepal Police Cyber Bureau investigates cyber crimes. The Department of Information Technology manages IT policy. The Right to Information extends to digital records. Social media regulations require platforms to remove illegal content within 72 hours. Data protection provisions are limited under current law. The proposed Data Protection Bill will introduce comprehensive privacy protections.",
+    "keywords": ["cyber law", "digital rights", "electronic transaction", "data protection", "privacy", "साइबर कानुन", "डिजिटल अधिकार", "इलेक्ट्रोनिक कारोबार", "डाटा संरक्षण", "गोपनीयता"]
+  },
+  {
+    "id": "criminal-10",
+    "caseType": "Criminal",
+    "title": "Sexual Offenses and Rape Laws in Nepal",
+    "content": "Sexual offenses in Nepal are governed by the Muluki Criminal Code 2017 (Chapter on Sexual Offenses). Rape (Section 219): A person who engages in sexual intercourse without consent commits rape. Punishment: 10-15 years imprisonment. Marital rape: recognized under Section 219 (exemption for husbands removed in 2074). Child sexual abuse: Section 220 provides for additional penalties when the victim is under 18. Attempted rape: half the maximum punishment. Statutory rape: sexual intercourse with a child under 16 is automatically considered rape. Evidence rules protect victim identity. Victim's previous sexual history is generally inadmissible. Government provides free legal aid to rape victims. The One Door Crisis Management Centers at government hospitals provide integrated services for sexual violence victims. Psychological counseling and rehabilitation services are available.",
+    "keywords": ["rape", "sexual assault", "sexual offense", "marital rape", "child abuse", "बलात्कार", "यौन दुर्व्यवहार", "यौन अपराध", "बाल यौन दुरुपयोग"]
   }
 ]
