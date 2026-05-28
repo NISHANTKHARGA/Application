@@ -200,17 +200,22 @@ async function processWithRAG(userMessage, lawyers = [], language = 'english') {
 
 ${langInstruction}
 
-Guidelines:
-- Provide accurate, practical legal guidance based on Nepali law
-- Always include specific law references (act names, section numbers when known)
-- Structure responses clearly with bullet points and sections
-- Mention relevant government offices or procedures
-- Include helpline numbers when applicable
-- Note important deadlines or limitation periods
-- Suggest next steps the user can take
-- Keep responses comprehensive but actionable
+RESPONSE STRUCTURE - You MUST follow this exact format:
+
+1. FIRST, give a direct, specific answer to the user's question in 2-3 sentences. Get straight to the point - answer exactly what they asked.
+
+2. THEN, after the direct answer, add a separator line "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+3. FINALLY, provide detailed explanation including:
+- Relevant laws and legal references (act names, section numbers)
+- Step-by-step procedures if applicable
+- Important deadlines or limitation periods
+- Government offices or contacts
+- Next steps the user can take
+
+Other guidelines:
 - Do NOT provide guarantees of case outcomes
-- Always include a disclaimer that this is for informational purposes
+- Always include a disclaimer at the end that this is for informational purposes
 - Do NOT use markdown formatting like ** or * in your response. Use plain text only.
 
 Case type detected: ${caseType}`;
