@@ -3,10 +3,12 @@ const express = require('express');
 const cors = require('cors');
 
 let sequelize = null;
+let sequelizeInitError = null;
 let authRoutes, adminRoutes;
 try {
   const models = require('./models');
   sequelize = models.sequelize;
+  sequelizeInitError = models.sequelizeError;
 } catch (e) {
   console.error('Model load error:', e?.message);
 }
@@ -52,8 +54,35 @@ app.use(async (req, res, next) => {
   next();
 });
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'KanoonSathi Admin Backend is running', version: '1.0.0' });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'KanoonSathi Admin API is running', db: dbReady ? 'connected' : (dbError || 'pending') });
+});
+
+app.get('/api/debug', async (req, res) => {
+  const info = {
+    dbConnected: dbReady,
+    dbError,
+    dbSequelize: !!sequelize,
+    sequelizeInitError,
+    routes: {
+      auth: !!authRoutes,
+      admin: !!adminRoutes
+    }
+  };
+  if (sequelize) {
+    try {
+      await sequelize.authenticate();
+      info.dbAuthOk = true;
+    } catch (e) {
+      info.dbAuthOk = false;
+      info.dbAuthError = e?.message;
+    }
+  }
+  res.json(info);
 });
 
 if (authRoutes) app.use('/api/auth', authRoutes);
@@ -65,7 +94,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ message: 'Route not found', url: req.url });
 });
 
 if (!process.env.VERCEL) {

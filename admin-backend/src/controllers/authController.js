@@ -7,7 +7,7 @@ const adminLogin = async (req, res) => {
     if (email === 'admin@kanoonsathi.np' && password === 'Admin@2024') {
       const token = jwt.sign(
         { id: 'admin', role: 'admin' },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || 'kanoonsathi-admin-jwt-secret-key-2024',
         { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
       );
       return res.json({

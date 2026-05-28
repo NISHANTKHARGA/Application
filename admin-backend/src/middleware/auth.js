@@ -1,13 +1,15 @@
 const jwt = require('jsonwebtoken');
 const { User, Lawyer } = require('../models');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'kanoonsathi-admin-jwt-secret-key-2024';
+
 const protect = async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
 
       req.userRole = decoded.role;
       req.isAdmin = decoded.role === 'admin';
