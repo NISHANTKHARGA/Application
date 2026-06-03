@@ -43,7 +43,7 @@ const SPECIALIZATION_CASE_TYPE_MAP = {
   'Constitutional': 'Constitutional', 'Traffic': 'Traffic', 'Tax': 'Tax'
 };
 
-const groqApiKey = process.env.GROQ_API_KEY || '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';
+const groqApiKey = process.env.GROQ_API_KEY;
 
 const groq = new OpenAI({
   apiKey: groqApiKey || 'sk-placeholder',
@@ -152,7 +152,7 @@ function determinePrimaryCaseType(results, llmClassification) {
 }
 
 async function generateWithGroq(systemPrompt, userMessage, context) {
-  if (!groqApiKey || groqApiKey === 'sk-placeholder') return null;
+  if (!groqApiKey) return null;
   try {
     const messages = [{ role: 'system', content: systemPrompt }];
     if (context) {
