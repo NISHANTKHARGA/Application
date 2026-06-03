@@ -180,6 +180,33 @@ async function processWithRAG(userMessage, lawyers = [], language = 'english') {
   const { results: searchResults, source: searchSource } = await hybridSearch(userMessage, 5);
   const context = buildContext(searchResults);
 
+  const relevancePrompt = `You are a strict Nepal law relevance filter. Determine if the user's query is related to Nepali law, legal matters, rights, regulations, court procedures, or government legal processes. Respond with ONLY "YES" if the query is law-related or "NO" if it is not. Do NOT answer the question itself. Examples:
+- "How do I file an FIR?" -> YES
+- "What is the divorce process?" -> YES
+- "Tell me about property registration" -> YES
+- "What is the capital of France?" -> NO
+- "How do I bake a cake?" -> NO
+- "Write a poem about love" -> NO
+- "Who won the world cup?" -> NO
+- "Explain quantum physics" -> NO
+- "My landlord is not returning my deposit" -> YES
+- "I got into a car accident" -> YES`;
+
+  let isLawRelated = true;
+  try {
+    const relevanceCheck = await generateWithGroq(relevancePrompt, userMessage, null);
+    if (relevanceCheck && relevanceCheck.trim().toUpperCase().startsWith('NO')) {
+      isLawRelated = false;
+    }
+  } catch (e) { console.error('Relevance check error:', e); }
+
+  if (!isLawRelated) {
+    const refusalMsg = language === 'nepali'
+      ? 'माफ गर्नुहोस्, म केवल नेपाली कानून सम्बन्धी प्रश्नहरूको जवाफ दिन सक्छु। कृपया आफ्नो कानुनी समस्याको बारेमा सोध्नुहोस्।'
+      : 'I am designed to answer questions related to Nepali law and legal matters only. Please ask a law-related question about Nepal.';
+    return { response: refusalMsg, caseType: 'General', source: 'rag_relevance_filter' };
+  }
+
   const classificationPrompt = `You are a Nepali legal case classification expert. Analyze the user's legal problem and determine the single most relevant case type. Respond with ONLY ONE word from this list: Criminal, Property, Civil, Business, Family, Labor, Immigration, Consumer, Constitutional, Traffic, Tax, General.`;
 
   let caseType = 'General';
@@ -199,6 +226,8 @@ async function processWithRAG(userMessage, lawyers = [], language = 'english') {
   const responsePrompt = `You are KanoonSathi, an AI Legal Assistant specialized in Nepali law. Your knowledge covers the Constitution of Nepal 2015, Muluki Criminal Code 2017, Civil Procedure Code 2074, and all major Nepali laws.
 
 ${langInstruction}
+
+IMPORTANT: Read the user's question carefully and understand the full context and intent. Do NOT just match keywords. Analyze what the user is actually asking about and respond based on the meaning of their question, not individual words.
 
 RESPONSE STRUCTURE - You MUST follow this exact format:
 
