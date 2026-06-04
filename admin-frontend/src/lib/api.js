@@ -5,7 +5,7 @@ let API_URL;
 if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_ADMIN_API_URL) {
   API_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:5001/api'
-    : 'https://admin-backend-sable.vercel.app/api';
+    : 'https://admin-backend-correct.vercel.app/api';
 } else {
   API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:5001/api';
 }
