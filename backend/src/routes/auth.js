@@ -25,7 +25,7 @@ try {
   });
   upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 },
+    limits: { fileSize: 10 * 1024 * 1024, fieldSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
       const allowedTypes = /pdf|jpg|jpeg|png/;
       const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
