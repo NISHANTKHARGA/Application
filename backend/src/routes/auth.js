@@ -15,16 +15,8 @@ const {
 let upload = null;
 try {
   const multer = require('multer');
-  const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-      cb(null, `lawyer-${Date.now()}${path.extname(file.originalname)}`);
-    }
-  });
   upload = multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024, fieldSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
       const allowedTypes = /pdf|jpg|jpeg|png/;

@@ -46,7 +46,7 @@ const Lawyer = sequelize.define('Lawyer', {
     defaultValue: 0
   },
   documentUrl: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true
   },
   profilePicture: {

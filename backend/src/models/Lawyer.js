@@ -19,7 +19,7 @@ try {
       specialization: { type: DataTypes.ENUM('Criminal', 'Civil', 'Business', 'Family', 'Property', 'Immigration', 'Constitutional', 'Labor', 'Tax', 'Other'), allowNull: false },
       licenseNumber: { type: DataTypes.STRING, allowNull: false, unique: true },
       experience: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
-      documentUrl: { type: DataTypes.STRING, allowNull: true },
+      documentUrl: { type: DataTypes.TEXT, allowNull: true },
       profilePicture: { type: DataTypes.TEXT, allowNull: true },
       status: { type: DataTypes.ENUM('pending', 'approved', 'rejected'), defaultValue: 'pending' },
       bio: { type: DataTypes.TEXT, allowNull: true },

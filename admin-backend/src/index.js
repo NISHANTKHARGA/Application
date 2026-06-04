@@ -42,6 +42,7 @@ let dbError = null;
 
 const fixSchema = async () => {
   try { await sequelize.query(`ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS "profilePicture" TEXT;`); } catch (e) {}
+  try { await sequelize.query(`ALTER TABLE lawyers ALTER COLUMN "documentUrl" TYPE TEXT;`); } catch (e) {}
 };
 
 app.use(async (req, res, next) => {

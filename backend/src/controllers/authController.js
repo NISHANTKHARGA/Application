@@ -165,7 +165,9 @@ const lawyerRegister = async (req, res) => {
 
     let documentUrl = null;
     if (req.file) {
-      documentUrl = `/uploads/${req.file.filename}`;
+      const mime = req.file.mimetype;
+      const b64 = req.file.buffer.toString('base64');
+      documentUrl = `data:${mime};base64,${b64}`;
     }
 
     const lawyer = await Lawyer.create({
