@@ -40,11 +40,16 @@ app.use(express.urlencoded({ extended: true }));
 let dbReady = false;
 let dbError = null;
 
+const fixSchema = async () => {
+  try { await sequelize.query(`ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS "profilePicture" TEXT;`); } catch (e) {}
+};
+
 app.use(async (req, res, next) => {
   if (!dbReady && sequelize && !dbError) {
     try {
       await sequelize.authenticate();
       await sequelize.sync({ force: false });
+      await fixSchema();
       dbReady = true;
       console.log('Admin DB synced');
     } catch (e) {

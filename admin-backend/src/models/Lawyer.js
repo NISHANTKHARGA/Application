@@ -49,6 +49,10 @@ const Lawyer = sequelize.define('Lawyer', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  profilePicture: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
   status: {
     type: DataTypes.ENUM('pending', 'approved', 'rejected'),
     defaultValue: 'pending'
