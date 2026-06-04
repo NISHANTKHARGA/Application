@@ -2,13 +2,14 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Send, MessageSquare, LogOut, User, Home, Users, Calendar, Download, Trash2, Globe } from 'lucide-react';
+import { Scale, Send, Users, Download, Trash2, Globe } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import UserNav from '@/components/UserNav';
 
 export default function ChatPage() {
-  const { user, isAuthenticated, isLoading, role } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -188,21 +189,6 @@ export default function ChatPage() {
     toast.success(lang === 'nepali' ? 'भाषा नेपालीमा परिवर्तन गरियो' : 'Language switched to English');
   };
 
-  const menuItems = role === 'lawyer' ? [
-    { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard' },
-    { icon: MessageSquare, label: 'AI Chat', href: '/chat', active: true },
-    { icon: Calendar, label: 'Appointments', href: '/lawyer/appointments' },
-  ] : role === 'admin' ? [
-    { icon: Home, label: 'Dashboard', href: '/admin/dashboard' },
-    { icon: MessageSquare, label: 'AI Chat', href: '/chat', active: true },
-    { icon: Users, label: 'Lawyers', href: '/admin/lawyers' },
-  ] : [
-    { icon: Home, label: 'Dashboard', href: '/dashboard' },
-    { icon: MessageSquare, label: 'AI Chat', href: '/chat', active: true },
-    { icon: Users, label: 'Find Lawyers', href: '/lawyers' },
-    { icon: Calendar, label: 'Appointments', href: '/appointments' },
-  ];
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -212,79 +198,58 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-2">
-                <Scale className="w-8 h-8 text-primary" />
-                <span className="text-xl font-bold text-secondary">KanoonSathi</span>
-              </Link>
+    <UserNav>
+      <div className="bg-gradient-to-r from-primary to-primary-700 -mx-4 -mt-4 lg:-mx-8 lg:-mt-8 px-6 py-4 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+              <Scale className="w-6 h-6" />
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center bg-gray-100 rounded-lg p-0.5 mr-2">
-                <button
-                  onClick={() => toggleLanguage('english')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    language === 'english' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <Globe className="w-3.5 h-3.5 inline mr-1" />
-                  EN
-                </button>
-                <button
-                  onClick={() => toggleLanguage('nepali')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    language === 'nepali' ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  ने
-                </button>
-              </div>
-              <button
-                onClick={downloadConversation}
-                className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-lg"
-                title="Download Conversation"
-              >
-                <Download className="w-5 h-5" />
-              </button>
-              <button
-                onClick={clearChat}
-                className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg"
-                title="Clear Chat"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+            <div>
+              <h1 className="text-lg font-semibold">AI Legal Assistant</h1>
+              <p className="text-sm text-white/80 flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                {language === 'nepali' ? 'अनलाइन - नेपाली कानुन विज्ञ' : 'Online - Nepali Law Expert'}
+              </p>
             </div>
           </div>
-        </div>
-      </nav>
-
-      <div className="hidden md:flex fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-100 flex-col">
-        <div className="p-4 flex-1">
-          <nav className="space-y-1">
-            {menuItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`sidebar-link ${item.active ? 'sidebar-link-active' : ''}`}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-white/20 rounded-lg p-0.5">
+              <button
+                onClick={() => toggleLanguage('english')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  language === 'english' ? 'bg-white text-primary shadow-sm' : 'text-white/80 hover:text-white'
+                }`}
               >
-                <item.icon className="w-5 h-5" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-        <div className="p-4 border-t border-gray-100">
-          <Link href="/login" className="sidebar-link text-red-500">
-            <LogOut className="w-5 h-5" />
-            Logout
-          </Link>
+                <Globe className="w-3.5 h-3.5 inline mr-1" />
+                EN
+              </button>
+              <button
+                onClick={() => toggleLanguage('nepali')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  language === 'nepali' ? 'bg-white text-primary shadow-sm' : 'text-white/80 hover:text-white'
+                }`}
+              >
+                ने
+              </button>
+            </div>
+            <button
+              onClick={downloadConversation}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg"
+              title="Download Conversation"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+            <button
+              onClick={clearChat}
+              className="p-2 text-white/80 hover:text-red-300 hover:bg-white/10 rounded-lg"
+              title="Clear Chat"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
-
-      <main className="flex-1 md:ml-64 pt-16">
         <div className="h-[calc(100vh-64px)] flex flex-col">
           <div className="bg-gradient-to-r from-primary to-primary-700 px-6 py-4 text-white">
             <div className="flex items-center gap-4">
@@ -437,7 +402,6 @@ export default function ChatPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </UserNav>
   );
 }

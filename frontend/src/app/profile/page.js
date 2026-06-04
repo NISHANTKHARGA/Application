@@ -2,12 +2,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, User, Mail, Phone, Lock, Calendar, ChevronLeft, Save, AlertCircle, LogOut } from 'lucide-react';
+import { User, Mail, Phone, Lock, ChevronLeft, Save, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
+import UserNav from '@/components/UserNav';
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -115,27 +116,11 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <Scale className="w-8 h-8 text-primary" />
-              <span className="text-xl font-bold text-secondary">KanoonSathi</span>
-            </Link>
-            <button onClick={logout} className="text-gray-600 hover:text-primary">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="pt-20 pb-12">
-        <div className="max-w-3xl mx-auto px-4">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-primary mb-6">
-            <ChevronLeft className="w-5 h-5" />
-            Back to Dashboard
-          </Link>
+    <UserNav>
+      <Link href="/dashboard" className="flex items-center gap-2 text-gray-600 hover:text-primary mb-6">
+        <ChevronLeft className="w-5 h-5" />
+        Back to Dashboard
+      </Link>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
             <div className="flex items-center justify-between mb-8">
@@ -295,9 +280,7 @@ export default function ProfilePage() {
                 {saving ? 'Changing...' : 'Change Password'}
               </button>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
+    </UserNav>
   );
 }

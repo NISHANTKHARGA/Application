@@ -31,6 +31,8 @@ export default function LawyerRegisterPage() {
     bio: '',
   });
   const [document, setDocument] = useState(null);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { lawyerRegister } = useAuth();
@@ -51,6 +53,26 @@ export default function LawyerRegisterPage() {
     }
   };
 
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Profile picture must be less than 2MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert('Only image files are allowed');
+        return;
+      }
+      setProfilePicture(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicturePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -61,10 +83,17 @@ export default function LawyerRegisterPage() {
 
     setLoading(true);
 
+    if (!profilePicturePreview) {
+      alert('Profile picture is required');
+      setLoading(false);
+      return;
+    }
+
     const data = new FormData();
     Object.keys(formData).forEach(key => {
       data.append(key, formData[key]);
     });
+    data.append('profilePicture', profilePicturePreview);
     if (document) {
       data.append('document', document);
     }
@@ -283,6 +312,41 @@ export default function LawyerRegisterPage() {
                 className="input-field min-h-[100px]"
                 placeholder="Tell clients about your expertise and experience..."
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Profile Picture *
+              </label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePictureChange}
+                  className="hidden"
+                  id="profile-picture-upload"
+                />
+                <label htmlFor="profile-picture-upload" className="cursor-pointer">
+                  {profilePicturePreview ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <img
+                        src={profilePicturePreview}
+                        alt="Profile preview"
+                        className="w-32 h-32 rounded-full object-cover border-4 border-primary"
+                      />
+                      <p className="text-primary font-medium">Change photo</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <User className="w-10 h-10 text-gray-400" />
+                      </div>
+                      <p className="text-gray-600">Click to upload your profile photo</p>
+                      <p className="text-sm text-gray-400 mt-1">JPG, PNG up to 2MB</p>
+                    </>
+                  )}
+                </label>
+              </div>
             </div>
 
             <div>

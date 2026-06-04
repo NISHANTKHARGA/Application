@@ -20,6 +20,7 @@ try {
       licenseNumber: { type: DataTypes.STRING, allowNull: false, unique: true },
       experience: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       documentUrl: { type: DataTypes.STRING, allowNull: true },
+      profilePicture: { type: DataTypes.TEXT, allowNull: true },
       status: { type: DataTypes.ENUM('pending', 'approved', 'rejected'), defaultValue: 'pending' },
       bio: { type: DataTypes.TEXT, allowNull: true },
       rating: { type: DataTypes.DECIMAL(3, 2), defaultValue: 0 },

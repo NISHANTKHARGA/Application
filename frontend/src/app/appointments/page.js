@@ -2,13 +2,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Calendar, Clock, Video, LogOut, Home, MessageSquare, Users, ChevronRight, X, Check, XCircle } from 'lucide-react';
+import { Calendar, Clock, Video, ChevronRight, X, Check, XCircle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import UserNav from '@/components/UserNav';
 
 export default function AppointmentsPage() {
-  const { user, isAuthenticated, isLoading, logout, role } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,17 +60,6 @@ export default function AppointmentsPage() {
     }
   };
 
-  const menuItems = role === 'lawyer' ? [
-    { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard' },
-    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
-    { icon: Calendar, label: 'Appointments', href: '/appointments', active: true },
-  ] : [
-    { icon: Home, label: 'Dashboard', href: '/dashboard' },
-    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
-    { icon: Users, label: 'Find Lawyers', href: '/lawyers' },
-    { icon: Calendar, label: 'Appointments', href: '/appointments', active: true },
-  ];
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -86,38 +76,8 @@ export default function AppointmentsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-2">
-                <Scale className="w-8 h-8 text-primary" />
-                <span className="text-xl font-bold text-secondary">KanoonSathi</span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              {isAuthenticated ? (
-                <>
-                  <Link href="/dashboard" className="text-gray-600 hover:text-primary">
-                    Dashboard
-                  </Link>
-                  <button onClick={logout} className="text-gray-600 hover:text-red-500">
-                    <LogOut className="w-5 h-5" />
-                  </button>
-                </>
-              ) : (
-                <Link href="/login" className="btn-primary !py-2">
-                  Sign In
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="pt-24 pb-12 px-4">
-        <div className="max-w-5xl mx-auto">
+    <UserNav>
+      <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-2xl font-bold text-secondary">My Appointments</h1>
@@ -294,6 +254,6 @@ export default function AppointmentsPage() {
           </div>
         </div>
       )}
-    </div>
+    </UserNav>
   );
 }

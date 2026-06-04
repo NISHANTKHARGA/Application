@@ -2,14 +2,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, MessageSquare, Calendar, User, LogOut, Menu, X, ChevronRight, Clock, FileText, Users } from 'lucide-react';
+import { Calendar, ChevronRight, Clock, FileText, Users, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
+import UserNav from '@/components/UserNav';
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats] = useState({ appointments: 0, lawyersViewed: 0 });
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
@@ -46,92 +46,12 @@ export default function DashboardPage() {
     );
   }
 
-  const menuItems = [
-    { icon: User, label: 'Dashboard', href: '/dashboard', active: true },
-    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
-    { icon: Users, label: 'Find Lawyers', href: '/lawyers' },
-    { icon: Calendar, label: 'Appointments', href: '/appointments' },
-  ];
-
-  const bottomMenuItems = [
-    { icon: User, label: 'My Profile', href: '/profile' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 text-gray-600 hover:text-primary"
-              >
-                {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-              <Link href="/" className="flex items-center gap-2">
-                <Scale className="w-8 h-8 text-primary" />
-                <span className="text-xl font-bold text-secondary">KanoonSathi</span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold">
-                    {user?.name?.charAt(0)?.toUpperCase()}
-                  </span>
-                </div>
-                <span className="text-gray-700">{user?.name}</span>
-              </div>
-              <button
-                onClick={logout}
-                className="p-2 text-gray-600 hover:text-primary"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="flex pt-16">
-        <aside className={`fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-100 transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-30`}>
-          <div className="p-6">
-            <nav className="space-y-1">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`sidebar-link ${item.active ? 'sidebar-link-active' : ''}`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon className="w-5 h-5" />
-                  {item.label}
-                </Link>
-              ))}
-              <div className="border-t border-gray-100 my-4"></div>
-              <Link href="/profile" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
-                <User className="w-5 h-5" />
-                My Profile
-              </Link>
-            </nav>
-          </div>
-        </aside>
-
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-20 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        <main className="flex-1 lg:ml-64 p-6 lg:p-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-secondary">Welcome back, {user?.name}!</h1>
-              <p className="text-gray-600">Here's an overview of your legal journey</p>
-            </div>
+    <UserNav>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-secondary">Welcome back, {user?.name}!</h1>
+        <p className="text-gray-600">Here's an overview of your legal journey</p>
+      </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <div className="card">
@@ -292,8 +212,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </UserNav>
   );
 }

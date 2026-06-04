@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { Scale, Calendar, Clock, Video, Star, ArrowLeft, Check, FileText, Upload, X, File, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, Video, Star, ArrowLeft, Check, FileText, Upload, X, File, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import UserNav from '@/components/UserNav';
 
 const timeSlots = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -147,34 +148,27 @@ export default function LawyerBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/lawyers" className="flex items-center gap-2 text-gray-600 hover:text-primary">
-                <ArrowLeft className="w-5 h-5" />
-                Back
-              </Link>
-              <Link href="/" className="flex items-center gap-2">
-                <Scale className="w-8 h-8 text-primary" />
-                <span className="text-xl font-bold text-secondary">KanoonSathi</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="pt-24 pb-12 px-4">
-        <div className="max-w-4xl mx-auto">
+    <UserNav>
+      <Link href="/lawyers" className="flex items-center gap-2 text-gray-600 hover:text-primary mb-6">
+        <ArrowLeft className="w-5 h-5" />
+        Back to Lawyers
+      </Link>
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="bg-gradient-to-r from-secondary to-secondary-800 p-8 text-white">
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
-                  <span className="text-3xl font-bold">
-                    {lawyer.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
+                {lawyer.profilePicture ? (
+                  <img
+                    src={lawyer.profilePicture}
+                    alt={lawyer.name}
+                    className="w-24 h-24 rounded-full object-cover border-2 border-white"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
+                    <span className="text-3xl font-bold">
+                      {lawyer.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <div>
                   <h1 className="text-2xl font-bold">{lawyer.name}</h1>
                   <p className="text-white/80">{lawyer.specialization} Lawyer</p>
@@ -356,8 +350,6 @@ export default function LawyerBookingPage() {
                 </div>
               </div>
             </div>
-          </div>
-
           <div className="mt-6 p-4 bg-blue-50 rounded-xl">
             <h3 className="font-semibold mb-2">What happens next?</h3>
             <ol className="text-sm text-gray-600 space-y-1">
@@ -367,8 +359,6 @@ export default function LawyerBookingPage() {
               <li>4. Join the video call at the scheduled time</li>
             </ol>
           </div>
-        </div>
-      </main>
-    </div>
+    </UserNav>
   );
 }

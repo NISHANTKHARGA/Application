@@ -142,7 +142,11 @@ const getMe = async (req, res) => {
 
 const lawyerRegister = async (req, res) => {
   try {
-    const { name, email, password, phone, specialization, licenseNumber, experience, bio } = req.body;
+    const { name, email, password, phone, specialization, licenseNumber, experience, bio, profilePicture } = req.body;
+
+    if (!profilePicture) {
+      return res.status(400).json({ message: 'Profile picture is required' });
+    }
 
     const lawyerExists = await Lawyer.findOne({ where: { email } });
     if (lawyerExists) {
@@ -169,6 +173,7 @@ const lawyerRegister = async (req, res) => {
       experience,
       bio,
       documentUrl,
+      profilePicture,
       status: 'pending'
     });
 
@@ -182,7 +187,12 @@ const lawyerRegister = async (req, res) => {
         id: lawyer.id,
         name: lawyer.name,
         email: lawyer.email,
+        phone: lawyer.phone,
         specialization: lawyer.specialization,
+        licenseNumber: lawyer.licenseNumber,
+        experience: lawyer.experience,
+        bio: lawyer.bio,
+        profilePicture: lawyer.profilePicture,
         status: lawyer.status
       }
     });
@@ -219,6 +229,7 @@ const lawyerLogin = async (req, res) => {
           email: lawyer.email,
           phone: lawyer.phone,
           specialization: lawyer.specialization,
+          profilePicture: lawyer.profilePicture,
           status: lawyer.status,
           rating: lawyer.rating,
           experience: lawyer.experience,
