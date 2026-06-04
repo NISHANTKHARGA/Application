@@ -1,9 +1,13 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:5001/api';
-if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_ADMIN_API_URL && window.location.hostname !== 'localhost') {
-  console.warn('KanoonSathi: NEXT_PUBLIC_ADMIN_API_URL not set. Set it in Vercel project settings.');
+let API_URL;
+if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_ADMIN_API_URL) {
+  API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:5001/api'
+    : 'https://admin-backend-sable.vercel.app/api';
+} else {
+  API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:5001/api';
 }
 
 const api = axios.create({
