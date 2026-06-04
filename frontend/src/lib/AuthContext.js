@@ -132,9 +132,7 @@ export const AuthProvider = ({ children }) => {
 
   const lawyerRegister = async (formData) => {
     try {
-      const response = await api.post('/auth/lawyer/register', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await api.post('/auth/lawyer/register', formData);
       if (response.data.success) {
         toast.success(response.data.message);
         return { success: true, message: response.data.message };
