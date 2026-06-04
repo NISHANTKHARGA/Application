@@ -26,6 +26,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'https://frontend-nu-ochre.vercel.app',
+  'https://frontend-iota-six-33.vercel.app',
 ].filter(Boolean);
 
 app.use((req, res, next) => {
