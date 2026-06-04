@@ -349,8 +349,9 @@ export default function LawyerBookingPage() {
                   </div>
                 </div>
               </div>
-            </div>
-          <div className="mt-6 p-4 bg-blue-50 rounded-xl">
+          </div>
+        </div>
+      <div className="mt-6 p-4 bg-blue-50 rounded-xl">
             <h3 className="font-semibold mb-2">What happens next?</h3>
             <ol className="text-sm text-gray-600 space-y-1">
               <li>1. You'll receive an email confirmation with appointment details</li>
