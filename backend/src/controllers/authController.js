@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { User, Lawyer } = require('../models');
+const { sendUserRegistrationEmail, sendLawyerRegistrationEmail } = require('../services/emailService');
 
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET || 'kanoonsathi_super_secret_jwt_key_2024', {
@@ -56,6 +57,10 @@ const register = async (req, res) => {
     });
 
     const token = generateToken(user.id, 'user');
+
+    if (user.email) {
+      sendUserRegistrationEmail(user);
+    }
 
     res.status(201).json({
       success: true,
@@ -178,6 +183,8 @@ const lawyerRegister = async (req, res) => {
     });
 
     const token = generateToken(lawyer.id, 'lawyer');
+
+    sendLawyerRegistrationEmail(lawyer);
 
     res.status(201).json({
       success: true,

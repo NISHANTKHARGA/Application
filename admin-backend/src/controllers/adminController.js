@@ -1,4 +1,5 @@
 const { User, Lawyer, Appointment } = require('../models');
+const { sendLawyerApprovalEmail, sendLawyerRejectionEmail } = require('../services/emailService');
 
 const getStats = async (req, res) => {
   try {
@@ -186,9 +187,11 @@ const approveLawyer = async (req, res) => {
     lawyer.status = 'approved';
     await lawyer.save();
 
+    sendLawyerApprovalEmail(lawyer);
+
     res.json({
       success: true,
-      message: 'Lawyer approved successfully',
+      message: 'Lawyer approved successfully. Confirmation email sent.',
       lawyer: {
         id: lawyer.id,
         name: lawyer.name,
@@ -217,9 +220,11 @@ const rejectLawyer = async (req, res) => {
     lawyer.status = 'rejected';
     await lawyer.save();
 
+    sendLawyerRejectionEmail(lawyer, reason || '');
+
     res.json({
       success: true,
-      message: 'Lawyer rejected',
+      message: 'Lawyer rejected. Notification email sent.',
       lawyer: {
         id: lawyer.id,
         name: lawyer.name,
