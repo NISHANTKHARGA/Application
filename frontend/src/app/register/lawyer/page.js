@@ -45,8 +45,8 @@ export default function LawyerRegisterPage() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be less than 10MB');
+      if (file.size > 3 * 1024 * 1024) {
+        alert('License document must be less than 3MB');
         return;
       }
       setDocument(file);
@@ -56,8 +56,8 @@ export default function LawyerRegisterPage() {
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Profile picture must be less than 2MB');
+      if (file.size > 500 * 1024) {
+        alert('Profile picture must be less than 500KB');
         return;
       }
       if (!file.type.startsWith('image/')) {
