@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Send, Users, Download, Trash2, Globe } from 'lucide-react';
+import { Scale, Send, User, Users, Download, Trash2, Globe } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
