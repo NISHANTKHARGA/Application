@@ -7,8 +7,11 @@ const groq = new OpenAI({
   baseURL: 'https://api.groq.com/openai/v1'
 });
 
-async function generateWithGroq(systemPrompt, userMessage, context) {
-  if (!groqApiKey) return null;
+async function generateWithGroq(systemPrompt, userMessage, context, options = {}) {
+  if (!groqApiKey) {
+    console.error('Groq API key not set');
+    return null;
+  }
   try {
     const messages = [{ role: 'system', content: systemPrompt }];
     if (context) {
@@ -19,11 +22,11 @@ async function generateWithGroq(systemPrompt, userMessage, context) {
     }
     messages.push({ role: 'user', content: userMessage });
     const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: options.model || 'llama-3.3-70b-versatile',
       messages,
-      temperature: 0.3,
-      max_tokens: 2000,
-      top_p: 0.9
+      temperature: options.temperature ?? 0.3,
+      max_tokens: options.maxTokens || 2000,
+      top_p: options.topP ?? 0.9
     });
     return completion.choices[0]?.message?.content || '';
   } catch (error) {

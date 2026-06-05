@@ -27,14 +27,57 @@ function hasMinimumFacts(userId) {
   return !!(facts.location && facts.timeline);
 }
 
+const NEPAL_DISTRICTS = [
+  'kathmandu', 'lalitpur', 'bhaktapur', 'pokhara', 'kaski', 'chitwan',
+  'butwal', 'rupandehi', 'biratnagar', 'morang', 'nepalgunj', 'banke',
+  'dharan', 'sunsari', 'janakpur', 'dhanusha', 'hetauda', 'makwanpur',
+  'birgunj', 'parsa', 'bharatpur', 'kailali', 'dhangadhi', 'kanchanpur',
+  'baitadi', 'dadeldhura', 'achham', 'doti', 'dailekh', 'surkhet',
+  'salyan', 'rolpa', 'pyuthan', 'gulmi', 'arghakhanchi', 'palpa',
+  'nawalparasi', 'kapilvastu', 'dang', 'sindhuli', 'kavrepalanchok',
+  'nuwakot', 'dhading', 'rasuwa', 'sindhupalchok', 'dolakha', 'ramechhap',
+  'okhaldhunga', 'khotang', 'bhojpur', 'sankhuwasabha', 'taplejung',
+  'panchthar', 'illam', 'jhapa', 'terhathum', 'dhankuta', 'udayapur',
+  'siraha', 'saptari', 'mahottari', 'sarlahi', 'bara', 'rautahat',
+  'lamjung', 'manang', 'mustang', 'myagdi', 'baglung', 'parbat',
+  'syangja', 'tanahu', 'gorkha', 'bajura', 'bajhang', 'humla',
+  'jumla', 'kalikot', 'mugu', 'dolpa', 'jajarkot', 'rukum',
+  'east', 'west', 'nepal',
+];
+
+function keywordCompletenessCheck(message) {
+  const lower = message.toLowerCase();
+  const hasLocation = NEPAL_DISTRICTS.some(d => lower.includes(d));
+  const hasTimeline = /\b(today|yesterday|tomorrow|last\s+\w+|this\s+\w+|next\s+\w+|ago|\d+\s*(day|week|month|year)s?\s+ago|january|february|march|april|may|june|july|august|september|october|november|december|20\d{2})\b/i.test(lower);
+  const hasParties = /\b(my\s+(husband|wife|father|mother|brother|sister|son|daughter|uncle|aunt|cousin|neighbor|friend|employer|employee|landlord|tenant|partner|company|bank|organization))\b/i.test(lower);
+  const hasNepalKeyword = /(nepal|nepali|nepalese|kathmandu|malpot|lalpurja)\b/i.test(lower);
+  const hasLegalIssue = /(landlord|tenant|eviction|rent|lease|divorce|marriage|property|inheritance|will|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|contract|agreement|loan|debt|bankruptcy|court|case|police|complaint|notice|license|registration|tax|fine|penalty|arrest|bail|lawyer|legal|law)/i.test(lower);
+
+  if (!hasLegalIssue) return { isComplete: false, missingFields: ['location'] };
+  if (!hasLocation && !hasTimeline && !hasNepalKeyword) {
+    return { isComplete: false, missingFields: ['location', 'timeline'] };
+  }
+  if ((!hasLocation || !hasTimeline) && !hasParties) {
+    const missing = [];
+    if (!hasLocation) missing.push('location');
+    if (!hasTimeline) missing.push('timeline');
+    if (!hasParties) missing.push('parties');
+    return { isComplete: false, missingFields: missing };
+  }
+  return { isComplete: true, missingFields: [] };
+}
+
 async function checkQuestionCompleteness(message, userId, conversationHistory = []) {
+  const facts = getFacts(userId);
+  if (facts.location && facts.timeline) return { isComplete: true, missingFields: [] };
+
+  const keywordCheck = keywordCompletenessCheck(message);
   const historyText = conversationHistory.length > 0
     ? '\n\nRelevant conversation:\n' + conversationHistory.slice(-4).map(m =>
         `${m.role}: ${m.content.substring(0, 200)}`
       ).join('\n')
     : '';
 
-  const facts = getFacts(userId);
   const factsText = Object.keys(facts).length > 0
     ? '\n\nFacts already gathered:\n' + Object.entries(facts).map(([k, v]) => `${k}: ${v}`).join('\n')
     : '';
@@ -68,7 +111,7 @@ MISSING: comma-separated list of missing fields (only if INCOMPLETE)`;
       null
     );
 
-    if (!result) return { isComplete: true, missingFields: [] };
+    if (!result) return keywordCheck;
 
     const statusLine = result.split('\n')[0].trim().toUpperCase();
     const isComplete = statusLine.includes('COMPLETE');
@@ -81,11 +124,25 @@ MISSING: comma-separated list of missing fields (only if INCOMPLETE)`;
     return { isComplete, missingFields };
   } catch (e) {
     console.error('Completeness check error:', e.message);
-    return { isComplete: true, missingFields: [] };
+    return keywordCheck;
   }
 }
 
 async function extractFacts(message, userId) {
+  const lower = message.toLowerCase();
+  const newFacts = {};
+  const facts = getFacts(userId);
+
+  const districtMatch = lower.match(new RegExp(`(${NEPAL_DISTRICTS.join('|')})`, 'i'));
+  if (districtMatch && !facts.location) {
+    newFacts.location = districtMatch[0].charAt(0).toUpperCase() + districtMatch[0].slice(1);
+  }
+
+  const timelineMatch = lower.match(/\b(today|yesterday|tomorrow|last\s+\w+|this\s+\w+|next\s+\w+|\d+\s*(day|week|month|year)s?\s+ago|20\d{2})\b/i);
+  if (timelineMatch && !facts.timeline) {
+    newFacts.timeline = timelineMatch[0];
+  }
+
   const existingFacts = getFacts(userId);
   const existingText = Object.keys(existingFacts).length > 0
     ? '\n\nAlready known facts:\n' + Object.entries(existingFacts).map(([k, v]) => `${k}: ${v}`).join('\n')
@@ -120,24 +177,23 @@ Only include values that are explicitly stated or clearly implied. Use null for 
       null
     );
 
-    if (!result) return;
-
-    const jsonMatch = result.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return;
-
-    const parsed = JSON.parse(jsonMatch[0]);
-    const newFacts = {};
-    for (const [key, value] of Object.entries(parsed)) {
-      if (value && value !== 'null' && value !== null && !existingFacts[key]) {
-        newFacts[key] = value;
+    if (result) {
+      const jsonMatch = result.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        for (const [key, value] of Object.entries(parsed)) {
+          if (value && value !== 'null' && value !== null && !existingFacts[key]) {
+            newFacts[key] = value;
+          }
+        }
       }
-    }
-
-    if (Object.keys(newFacts).length > 0) {
-      updateFacts(userId, newFacts);
     }
   } catch (e) {
     console.error('Fact extraction error:', e.message);
+  }
+
+  if (Object.keys(newFacts).length > 0) {
+    updateFacts(userId, newFacts);
   }
 }
 

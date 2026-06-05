@@ -48,9 +48,78 @@ Examples:
 
 Respond with ONLY the category name. Do NOT include any other text.`;
 
+const GREETING_PATTERNS = [
+  /^(hello|hi|hey|good\s*(morning|afternoon|evening|day)|namaste|नमस्ते|नमस्कार)\b/i,
+  /^(what's up|sup|howdy|hola)\b/i,
+];
+const THANKS_PATTERNS = [
+  /^(thank\s*(you|s)|thanks|thankful|grateful|धन्यवाद)\b/i,
+  /^(that's\s*(great|perfect|all)|ok\s*(thank|thanks))\b/i,
+];
+const FAREWELL_PATTERNS = [
+  /^(bye|goodbye|see\s*you|take\s*care|cya|bye-bye|अलविदा)\b/i,
+];
+const SMALL_TALK_PATTERNS = [
+  /^(how\s*(are\s*you|do\s*you\s*work|can\s*you\s*help)|what\s*(can\s*you\s*do|are\s*you)|tell\s*me\s*about\s*yourself)\b/i,
+  /^(i'm?\s*(fine|good|great|ok)\b|not\s*(bad|too\s*bad))\b/i,
+];
+const OUT_OF_SCOPE_PATTERNS = [
+  /^(what\s+is\s+(python|javascript|programming|computer|science|math|physics|chemistry|biology|history|geography))/i,
+  /(cook|recipe|bake|fry|boil|ingredient)/i,
+  /(movie|film|song|music|celebrity|actor|actress|singer)/i,
+  /(sport|football|cricket|world\s*cup|olympics|match|game|player|team|score)/i,
+  /(write\s*(poem|story|essay|code|program))|(translate\s*(to|into))/i,
+];
+
+const EMERGENCY_KEYWORDS = [
+  'beating me', 'hitting me', 'attacking', 'immediate danger', 'right now',
+  'being arrested', 'at the police station', 'police station right now',
+  'domestic violence', 'child in danger', 'immediate protection',
+  'court today', 'deadline today', 'urgent legal',
+];
+
+async function classifyByKeywords(message) {
+  const lower = message.trim();
+
+  for (const pat of FAREWELL_PATTERNS) { if (pat.test(lower)) return { intent: 'thanks_farewell', confidence: 0.9 }; }
+  for (const pat of THANKS_PATTERNS) { if (pat.test(lower)) return { intent: 'thanks_farewell', confidence: 0.9 }; }
+  for (const pat of GREETING_PATTERNS) { if (pat.test(lower)) return { intent: 'greeting', confidence: 0.9 }; }
+  for (const pat of SMALL_TALK_PATTERNS) { if (pat.test(lower)) return { intent: 'small_talk', confidence: 0.85 }; }
+
+  if (EMERGENCY_KEYWORDS.some(k => lower.toLowerCase().includes(k))) {
+    return { intent: 'emergency_legal', confidence: 0.85 };
+  }
+
+  for (const pat of OUT_OF_SCOPE_PATTERNS) {
+    if (pat.test(lower)) return { intent: 'out_of_scope', confidence: 0.8 };
+  }
+
+  if (lower.length < 15 && /^(how|what|when|where|why|is|are|can|do|does|did|has|have)\b/i.test(lower) && !/(law|court|legal|right|case|act|rule|section|complaint|petition|suit|appeal|notice|license|permit|registration|inheritance|property|land|rent|tenant|landlord|divorce|marriage|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|claim|contract|agreement|lease|mortgage|loan|debt|bankruptcy|tax|fine|penalty|violation|offense|punishment|imprisonment|bail|arrest|witness|evidence|judgment|decree|order|writ|petition|appeal)/i.test(lower)) {
+    if (/^(what\s+is|how\s+(to|do|can|does)|define|explain)\b/i.test(lower)) {
+      return { intent: 'out_of_scope', confidence: 0.7 };
+    }
+  }
+
+  if (/(?:^|\s)(?:my|i\s+have|i\s+am|i\s+got|i\s+was|i\s+did|our|we|they|he|she)\b/i.test(lower) &&
+      /(?:lawyer|court|legal|law|police|case|complaint|notice|land|lalpurja|malpot|rent|tenant|landlord|eviction|divorce|marriage|property|inheritance|will|crime|theft|accident|insurance|contract|agreement|fraud|cheating|harassment|domestic|violence|accident|death|murder|theft|robbery|assault|bail|arrest|license|registration|custody|maintenance|alimony|succession|partition|boundary|survey)/i.test(lower)) {
+    if (!/(?:in\s+\w+|at\s+\w+|last\s+\w+|today|yesterday|this\s+\w+)/i.test(lower) &&
+        !/(?:kathmandu|lalitpur|bhaktapur|pokhara|chitwan|butwal|biratnagar|nepalgunj|dharan|janakpur|hetauda|nepal|district|municipality|ward)/i.test(lower)) {
+      return { intent: 'incomplete_legal_question', confidence: 0.75 };
+    }
+    return { intent: 'nepal_legal_question', confidence: 0.8 };
+  }
+
+  return null;
+}
+
 async function classifyIntent(message, conversationHistory = []) {
   if (!message || !message.trim()) {
     return { intent: 'small_talk', confidence: 1 };
+  }
+
+  const keywordResult = await classifyByKeywords(message);
+  if (keywordResult && keywordResult.confidence >= 0.85) {
+    return keywordResult;
   }
 
   const historyContext = conversationHistory.length > 0
@@ -63,7 +132,10 @@ async function classifyIntent(message, conversationHistory = []) {
 
   try {
     const result = await generateWithGroq(CLASSIFICATION_PROMPT, fullPrompt, null);
-    if (!result) return { intent: 'nepal_legal_question', confidence: 0.5 };
+    if (!result) {
+      if (keywordResult) return keywordResult;
+      return { intent: 'nepal_legal_question', confidence: 0.5 };
+    }
 
     const cleaned = result.trim().toLowerCase().replace(/[^a-z_]/g, '');
 
@@ -71,17 +143,12 @@ async function classifyIntent(message, conversationHistory = []) {
       return { intent: cleaned, confidence: 0.9 };
     }
 
-    if (cleaned.includes('legal')) return { intent: 'nepal_legal_question', confidence: 0.7 };
-    if (cleaned.includes('greet') || cleaned.includes('hello')) return { intent: 'greeting', confidence: 0.6 };
-    if (cleaned.includes('thank') || cleaned.includes('bye') || cleaned.includes('farewell')) {
-      return { intent: 'thanks_farewell', confidence: 0.6 };
-    }
-    if (cleaned.includes('follow') || cleaned.includes('previous')) return { intent: 'follow_up_legal_question', confidence: 0.6 };
-    if (cleaned.includes('emergency') || cleaned.includes('urgent')) return { intent: 'emergency_legal', confidence: 0.6 };
+    if (keywordResult) return keywordResult;
 
     return { intent: 'nepal_legal_question', confidence: 0.5 };
   } catch (e) {
     console.error('Intent classification error:', e.message);
+    if (keywordResult) return keywordResult;
     return { intent: 'nepal_legal_question', confidence: 0.5 };
   }
 }
