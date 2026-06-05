@@ -119,9 +119,7 @@ export default function LawyerBookingPage() {
         formData.append('chatFile', chatFile);
       }
 
-      const response = await api.post('/appointment/book', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await api.post('/appointment/book', formData);
 
       toast.success('Appointment booked successfully! Check your email for confirmation.');
       router.push('/appointments');
