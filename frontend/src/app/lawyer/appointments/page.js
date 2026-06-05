@@ -14,6 +14,9 @@ export default function LawyerAppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState(null);
+  const [rescheduleModal, setRescheduleModal] = useState(null);
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
 
   useEffect(() => {
     if (!isLoading) {
@@ -51,6 +54,23 @@ export default function LawyerAppointmentsPage() {
       fetchAppointments();
     } catch (error) {
       toast.error('Failed to update status');
+    }
+    setActionLoading(null);
+  };
+
+  const handleReschedule = async () => {
+    if (!rescheduleModal || !newDate || !newTime) return;
+    setActionLoading(rescheduleModal.id);
+    try {
+      const dateTime = new Date(`${newDate}T${newTime}`).toISOString();
+      await api.put(`/appointment/${rescheduleModal.id}/reschedule`, { dateTime });
+      toast.success('Appointment rescheduled');
+      setRescheduleModal(null);
+      setNewDate('');
+      setNewTime('');
+      fetchAppointments();
+    } catch (error) {
+      toast.error('Failed to reschedule');
     }
     setActionLoading(null);
   };
@@ -223,12 +243,20 @@ export default function LawyerAppointmentsPage() {
                               Accept
                             </button>
                             <button
+                              onClick={() => { setRescheduleModal(apt); setNewDate(''); setNewTime(''); }}
+                              disabled={actionLoading === apt.id}
+                              className="bg-amber-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-600 flex items-center justify-center gap-1 disabled:opacity-50"
+                            >
+                              <Calendar className="w-4 h-4" />
+                              Reschedule
+                            </button>
+                            <button
                               onClick={() => updateStatus(apt.id, 'cancelled')}
                               disabled={actionLoading === apt.id}
                               className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 flex items-center justify-center gap-1 disabled:opacity-50"
                             >
                               <X className="w-4 h-4" />
-                              Reject
+                              Cancel
                             </button>
                           </>
                         )}
@@ -258,6 +286,53 @@ export default function LawyerAppointmentsPage() {
               </div>
             )}
           </div>
+
+      {rescheduleModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4">Reschedule Appointment</h3>
+            <p className="text-gray-600 mb-4">
+              Suggest a new date and time for {rescheduleModal.user?.name}'s appointment.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Date</label>
+                <input
+                  type="date"
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="input-field"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Time</label>
+                <input
+                  type="time"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  className="input-field"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleReschedule}
+                  disabled={!newDate || !newTime || actionLoading === rescheduleModal.id}
+                  className="flex-1 btn-primary disabled:opacity-50"
+                >
+                  {actionLoading === rescheduleModal.id ? 'Updating...' : 'Confirm Reschedule'}
+                </button>
+                <button
+                  onClick={() => setRescheduleModal(null)}
+                  className="flex-1 btn-outline"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
         </main>
       </div>
     </div>

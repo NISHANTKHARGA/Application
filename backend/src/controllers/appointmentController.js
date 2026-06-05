@@ -186,7 +186,7 @@ const updateAppointmentStatus = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized access' });
     }
 
-    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
+    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled', 'reschedule_requested'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
@@ -204,6 +204,85 @@ const updateAppointmentStatus = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to update appointment', error: error.message });
+  }
+};
+
+const requestReschedule = async (req, res) => {
+  try {
+    const { dateTime } = req.body;
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        { model: User, as: 'user' },
+        { model: Lawyer, as: 'lawyer' }
+      ]
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    if (appointment.lawyerId !== req.lawyer?.id && !req.isAdmin) {
+      return res.status(403).json({ message: 'Unauthorized access' });
+    }
+
+    if (!['pending', 'confirmed'].includes(appointment.status)) {
+      return res.status(400).json({ message: 'Cannot reschedule this appointment' });
+    }
+
+    if (dateTime) {
+      appointment.dateTime = dateTime;
+      appointment.status = 'pending';
+    } else {
+      appointment.status = 'reschedule_requested';
+    }
+    await appointment.save();
+
+    res.json({
+      success: true,
+      message: dateTime ? 'Appointment rescheduled successfully' : 'Reschedule requested. Waiting for user to pick new time.',
+      appointment
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to reschedule appointment', error: error.message });
+  }
+};
+
+const respondReschedule = async (req, res) => {
+  try {
+    const { dateTime } = req.body;
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        { model: Lawyer, as: 'lawyer' }
+      ]
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    if (appointment.userId !== req.user?.id) {
+      return res.status(403).json({ message: 'Unauthorized access' });
+    }
+
+    if (appointment.status !== 'reschedule_requested') {
+      return res.status(400).json({ message: 'No reschedule request pending for this appointment' });
+    }
+
+    if (!dateTime) {
+      return res.status(400).json({ message: 'New date/time is required' });
+    }
+
+    appointment.dateTime = dateTime;
+    appointment.status = 'confirmed';
+    await appointment.save();
+
+    res.json({
+      success: true,
+      message: 'Appointment rescheduled successfully',
+      appointment
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to respond to reschedule', error: error.message });
   }
 };
 

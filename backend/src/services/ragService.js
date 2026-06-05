@@ -24,9 +24,12 @@ async function checkVectorSearch() {
   if (vectorSearchAvailable !== null) return vectorSearchAvailable;
   try {
     const client = await pool.connect();
-    const res = await client.query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'knowledge_vectors')");
-    client.release();
-    vectorSearchAvailable = res.rows[0]?.exists || false;
+    try {
+      const res = await client.query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'knowledge_vectors')");
+      vectorSearchAvailable = res.rows[0]?.exists || false;
+    } finally {
+      client.release();
+    }
   } catch (e) {
     console.error('Vector search check failed:', e.message);
     vectorSearchAvailable = false;
@@ -54,28 +57,32 @@ async function vectorSearch(query, topK = 5) {
     const available = await checkVectorSearch();
     if (!available) return null;
 
-    const embedding = await getEmbedding(query);
-    if (!embedding || embedding.length === 0) return null;
+    const result = await getEmbedding(query);
+    if (!result || !result.vector || result.vector.length === 0) return null;
+    if (result.source === 'fallback') return null;
 
     const client = await pool.connect();
-    const res = await client.query(
-      `SELECT id, title, content, case_type, keywords,
-              1 - (embedding <=> $1::vector) AS similarity
-       FROM knowledge_vectors
-       ORDER BY embedding <=> $1::vector
-       LIMIT $2`,
-      [embedding, topK]
-    );
-    client.release();
-    return res.rows.map(r => ({
-      chunk: {
-        title: r.title,
-        content: r.content,
-        caseType: r.case_type,
-        keywords: r.keywords || []
-      },
-      score: r.similarity * 10
-    }));
+    try {
+      const res = await client.query(
+        `SELECT id, title, content, case_type, keywords,
+                 1 - (embedding <=> $1::vector) AS similarity
+         FROM knowledge_vectors
+         ORDER BY embedding <=> $1::vector
+         LIMIT $2`,
+        [result.vector, topK]
+      );
+      return res.rows.map(r => ({
+        chunk: {
+          title: r.title,
+          content: r.content,
+          caseType: r.case_type,
+          keywords: r.keywords || []
+        },
+        score: r.similarity * 10
+      }));
+    } finally {
+      client.release();
+    }
   } catch (e) {
     console.error('Vector search error:', e.message);
     return null;
@@ -145,9 +152,9 @@ function determinePrimaryCaseType(results, llmClassification) {
   }
   const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
   const top = sorted[0];
-  if (top && top[0] === llmClassification) return CASE_TYPE_MAP[llmClassification.toLowerCase()] || top[0];
+  if (top && top[0].toLowerCase() === (llmClassification || '').toLowerCase()) return CASE_TYPE_MAP[llmClassification.toLowerCase()] || top[0];
   if (top && top[1] >= 4) return top[0];
-  return CASE_TYPE_MAP[llmClassification] || (top ? top[0] : 'General');
+  return CASE_TYPE_MAP[(llmClassification || '').toLowerCase()] || (top ? top[0] : 'General');
 }
 
 function rerankResults(results, query) {
@@ -412,7 +419,7 @@ Do NOT use markdown formatting like ** or *. Use plain text only.`;
   }
 
   const standardDisclaimer = language === 'nepali' ? intentClassifier.STANDARD_DISCLAIMER.nepali : intentClassifier.STANDARD_DISCLAIMER.english;
-  if (!response.includes('educational')) {
+  if (!response.includes(standardDisclaimer.substring(0, 20))) {
     response += standardDisclaimer;
   }
 

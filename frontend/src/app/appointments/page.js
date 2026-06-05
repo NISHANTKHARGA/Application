@@ -14,6 +14,9 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelModal, setCancelModal] = useState(null);
+  const [rescheduleRespondModal, setRescheduleRespondModal] = useState(null);
+  const [rescheduleNewDate, setRescheduleNewDate] = useState('');
+  const [rescheduleNewTime, setRescheduleNewTime] = useState('');
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -50,12 +53,28 @@ export default function AppointmentsPage() {
     }
   };
 
+  const handleRescheduleRespond = async () => {
+    if (!rescheduleRespondModal || !rescheduleNewDate || !rescheduleNewTime) return;
+    try {
+      const dateTime = new Date(`${rescheduleNewDate}T${rescheduleNewTime}`).toISOString();
+      await api.put(`/appointment/${rescheduleRespondModal.id}/respond-reschedule`, { dateTime });
+      toast.success('Reschedule confirmed');
+      setRescheduleRespondModal(null);
+      setRescheduleNewDate('');
+      setRescheduleNewTime('');
+      fetchAppointments();
+    } catch (error) {
+      toast.error('Failed to respond to reschedule');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed': return 'badge-approved';
       case 'pending': return 'badge-pending';
       case 'completed': return 'bg-blue-100 text-blue-800';
       case 'cancelled': return 'badge-rejected';
+      case 'reschedule_requested': return 'bg-amber-100 text-amber-800';
       default: return 'badge-pending';
     }
   };
@@ -170,6 +189,14 @@ export default function AppointmentsPage() {
                                 Cancel
                               </button>
                             )}
+                            {apt.status === 'reschedule_requested' && (
+                              <button
+                                onClick={() => { setRescheduleRespondModal(apt); setRescheduleNewDate(''); setRescheduleNewTime(''); }}
+                                className="btn-primary !py-2 !px-4"
+                              >
+                                Respond to Reschedule
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -247,6 +274,53 @@ export default function AppointmentsPage() {
                   className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600"
                 >
                   Yes, Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rescheduleRespondModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4">Pick New Date & Time</h3>
+            <p className="text-gray-600 mb-4">
+              {rescheduleRespondModal.lawyer?.name} requested to reschedule. Pick a new time that works for you.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Date</label>
+                <input
+                  type="date"
+                  value={rescheduleNewDate}
+                  onChange={(e) => setRescheduleNewDate(e.target.value)}
+                  className="input-field"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Time</label>
+                <input
+                  type="time"
+                  value={rescheduleNewTime}
+                  onChange={(e) => setRescheduleNewTime(e.target.value)}
+                  className="input-field"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleRescheduleRespond}
+                  disabled={!rescheduleNewDate || !rescheduleNewTime}
+                  className="flex-1 btn-primary disabled:opacity-50"
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={() => setRescheduleRespondModal(null)}
+                  className="flex-1 btn-outline"
+                >
+                  Cancel
                 </button>
               </div>
             </div>

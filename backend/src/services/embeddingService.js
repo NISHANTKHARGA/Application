@@ -12,10 +12,10 @@ async function getEmbedding(text) {
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    return data[0] || data;
+    return { vector: data[0] || data, source: 'hf' };
   } catch (e) {
     console.error('Embedding API error:', e.message);
-    return simpleEmbedding(text);
+    return { vector: simpleEmbedding(text), source: 'fallback' };
   }
 }
 

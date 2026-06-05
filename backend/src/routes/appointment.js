@@ -9,7 +9,9 @@ const {
   getAppointmentById,
   updateAppointmentStatus,
   getAllAppointments,
-  cancelAppointment
+  cancelAppointment,
+  requestReschedule,
+  respondReschedule
 } = require('../controllers/appointmentController');
 
 let upload = null;
@@ -53,5 +55,7 @@ router.get('/all', protect, adminOnly, getAllAppointments);
 router.get('/:id', protect, getAppointmentById);
 router.put('/:id/status', protect, lawyerOnly, updateAppointmentStatus);
 router.put('/:id/cancel', protect, userOnly, cancelAppointment);
+router.put('/:id/reschedule', protect, lawyerOnly, requestReschedule);
+router.put('/:id/respond-reschedule', protect, userOnly, respondReschedule);
 
 module.exports = router;
