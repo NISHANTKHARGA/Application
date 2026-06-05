@@ -1,5 +1,6 @@
 const { ChatMessage, Lawyer } = require('../models');
 const { chatWithAI, generateConversationPDF } = require('../services/chatService');
+const { loadConversationHistory } = require('../services/conversationMemory');
 
 const sendMessage = async (req, res) => {
   try {
@@ -16,7 +17,9 @@ const sendMessage = async (req, res) => {
       attributes: ['id', 'name', 'specialization', 'experience', 'rating', 'totalRatings', 'email']
     });
 
-    const result = await chatWithAI(message, [], lawyers, lang);
+    const conversationHistory = await loadConversationHistory(userId, 20);
+
+    const result = await chatWithAI(message, conversationHistory, lawyers, lang, userId);
 
     if (userId) {
       await ChatMessage.create({
@@ -35,7 +38,7 @@ const sendMessage = async (req, res) => {
     });
   } catch (error) {
     console.error('Chat error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to process message',
       response: 'I apologize, but I encountered an issue. Please try again later.'
     });
@@ -131,7 +134,7 @@ const getCaseSummaries = async (req, res) => {
     const appointments = await ChatMessage.findAll({
       where: { userId: { [require('sequelize').Op.ne]: null } },
       include: [
-        { 
+        {
           model: require('../models/User'),
           as: 'user',
           attributes: ['id', 'name']
