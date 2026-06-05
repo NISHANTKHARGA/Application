@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Phone, Lock, ChevronLeft, Save, AlertCircle } from 'lucide-react';
+import { User, Mail, Phone, Lock, ChevronLeft, Save, AlertCircle, Calendar } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import UserNav from '@/components/UserNav';
