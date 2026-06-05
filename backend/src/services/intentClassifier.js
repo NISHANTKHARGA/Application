@@ -94,19 +94,33 @@ async function classifyByKeywords(message) {
     if (pat.test(lower)) return { intent: 'out_of_scope', confidence: 0.8 };
   }
 
-  if (lower.length < 15 && /^(how|what|when|where|why|is|are|can|do|does|did|has|have)\b/i.test(lower) && !/(law|court|legal|right|case|act|rule|section|complaint|petition|suit|appeal|notice|license|permit|registration|inheritance|property|land|rent|tenant|landlord|divorce|marriage|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|claim|contract|agreement|lease|mortgage|loan|debt|bankruptcy|tax|fine|penalty|violation|offense|punishment|imprisonment|bail|arrest|witness|evidence|judgment|decree|order|writ|petition|appeal)/i.test(lower)) {
-    if (/^(what\s+is|how\s+(to|do|can|does)|define|explain)\b/i.test(lower)) {
+  if (/^(what\s+is|how\s+(to|do|can|does)|define|explain)\b/i.test(lower) && !/(law|court|legal|right|case|act|rule|section|complaint|petition|suit|appeal|notice|license|permit|registration|inheritance|property|land|rent|tenant|landlord|divorce|marriage|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|claim|contract|agreement|lease|mortgage|loan|debt|bankruptcy|tax|fine|penalty|violation|offense|punishment|imprisonment|bail|arrest|witness|evidence|judgment|decree|order|writ|petition|appeal|nepal|nepali)/i.test(lower) && !/(nepal|nepali|kathmandu|मुलुकी)/i.test(lower)) {
+    if (lower.split(/\s+/).length > 3) {
       return { intent: 'out_of_scope', confidence: 0.7 };
     }
   }
 
-  if (/(?:^|\s)(?:my|i\s+have|i\s+am|i\s+got|i\s+was|i\s+did|our|we|they|he|she)\b/i.test(lower) &&
-      /(?:lawyer|court|legal|law|police|case|complaint|notice|land|lalpurja|malpot|rent|tenant|landlord|eviction|divorce|marriage|property|inheritance|will|crime|theft|accident|insurance|contract|agreement|fraud|cheating|harassment|domestic|violence|accident|death|murder|theft|robbery|assault|bail|arrest|license|registration|custody|maintenance|alimony|succession|partition|boundary|survey)/i.test(lower)) {
+  if (lower.includes('nepal') || lower.includes('nepali')) {
+    return { intent: 'nepal_legal_question', confidence: 0.85 };
+  }
+
+  if (/^(what\s+is|how\s+(to|do|i|could|can)|what\s+are\s+(the|my)|explain|describe)\b/i.test(lower) &&
+      /(?:law|court|legal|right|case|act|rule|section|complaint|petition|suit|appeal|notice|license|permit|registration|inheritance|property|land|rent|tenant|landlord|divorce|marriage|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|claim|contract|agreement|lease|mortgage|loan|debt|bankruptcy|tax|fine|penalty|violation|offense|punishment|imprisonment|bail|arrest|witness|evidence|judgment|decree|order|writ|petition|appeal|process|procedure|requirement|eligibility)/i.test(lower)) {
+    return { intent: 'nepal_legal_question', confidence: 0.85 };
+  }
+
+  const hasPersonalRef = /(?:^|\s)(?:my|i\s+(have|am|got|was|did|want|need|filed|received|signed|paid)|our|we|they|he|she)\b/i.test(lower);
+  const hasLegalKw = /(?:lawyer|court|legal|law|police|case|complaint|notice|land|lalpurja|malpot|rent|tenant|landlord|eviction|divorce|marriage|property|inheritance|will|crime|theft|accident|insurance|contract|agreement|fraud|cheating|harassment|domestic|violence|accident|death|murder|theft|robbery|assault|bail|arrest|license|registration|custody|maintenance|alimony|succession|partition|boundary|survey)/i.test(lower);
+  if (hasPersonalRef && hasLegalKw) {
     if (!/(?:in\s+\w+|at\s+\w+|last\s+\w+|today|yesterday|this\s+\w+)/i.test(lower) &&
         !/(?:kathmandu|lalitpur|bhaktapur|pokhara|chitwan|butwal|biratnagar|nepalgunj|dharan|janakpur|hetauda|nepal|district|municipality|ward)/i.test(lower)) {
       return { intent: 'incomplete_legal_question', confidence: 0.75 };
     }
-    return { intent: 'nepal_legal_question', confidence: 0.8 };
+    return { intent: 'nepal_legal_question', confidence: 0.85 };
+  }
+
+  if (hasLegalKw && lower.length > 10) {
+    return { intent: 'nepal_legal_question', confidence: 0.7 };
   }
 
   return null;
