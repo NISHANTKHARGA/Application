@@ -148,7 +148,7 @@ export default function VideoConsultationPage() {
             <div className="w-px h-8 bg-gray-600" />
 
             <Link
-              href={role === 'lawyer' ? '/lawyer/appointments' : '/appointments'}
+              href={role === 'lawyer' ? '/lawyer/dashboard' : '/dashboard'}
               className="p-3 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
               title="Leave meeting"
             >
@@ -216,11 +216,11 @@ export default function VideoConsultationPage() {
 
           <div className="space-y-3">
             <Link
-              href={role === 'lawyer' ? '/lawyer/appointments' : '/appointments'}
+              href={role === 'lawyer' ? '/lawyer/dashboard' : '/dashboard'}
               className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Appointments
+              Back to Dashboard
             </Link>
           </div>
 
@@ -248,10 +248,10 @@ export default function VideoConsultationPage() {
             Open Video Call
           </button>
           <Link
-            href={role === 'lawyer' ? '/lawyer/appointments' : '/appointments'}
+            href={role === 'lawyer' ? '/lawyer/dashboard' : '/dashboard'}
             className="block text-center text-gray-400 hover:text-white mt-4"
           >
-            Cancel
+            Back to Dashboard
           </Link>
         </div>
       </div>
