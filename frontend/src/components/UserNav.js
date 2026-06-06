@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Scale, MessageSquare, Users, Calendar, User, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -14,7 +14,13 @@ const allNavItems = [
 
 export default function UserNav({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, role, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   const navItems = allNavItems.filter(item =>
     item.href === '/lawyers' ? role !== 'lawyer' : true
@@ -38,7 +44,7 @@ export default function UserNav({ children }) {
                 </div>
                 <span className="text-gray-700">{user?.name}</span>
               </div>
-              <button onClick={logout} className="p-2 text-gray-600 hover:text-primary" title="Logout">
+              <button onClick={handleLogout} className="p-2 text-gray-600 hover:text-primary" title="Logout">
                 <LogOut className="w-5 h-5" />
               </button>
             </div>

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Filter, Star, MapPin, Phone, Mail, Calendar, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
@@ -23,11 +24,18 @@ const specializations = [
 
 export default function LawyersPage() {
   const { user, isAuthenticated, isLoading, role } = useAuth();
+  const router = useRouter();
   const [lawyers, setLawyers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedSpec, setSelectedSpec] = useState('All');
   const [selectedLawyer, setSelectedLawyer] = useState(null);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   useEffect(() => {
     fetchLawyers();
