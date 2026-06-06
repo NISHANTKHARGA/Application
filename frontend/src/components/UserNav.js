@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Scale, MessageSquare, Users, Calendar, User, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
-const navItems = [
+const allNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
   { icon: Users, label: 'Find Lawyers', href: '/lawyers' },
@@ -16,12 +16,16 @@ export default function UserNav({ children }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
+  const navItems = allNavItems.filter(item =>
+    item.href === '/lawyers' ? role !== 'lawyer' : true
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <Link href="/dashboard" className="flex items-center gap-2">
+            <Link href={role === 'lawyer' ? '/lawyer/dashboard' : '/dashboard'} className="flex items-center gap-2">
               <Scale className="w-8 h-8 text-primary" />
               <span className="text-xl font-bold text-secondary">KanoonSathi</span>
             </Link>
