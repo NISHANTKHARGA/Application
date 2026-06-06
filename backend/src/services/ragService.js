@@ -230,19 +230,31 @@ async function processWithRAG(userMessage, userId, lawyers = [], language = 'eng
   const dynamicMode = getDynamicMode(userMessage);
 
   if (intent === 'greeting') {
-    const response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali.greeting : intentClassifier.GREETING_RESPONSES.english.greeting;
+    const greetingPrompt = `You are KanoonSathi, a friendly and helpful AI assistant. The user is greeting you. Respond naturally and warmly in 1-2 sentences. Mention that you can help with Nepal law. Do not use markdown.`;
+    let response = await generateWithGroq(greetingPrompt, userMessage, null, { temperature: 0.7, maxTokens: 150 });
+    if (!response) {
+      response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali.greeting : intentClassifier.GREETING_RESPONSES.english.greeting;
+    }
     addPreviousResponse(userId, response);
     return { response, caseType: 'General', source: 'intent_greeting' };
   }
 
   if (intent === 'small_talk') {
-    const response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali.small_talk : intentClassifier.GREETING_RESPONSES.english.small_talk;
+    const smallTalkPrompt = `You are KanoonSathi, a friendly and helpful AI assistant. The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm and human-like. If they ask about your capabilities, briefly mention you can help with Nepal law. Do not use markdown.`;
+    let response = await generateWithGroq(smallTalkPrompt, userMessage, null, { temperature: 0.7, maxTokens: 150 });
+    if (!response) {
+      response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali.small_talk : intentClassifier.GREETING_RESPONSES.english.small_talk;
+    }
     addPreviousResponse(userId, response);
     return { response, caseType: 'General', source: 'intent_small_talk' };
   }
 
   if (intent === 'thanks_farewell') {
-    const response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali.thanks_farewell : intentClassifier.GREETING_RESPONSES.english.thanks_farewell;
+    const farewellPrompt = `You are KanoonSathi, a friendly and helpful AI assistant. The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal help. Do not use markdown.`;
+    let response = await generateWithGroq(farewellPrompt, userMessage, null, { temperature: 0.7, maxTokens: 150 });
+    if (!response) {
+      response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali.thanks_farewell : intentClassifier.GREETING_RESPONSES.english.thanks_farewell;
+    }
     addPreviousResponse(userId, response);
     return { response, caseType: 'General', source: 'intent_thanks_farewell' };
   }
