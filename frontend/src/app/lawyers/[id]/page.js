@@ -353,7 +353,7 @@ export default function LawyerBookingPage() {
                     </div>
 
                     <button
-                      onClick={handleBooking}
+                      onClick={() => handleBooking()}
                       disabled={!selectedDate || !selectedTime || booking}
                       className="btn-primary w-full flex items-center justify-center gap-2"
                     >
