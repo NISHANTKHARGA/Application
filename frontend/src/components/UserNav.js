@@ -14,7 +14,7 @@ const allNavItems = [
 
 export default function UserNav({ children }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, role, logout } = useAuth();
 
   const navItems = allNavItems.filter(item =>
     item.href === '/lawyers' ? role !== 'lawyer' : true
