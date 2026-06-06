@@ -248,7 +248,11 @@ async function processWithRAG(userMessage, userId, lawyers = [], language = 'eng
   }
 
   if (intent === 'out_of_scope') {
-    const response = language === 'nepali' ? intentClassifier.OUT_OF_SCOPE_RESPONSE.nepali : intentClassifier.OUT_OF_SCOPE_RESPONSE.english;
+    const generalPrompt = `You are KanoonSathi, a friendly and helpful AI assistant. The user has asked something that isn't specifically about Nepal law. Answer their question in a helpful, natural way. Be concise but informative. If you don't know the answer, just say so honestly. Do not make up information.`;
+    let response = await generateWithGroq(generalPrompt, userMessage, null, { temperature: 0.7 });
+    if (!response) {
+      response = language === 'nepali' ? intentClassifier.OUT_OF_SCOPE_RESPONSE.nepali : intentClassifier.OUT_OF_SCOPE_RESPONSE.english;
+    }
     addPreviousResponse(userId, response);
     return { response, caseType: 'General', source: 'intent_out_of_scope' };
   }
