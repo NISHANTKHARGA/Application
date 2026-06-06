@@ -11,7 +11,8 @@ const {
   getAllAppointments,
   cancelAppointment,
   requestReschedule,
-  respondReschedule
+  respondReschedule,
+  checkExistingBooking
 } = require('../controllers/appointmentController');
 
 let upload = null;
@@ -45,6 +46,7 @@ try {
 
 if (upload) {
   router.post('/book', protect, userOnly, upload.single('chatFile'), bookAppointment);
+router.post('/check-existing', protect, userOnly, checkExistingBooking);
 } else {
   router.post('/book', protect, userOnly, bookAppointment);
 }

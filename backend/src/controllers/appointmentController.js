@@ -247,6 +247,48 @@ const requestReschedule = async (req, res) => {
   }
 };
 
+const checkExistingBooking = async (req, res) => {
+  try {
+    const { lawyerId, date } = req.body;
+    const userId = req.user.id;
+
+    if (!lawyerId || !date) {
+      return res.status(400).json({ message: 'Lawyer ID and date are required' });
+    }
+
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existing = await Appointment.findOne({
+      where: {
+        userId,
+        lawyerId,
+        dateTime: { [require('sequelize').Op.between]: [startOfDay, endOfDay] },
+        status: { [require('sequelize').Op.notIn]: ['cancelled'] }
+      },
+      include: [{ model: Lawyer, as: 'lawyer', attributes: ['name'] }]
+    });
+
+    if (existing) {
+      return res.json({
+        hasExisting: true,
+        appointment: {
+          id: existing.id,
+          dateTime: existing.dateTime,
+          lawyerName: existing.lawyer?.name,
+          status: existing.status
+        }
+      });
+    }
+
+    res.json({ hasExisting: false });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to check existing booking', error: error.message });
+  }
+};
+
 const respondReschedule = async (req, res) => {
   try {
     const { dateTime } = req.body;
@@ -350,5 +392,8 @@ module.exports = {
   getAppointmentById,
   updateAppointmentStatus,
   getAllAppointments,
-  cancelAppointment
+  cancelAppointment,
+  requestReschedule,
+  respondReschedule,
+  checkExistingBooking
 };

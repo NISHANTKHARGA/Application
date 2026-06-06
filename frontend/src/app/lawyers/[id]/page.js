@@ -26,6 +26,7 @@ export default function LawyerBookingPage() {
   const [booking, setBooking] = useState(false);
   const [chatFile, setChatFile] = useState(null);
   const [showChatOption, setShowChatOption] = useState(false);
+  const [existingBookingModal, setExistingBookingModal] = useState(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -102,7 +103,7 @@ export default function LawyerBookingPage() {
     }
   };
 
-  const handleBooking = async () => {
+  const handleBooking = async (force = false) => {
     if (!selectedDate || !selectedTime) {
       toast.error('Please select date and time');
       return;
@@ -110,6 +111,18 @@ export default function LawyerBookingPage() {
 
     setBooking(true);
     try {
+      if (!force) {
+        const check = await api.post('/appointment/check-existing', {
+          lawyerId: params.id,
+          date: selectedDate
+        });
+        if (check.data.hasExisting) {
+          setExistingBookingModal(check.data.appointment);
+          setBooking(false);
+          return;
+        }
+      }
+
       const formData = new FormData();
       formData.append('lawyerId', params.id);
       formData.append('dateTime', new Date(`${selectedDate}T${selectedTime}`).toISOString());
@@ -127,6 +140,11 @@ export default function LawyerBookingPage() {
       toast.error(error.response?.data?.message || 'Failed to book appointment');
     }
     setBooking(false);
+  };
+
+  const confirmExistingBooking = () => {
+    setExistingBookingModal(null);
+    handleBooking(true);
   };
 
   if (isLoading || loading) {
@@ -358,6 +376,42 @@ export default function LawyerBookingPage() {
               <li>4. Join the video call at the scheduled time</li>
             </ol>
           </div>
+
+      {existingBookingModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Already Booked on This Date</h3>
+              <p className="text-gray-600 mb-2">
+                You already have an appointment with <strong>{existingBookingModal.lawyerName}</strong> on{' '}
+                <strong>{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong>
+                {' '}at{' '}
+                <strong>{new Date(existingBookingModal.dateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</strong>.
+              </p>
+              <p className="text-gray-500 text-sm mb-6">
+                Do you want to book another appointment with the same lawyer on the same day?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setExistingBookingModal(null)}
+                  className="flex-1 btn-outline"
+                >
+                  No, Cancel
+                </button>
+                <button
+                  onClick={confirmExistingBooking}
+                  className="flex-1 btn-primary"
+                >
+                  Yes, Book Anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </UserNav>
   );
 }
