@@ -54,15 +54,22 @@ export default function LawyerBookingPage() {
   };
 
   const getMinDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
+    return new Date().toISOString().split('T')[0];
   };
 
   const getMaxDate = () => {
     const maxDate = new Date();
     maxDate.setDate(maxDate.getDate() + 30);
     return maxDate.toISOString().split('T')[0];
+  };
+
+  const isTimeSlotAvailable = (time) => {
+    if (!selectedDate) return true;
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate !== today) return true;
+    const [hours, minutes] = time.split(':').map(Number);
+    const now = new Date();
+    return hours > now.getHours() || (hours === now.getHours() && minutes > now.getMinutes());
   };
 
   const handleFileChange = (e) => {
@@ -238,7 +245,7 @@ export default function LawyerBookingPage() {
                         Select Time
                       </label>
                       <div className="grid grid-cols-4 gap-2">
-                        {timeSlots.map((time) => (
+                        {timeSlots.filter(isTimeSlotAvailable).map((time) => (
                           <button
                             key={time}
                             onClick={() => setSelectedTime(time)}
