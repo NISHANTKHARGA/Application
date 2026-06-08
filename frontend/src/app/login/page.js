@@ -13,21 +13,21 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState('user');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
 
     if (!email.trim()) {
-      setError('Email or phone number is required');
+      setErrors({ email: 'Email or phone number is required' });
       return;
     }
 
     if (!password) {
-      setError('Password is required');
+      setErrors({ password: 'Password is required' });
       return;
     }
 
@@ -42,7 +42,7 @@ export default function LoginPage() {
         router.push('/dashboard');
       }
     } else {
-      setError(result.message || 'Invalid credentials');
+      setErrors({ form: result.message || 'Invalid credentials' });
     }
 
     setLoading(false);
@@ -94,10 +94,10 @@ export default function LoginPage() {
           <h2 className="text-3xl font-bold text-secondary mb-2">Sign In</h2>
           <p className="text-gray-600 mb-6">Sign in to your account</p>
 
-          {error && (
+          {errors.form && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 mb-6">
               <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-red-700 text-sm">{errors.form}</p>
             </div>
           )}
 
@@ -125,12 +125,15 @@ export default function LoginPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email or Phone Number
               </label>
+              {errors.email && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.email}</p>
+              )}
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: '' })); }}
                   className="input-field pl-12"
                   placeholder="you@example.com or 98XXXXXXXX"
                   required
@@ -143,12 +146,15 @@ export default function LoginPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
+              {errors.password && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.password}</p>
+              )}
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({ ...prev, password: '' })); }}
                   className="input-field pl-12 pr-12"
                   placeholder="Enter your password"
                   required

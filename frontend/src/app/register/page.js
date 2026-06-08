@@ -15,12 +15,13 @@ export default function RegisterPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const { register } = useAuth();
   const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors(prev => ({ ...prev, [e.target.name]: '' }));
   };
 
   const getPasswordStrength = () => {
@@ -52,57 +53,57 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
 
     if (!formData.name.trim()) {
-      setError('Name is required');
+      setErrors({ name: 'Name is required' });
       return;
     }
 
     if (!formData.phone.trim()) {
-      setError('Phone number is required');
+      setErrors({ phone: 'Phone number is required' });
       return;
     }
 
     const phoneDigits = formData.phone.replace(/\D/g, '');
     if (phoneDigits.length !== 10) {
-      setError('Phone number must be exactly 10 digits (e.g., 98XXXXXXXX)');
+      setErrors({ phone: 'Phone number must be exactly 10 digits (e.g., 98XXXXXXXX)' });
       return;
     }
     if (!/^9[78]/.test(phoneDigits)) {
-      setError('Phone must start with 98 or 97 (Nepal mobile prefix)');
+      setErrors({ phone: 'Phone must start with 98 or 97 (Nepal mobile prefix)' });
       return;
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError('Please enter a valid email address');
+      setErrors({ email: 'Please enter a valid email address' });
       return;
     }
 
     if (!formData.password) {
-      setError('Password is required');
+      setErrors({ password: 'Password is required' });
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setErrors({ password: 'Password must be at least 8 characters' });
       return;
     }
     if (!/[A-Z]/.test(formData.password[0])) {
-      setError('Password must start with a capital letter');
+      setErrors({ password: 'Password must start with a capital letter' });
       return;
     }
     if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password)) {
-      setError('Password must contain at least one special character');
+      setErrors({ password: 'Password must contain at least one special character' });
       return;
     }
     if (!/[0-9]/.test(formData.password)) {
-      setError('Password must contain at least one number');
+      setErrors({ password: 'Password must contain at least one number' });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setErrors({ confirmPassword: 'Passwords do not match' });
       return;
     }
 
@@ -117,7 +118,7 @@ export default function RegisterPage() {
     if (result.success) {
       router.push('/dashboard');
     } else {
-      setError(result.message || 'Registration failed');
+      setErrors({ form: result.message || 'Registration failed' });
     }
 
     setLoading(false);
@@ -170,10 +171,10 @@ export default function RegisterPage() {
           <h2 className="text-3xl font-bold text-secondary mb-2">Create Account</h2>
           <p className="text-gray-600 mb-8">Fill in your details to get started</p>
 
-          {error && (
+          {errors.form && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 mb-6">
               <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-red-700 text-sm">{errors.form}</p>
             </div>
           )}
 
@@ -182,6 +183,9 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name
               </label>
+              {errors.name && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.name}</p>
+              )}
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -200,6 +204,9 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address <span className="text-gray-400">(optional)</span>
               </label>
+              {errors.email && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.email}</p>
+              )}
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -217,6 +224,9 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Phone Number
               </label>
+              {errors.phone && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.phone}</p>
+              )}
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <div className="absolute left-12 top-1/2 -translate-y-1/2 text-gray-400 text-sm">+977 </div>
@@ -237,6 +247,9 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
+              {errors.password && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.password}</p>
+              )}
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -299,6 +312,9 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password
               </label>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.confirmPassword}</p>
+              )}
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -311,9 +327,6 @@ export default function RegisterPage() {
                   required
                 />
               </div>
-              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
-              )}
             </div>
 
             <button

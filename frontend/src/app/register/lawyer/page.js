@@ -34,21 +34,24 @@ export default function LawyerRegisterPage() {
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const { lawyerRegister } = useAuth();
   const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors(prev => ({ ...prev, [e.target.name]: '' }));
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 3 * 1024 * 1024) {
-        alert('License document must be less than 3MB');
+        setErrors({ document: 'License document must be less than 3MB' });
         return;
       }
+      setErrors(prev => ({ ...prev, document: '' }));
       setDocument(file);
     }
   };
@@ -57,13 +60,14 @@ export default function LawyerRegisterPage() {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 500 * 1024) {
-        alert('Profile picture must be less than 500KB');
+        setErrors({ profilePicture: 'Profile picture must be less than 500KB' });
         return;
       }
       if (!file.type.startsWith('image/')) {
-        alert('Only image files are allowed');
+        setErrors({ profilePicture: 'Only image files are allowed' });
         return;
       }
+      setErrors(prev => ({ ...prev, profilePicture: '' }));
       setProfilePicture(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -75,16 +79,17 @@ export default function LawyerRegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
 
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      setErrors({ confirmPassword: 'Passwords do not match' });
       return;
     }
 
     setLoading(true);
 
     if (!profilePicturePreview) {
-      alert('Profile picture is required');
+      setErrors({ profilePicture: 'Profile picture is required' });
       setLoading(false);
       return;
     }
@@ -147,6 +152,9 @@ export default function LawyerRegisterPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name *
                 </label>
+                {errors.name && (
+                  <p className="text-red-500 text-xs mb-1.5">{errors.name}</p>
+                )}
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -165,6 +173,9 @@ export default function LawyerRegisterPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address *
                 </label>
+                {errors.email && (
+                  <p className="text-red-500 text-xs mb-1.5">{errors.email}</p>
+                )}
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -185,6 +196,9 @@ export default function LawyerRegisterPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number *
                 </label>
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mb-1.5">{errors.phone}</p>
+                )}
                 <div className="relative">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -203,6 +217,9 @@ export default function LawyerRegisterPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   License Number *
                 </label>
+                {errors.licenseNumber && (
+                  <p className="text-red-500 text-xs mb-1.5">{errors.licenseNumber}</p>
+                )}
                 <div className="relative">
                   <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -261,6 +278,9 @@ export default function LawyerRegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password *
               </label>
+              {errors.password && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.password}</p>
+              )}
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -287,6 +307,9 @@ export default function LawyerRegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password *
               </label>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.confirmPassword}</p>
+              )}
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -318,6 +341,9 @@ export default function LawyerRegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Profile Picture *
               </label>
+              {errors.profilePicture && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.profilePicture}</p>
+              )}
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
                 <input
                   type="file"
@@ -353,6 +379,9 @@ export default function LawyerRegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Upload License Document (PDF) *
               </label>
+              {errors.document && (
+                <p className="text-red-500 text-xs mb-1.5">{errors.document}</p>
+              )}
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors">
                 <input
                   type="file"
