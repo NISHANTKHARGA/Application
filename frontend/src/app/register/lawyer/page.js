@@ -81,6 +81,23 @@ export default function LawyerRegisterPage() {
     e.preventDefault();
     setErrors({});
 
+    if (!formData.name.trim()) {
+      setErrors({ name: 'Full name is required' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email || !emailRegex.test(formData.email)) {
+      setErrors({ email: 'Enter a valid email with @ and . (no spaces)' });
+      return;
+    }
+
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      setErrors({ phone: 'Phone number must be exactly 10 digits' });
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setErrors({ confirmPassword: 'Passwords do not match' });
       return;
