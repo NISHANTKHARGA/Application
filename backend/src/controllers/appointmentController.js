@@ -385,6 +385,34 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
+const getBookedSlots = async (req, res) => {
+  try {
+    const { lawyerId, date } = req.params;
+    const { Op } = require('sequelize');
+    const dayStart = new Date(`${date}T00:00:00.000Z`);
+    const dayEnd = new Date(`${date}T23:59:59.999Z`);
+    const appointments = await Appointment.findAll({
+      where: {
+        lawyerId,
+        status: { [Op.notIn]: ['cancelled'] },
+        dateTime: {
+          [Op.between]: [dayStart, dayEnd]
+        }
+      },
+      attributes: ['dateTime']
+    });
+    const bookedSlots = appointments.map(a => {
+      const d = new Date(a.dateTime);
+      const hours = d.getUTCHours();
+      const mins = d.getUTCMinutes();
+      return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    });
+    res.json({ bookedSlots });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch booked slots', error: error.message });
+  }
+};
+
 module.exports = {
   bookAppointment,
   getUserAppointments,
@@ -395,5 +423,6 @@ module.exports = {
   cancelAppointment,
   requestReschedule,
   respondReschedule,
-  checkExistingBooking
+  checkExistingBooking,
+  getBookedSlots
 };

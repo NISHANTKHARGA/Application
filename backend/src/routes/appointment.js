@@ -12,7 +12,8 @@ const {
   cancelAppointment,
   requestReschedule,
   respondReschedule,
-  checkExistingBooking
+  checkExistingBooking,
+  getBookedSlots
 } = require('../controllers/appointmentController');
 
 let upload = null;
@@ -54,6 +55,7 @@ router.get('/user/:userId', protect, getUserAppointments);
 router.get('/lawyer/me', protect, lawyerOnly, getLawyerAppointments);
 router.get('/lawyer/:lawyerId', protect, lawyerOnly, getLawyerAppointments);
 router.get('/all', protect, adminOnly, getAllAppointments);
+router.get('/booked-slots/:lawyerId/:date', getBookedSlots);
 router.get('/:id', protect, getAppointmentById);
 router.put('/:id/status', protect, lawyerOnly, updateAppointmentStatus);
 router.put('/:id/cancel', protect, userOnly, cancelAppointment);

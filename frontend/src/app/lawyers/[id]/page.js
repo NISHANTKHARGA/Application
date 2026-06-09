@@ -27,6 +27,7 @@ export default function LawyerBookingPage() {
   const [chatFile, setChatFile] = useState(null);
   const [showChatOption, setShowChatOption] = useState(false);
   const [existingBookingModal, setExistingBookingModal] = useState(null);
+  const [bookedSlots, setBookedSlots] = useState([]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -61,6 +62,21 @@ export default function LawyerBookingPage() {
     const maxDate = new Date();
     maxDate.setDate(maxDate.getDate() + 30);
     return maxDate.toISOString().split('T')[0];
+  };
+
+  useEffect(() => {
+    if (selectedDate && params.id) {
+      fetchBookedSlots();
+    }
+  }, [selectedDate, params.id]);
+
+  const fetchBookedSlots = async () => {
+    try {
+      const response = await api.get(`/appointment/booked-slots/${params.id}/${selectedDate}`);
+      setBookedSlots(response.data.bookedSlots || []);
+    } catch (error) {
+      console.error('Failed to fetch booked slots:', error);
+    }
   };
 
   const isTimeSlotAvailable = (time) => {
@@ -245,19 +261,25 @@ export default function LawyerBookingPage() {
                         Select Time
                       </label>
                       <div className="grid grid-cols-4 gap-2">
-                        {timeSlots.filter(isTimeSlotAvailable).map((time) => (
-                          <button
-                            key={time}
-                            onClick={() => setSelectedTime(time)}
-                            className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                              selectedTime === time
-                                ? 'bg-primary text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                          >
-                            {time}
-                          </button>
-                        ))}
+                        {timeSlots.filter(isTimeSlotAvailable).map((time) => {
+                          const isBooked = bookedSlots.includes(time);
+                          return (
+                            <button
+                              key={time}
+                              onClick={() => !isBooked && setSelectedTime(time)}
+                              disabled={isBooked}
+                              className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                                selectedTime === time
+                                  ? 'bg-primary text-white'
+                                  : isBooked
+                                    ? 'bg-red-100 text-red-500 cursor-not-allowed line-through'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
