@@ -92,9 +92,15 @@ export default function LawyerRegisterPage() {
       return;
     }
 
-    const phoneDigits = formData.phone.replace(/\D/g, '');
-    if (phoneDigits.length !== 10) {
-      setErrors({ phone: 'Phone number must be exactly 10 digits' });
+    const phoneRaw = formData.phone.trim();
+    const hasCountryCode = phoneRaw.startsWith('+977');
+    const phoneDigits = phoneRaw.replace(/\D/g, '');
+    if (hasCountryCode && phoneDigits.length !== 13) {
+      setErrors({ phone: 'Phone must be +977 followed by 10 digits' });
+      return;
+    }
+    if (!hasCountryCode && phoneDigits.length !== 10) {
+      setErrors({ phone: 'Phone number must be exactly 10 digits (or +977XXXXXXXXXX)' });
       return;
     }
 
