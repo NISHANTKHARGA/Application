@@ -59,18 +59,15 @@ export default function LawyerAppointmentsPage() {
   };
 
   const handleReschedule = async () => {
-    if (!rescheduleModal || !newDate || !newTime) return;
+    if (!rescheduleModal) return;
     setActionLoading(rescheduleModal.id);
     try {
-      const dateTime = new Date(`${newDate}T${newTime}`).toISOString();
-      await api.put(`/appointment/${rescheduleModal.id}/reschedule`, { dateTime });
-      toast.success('Appointment rescheduled');
+      await api.put(`/appointment/${rescheduleModal.id}/reschedule`, {});
+      toast.success('Reschedule request sent to user');
       setRescheduleModal(null);
-      setNewDate('');
-      setNewTime('');
       fetchAppointments();
     } catch (error) {
-      toast.error('Failed to reschedule');
+      toast.error('Failed to request reschedule');
     }
     setActionLoading(null);
   };
@@ -243,7 +240,7 @@ export default function LawyerAppointmentsPage() {
                               Accept
                             </button>
                             <button
-                              onClick={() => { setRescheduleModal(apt); setNewDate(''); setNewTime(''); }}
+                              onClick={() => setRescheduleModal(apt)}
                               disabled={actionLoading === apt.id}
                               className="bg-amber-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-600 flex items-center justify-center gap-1 disabled:opacity-50"
                             >
@@ -289,46 +286,28 @@ export default function LawyerAppointmentsPage() {
 
       {rescheduleModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold mb-4">Reschedule Appointment</h3>
-            <p className="text-gray-600 mb-4">
-              Suggest a new date and time for {rescheduleModal.user?.name}'s appointment.
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-amber-600" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Request Reschedule</h3>
+            <p className="text-gray-600 mb-6">
+              Ask {rescheduleModal.user?.name} to pick a new date and time for this appointment.
             </p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">New Date</label>
-                <input
-                  type="date"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  className="input-field"
-                  min={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">New Time</label>
-                <input
-                  type="time"
-                  value={newTime}
-                  onChange={(e) => setNewTime(e.target.value)}
-                  className="input-field"
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={handleReschedule}
-                  disabled={!newDate || !newTime || actionLoading === rescheduleModal.id}
-                  className="flex-1 btn-primary disabled:opacity-50"
-                >
-                  {actionLoading === rescheduleModal.id ? 'Updating...' : 'Confirm Reschedule'}
-                </button>
-                <button
-                  onClick={() => setRescheduleModal(null)}
-                  className="flex-1 btn-outline"
-                >
-                  Cancel
-                </button>
-              </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleReschedule}
+                disabled={actionLoading === rescheduleModal.id}
+                className="flex-1 btn-primary disabled:opacity-50"
+              >
+                {actionLoading === rescheduleModal.id ? 'Sending...' : 'Send Request'}
+              </button>
+              <button
+                onClick={() => setRescheduleModal(null)}
+                className="flex-1 btn-outline"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
