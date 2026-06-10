@@ -389,8 +389,11 @@ const getBookedSlots = async (req, res) => {
   try {
     const { lawyerId, date } = req.params;
     const { Op } = require('sequelize');
+    const NEPAL_OFFSET = 345; // 5h45m in minutes (UTC+5:45)
     const dayStart = new Date(`${date}T00:00:00.000Z`);
+    dayStart.setMinutes(dayStart.getMinutes() - NEPAL_OFFSET);
     const dayEnd = new Date(`${date}T23:59:59.999Z`);
+    dayEnd.setMinutes(dayEnd.getMinutes() - NEPAL_OFFSET);
     const appointments = await Appointment.findAll({
       where: {
         lawyerId,
@@ -403,9 +406,10 @@ const getBookedSlots = async (req, res) => {
     });
     const bookedSlots = appointments.map(a => {
       const d = new Date(a.dateTime);
-      const hours = d.getUTCHours();
-      const mins = d.getUTCMinutes();
-      return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+      const nepalTime = new Date(d.getTime() + NEPAL_OFFSET * 60 * 1000);
+      const hours = String(nepalTime.getUTCHours()).padStart(2, '0');
+      const mins = String(nepalTime.getUTCMinutes()).padStart(2, '0');
+      return `${hours}:${mins}`;
     });
     res.json({ bookedSlots });
   } catch (error) {
