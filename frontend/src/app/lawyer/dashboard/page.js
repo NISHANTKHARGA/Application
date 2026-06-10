@@ -32,17 +32,19 @@ export default function LawyerDashboardPage() {
 
   const fetchData = async () => {
     try {
-      const [statsRes, appointmentsRes] = await Promise.all([
-        api.get('/lawyer/stats'),
-        api.get('/appointment/lawyer/me')
-      ]);
+      const statsRes = await api.get('/lawyer/stats');
       setStats(statsRes.data.stats);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    }
+    try {
+      const appointmentsRes = await api.get('/appointment/lawyer/me');
       setAppointments(appointmentsRes.data.appointments || []);
     } catch (error) {
-      console.error('Failed to fetch data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch appointments:', error);
+      toast.error('Failed to load appointments');
     }
+    setLoading(false);
   };
 
   const updateStatus = async (appointmentId, status) => {

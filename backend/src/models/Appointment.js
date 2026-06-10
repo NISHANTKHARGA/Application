@@ -15,7 +15,7 @@ try {
       lawyerId: { type: DataTypes.UUID, allowNull: false, references: { model: 'lawyers', key: 'id' } },
       dateTime: { type: DataTypes.DATE, allowNull: false },
       meetingLink: { type: DataTypes.STRING, allowNull: true },
-      status: { type: DataTypes.ENUM('pending', 'confirmed', 'completed', 'cancelled'), defaultValue: 'pending' },
+      status: { type: DataTypes.STRING, defaultValue: 'pending' },
       notes: { type: DataTypes.TEXT, allowNull: true },
       caseSummary: { type: DataTypes.TEXT, allowNull: true },
       duration: { type: DataTypes.INTEGER, defaultValue: 30 }

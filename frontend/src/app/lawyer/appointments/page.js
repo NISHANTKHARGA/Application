@@ -41,9 +41,8 @@ export default function LawyerAppointmentsPage() {
     } catch (error) {
       console.error('Failed to fetch appointments:', error);
       toast.error('Failed to load appointments');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const updateStatus = async (appointmentId, status) => {

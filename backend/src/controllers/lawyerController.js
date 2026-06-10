@@ -173,6 +173,9 @@ const updateLawyerProfile = async (req, res) => {
 const getLawyerStats = async (req, res) => {
   try {
     const lawyer = req.lawyer;
+    if (!lawyer) {
+      return res.status(404).json({ message: 'Lawyer not found' });
+    }
 
     const totalAppointments = await Appointment.count({
       where: { lawyerId: lawyer.id }
