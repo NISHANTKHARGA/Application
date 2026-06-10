@@ -363,7 +363,7 @@ LEGAL REFERENCES YOU MUST USE:
 7. Social Security Act 2075 (2017) - SSF contributions, employee benefits, pension
 8. Company Act 2063 (2006) - Business registration, corporate governance, shareholders
 9. Consumer Protection Act 2075 (2018) - Consumer rights, complaints, defective products
-10. Electronic Transaction Act 2063 (2006) - Cyber law, digital signatures, online fraud, hacking, data protection
+10. Electronic Transaction Act 2063 (2006) - Cyber law, digital signatures, online fraud, hacking, data protection, cyber stalking, deepfakes, copyright infringement, child online protection
 11. Human Trafficking and Transportation (Control) Act 2064 (2007) - Trafficking, forced labor, prostitution
 12. Money Laundering Prevention Act 2064 (2007) - Financial crime, KYC, suspicious transactions
 13. Evidence Act 2031 (1974) - Admissibility of evidence, witnesses, confessions, documents
