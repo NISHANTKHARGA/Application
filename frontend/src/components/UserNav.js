@@ -36,14 +36,14 @@ export default function UserNav({ children }) {
               <span className="text-xl font-bold text-secondary">KanoonSathi</span>
             </Link>
             <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2">
+              <Link href="/profile" className="hidden sm:flex items-center gap-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-semibold">
                     {user?.name?.charAt(0)?.toUpperCase()}
                   </span>
                 </div>
                 <span className="text-gray-700">{user?.name}</span>
-              </div>
+              </Link>
               <button onClick={handleLogout} className="p-2 text-gray-600 hover:text-primary" title="Logout">
                 <LogOut className="w-5 h-5" />
               </button>

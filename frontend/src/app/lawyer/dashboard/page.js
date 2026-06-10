@@ -88,14 +88,14 @@ export default function LawyerDashboardPage() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
+              <Link href="/lawyer/profile" className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-semibold">
                     {user?.name?.charAt(0)?.toUpperCase()}
                   </span>
                 </div>
                 <span className="text-gray-700 hidden sm:inline">{user?.name}</span>
-              </div>
+              </Link>
               <button onClick={logout} className="text-gray-600 hover:text-red-500">
                 <LogOut className="w-5 h-5" />
               </button>

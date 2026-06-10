@@ -54,9 +54,9 @@ export default function LawyersPage() {
   };
 
   const filteredLawyers = lawyers.filter(lawyer => {
-    const matchesSearch = lawyer.name.toLowerCase().includes(search.toLowerCase()) ||
-      lawyer.specialization.toLowerCase().includes(search.toLowerCase());
-    const matchesSpec = selectedSpec === 'All' || lawyer.specialization === selectedSpec;
+    const matchesSearch = (lawyer.name?.toLowerCase() || '').includes(search.toLowerCase()) ||
+      (lawyer.specialization?.toLowerCase() || '').includes(search.toLowerCase());
+    const matchesSpec = selectedSpec === 'All' || (lawyer.specialization?.toLowerCase() || '') === selectedSpec.toLowerCase();
     return matchesSearch && matchesSpec;
   });
 
