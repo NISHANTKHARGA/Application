@@ -25,7 +25,7 @@ async function generateWithGroq(systemPrompt, userMessage, context, options = {}
       model: options.model || 'llama-3.3-70b-versatile',
       messages,
       temperature: options.temperature ?? 0.3,
-      max_tokens: options.maxTokens || 2000,
+      max_tokens: options.maxTokens || 800,
       top_p: options.topP ?? 0.9
     });
     return completion.choices[0]?.message?.content || '';
