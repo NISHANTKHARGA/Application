@@ -40,13 +40,13 @@ async function checkVectorSearch() {
 const CASE_TYPE_MAP = {
   criminal: 'Criminal', property: 'Property', civil: 'Civil', business: 'Business',
   family: 'Family', labor: 'Labor', immigration: 'Immigration', consumer: 'Consumer',
-  constitutional: 'Constitutional', traffic: 'Traffic', tax: 'Tax'
+  constitutional: 'Constitutional', traffic: 'Traffic', tax: 'Tax', cyber: 'Cyber'
 };
 
 const SPECIALIZATION_CASE_TYPE_MAP = {
   'Criminal': 'Criminal', 'Property': 'Property', 'Civil': 'Civil', 'Business': 'Business',
   'Family': 'Family', 'Labor': 'Labor', 'Immigration': 'Immigration', 'Consumer': 'Consumer',
-  'Constitutional': 'Constitutional', 'Traffic': 'Traffic', 'Tax': 'Tax'
+  'Constitutional': 'Constitutional', 'Traffic': 'Traffic', 'Tax': 'Tax', 'Cyber': 'Cyber'
 };
 
 const CONFIDENCE_THRESHOLD = 4.0;
@@ -234,7 +234,7 @@ async function processWithRAG(userMessage, userId, lawyers = [], language = 'eng
       greeting: 'The user is greeting you. Respond naturally and warmly in 1-2 sentences. Mention that you can help with Nepal law.',
       small_talk: 'The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm and human-like.',
       thanks_farewell: 'The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal help.',
-      out_of_scope: 'The user has asked something that is not about Nepal law. Answer their question helpfully and naturally. Be concise. If you do not know, just say so.'
+      out_of_scope: 'The user has asked something that is not related to Nepal law. Politely say "I am sorry, I can only help with Nepal law related questions." Do NOT answer their actual question. Be firm but polite.'
     };
     const prompt = `You are KanoonSathi, a friendly and helpful AI assistant. ${prompts[intent] || 'Respond naturally and helpfully.'} Do not use markdown.`;
     let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: intent === 'out_of_scope' ? 500 : 150 });
@@ -360,6 +360,7 @@ LEGAL REFERENCES YOU MUST USE:
 4. Labour Act 2074 (2017) - Worker rights, minimum wage, termination rules
 5. Company Act 2063 (2006) - Business registration, corporate structure
 6. Consumer Protection Act 2075 (2018) - Consumer rights, complaints, remedies
+7. Electronic Transaction Act 2063 (2006) - Cyber law, digital signatures, online fraud, hacking
 
 ${langInstruction}
 
@@ -379,15 +380,17 @@ ${prevRepText}
 
 RESPONSE RULES:
 - FIRST LINE: One single direct sentence answering what the user should do
-- SECOND LINE: Explain with the relevant Act and section number
+- Explain with the relevant Act and section number
 - End with the specific type of lawyer to consult if applicable
+- If the user reports being a victim of fraud, scam, or crime: immediately suggest specific actionable steps (report to Cyber Bureau at 01-4779900, file FIR, preserve evidence)
+- If the user just asks about a specific law (e.g. "tell me about cyber law"), explain the law clearly with provisions and penalties
 - If the user's question is in Devanagari script (Nepali), respond in Nepali only
 - If the user's question is in English, respond in English only
 - Never mix both languages in one response
 - While answering in Nepali, give answer in only three main points ending each with Nepali full stop (।)
 - Do NOT use ** or * or bullet points - plain text only
 - Total response must be under 6 sentences
-- Always cite the specific Act and Article/Section number
+- Always cite the specific Act and Article/Section number from the references
 - If unsure, say so - do not guess on legal matters
 - Keep answers clear and simple for non-lawyers
 

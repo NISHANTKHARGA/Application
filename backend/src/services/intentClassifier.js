@@ -169,22 +169,22 @@ async function classifyIntent(message, conversationHistory = []) {
 
 const GREETING_RESPONSES = {
   english: {
-    greeting: "Hello! I'm KanoonSathi, your Nepal legal assistant. How can I help you with your legal questions today? Whether it's about property, family, criminal, or any other area of Nepali law, I'm here to guide you.",
-    small_talk: "Hello! I'm KanoonSathi, a specialized AI legal assistant for Nepal law. I can help you understand your legal rights, explain Nepali laws and procedures, and guide you through legal processes. Feel free to describe your legal situation!",
-    thanks_farewell: "You're welcome! I'm glad I could help. If you have any more questions about Nepal law in the future, don't hesitate to return. Wishing you the best with your legal matters.",
+    greeting: "Hi there! Welcome to KanoonSathi. I'm your Nepal law assistant. How can I help you today? Feel free to ask me anything about Nepali law - property, family, criminal, cyber, business, or any other legal matter.",
+    small_talk: "Hey! I'm doing great, thanks for asking! I'm KanoonSathi, your Nepal law assistant. I can help you understand legal rights, explain laws, and guide you through legal processes in Nepal. What legal question do you have for me?",
+    thanks_farewell: "You're very welcome! Happy to help. If you ever need legal guidance in the future, I'm just a message away. Take care and all the best!",
     emergency_legal: "⚠️ IMPORTANT: If you are in immediate danger, please call 100 (Nepal Police) or 1145 (Women's Helpline) right away.\n\nI can provide general legal information, but emergency situations require immediate professional legal assistance. Please contact a qualified Nepal lawyer or visit your nearest police station or court immediately.\n\nWould you like me to provide information on legal aid resources available in Nepal?"
   },
   nepali: {
-    greeting: "नमस्ते! म KanoonSathi, तपाईंको नेपाली कानुनी सहायक हुँ। तपाईंको कानुनी प्रश्नहरूमा कसरी मद्दत गर्न सक्छु? सम्पत्ति, पारिवारिक, फौजदारी वा नेपाली कानूनको अन्य क्षेत्रहरूको बारेमा जानकारी चाहिन्छ भने, म यहाँ छु।",
-    small_talk: "नमस्ते! म KanoonSathi, नेपाली कानूनको लागि विशेष एआई कानुनी सहायक हुँ। म तपाईंलाई तपाईंको कानुनी अधिकारहरू बुझ्न, नेपाली कानून र प्रक्रियाहरू सम्झाउन, र कानुनी प्रक्रियाहरूमा मार्गदर्शन गर्न मद्दत गर्न सक्छु। कृपया आफ्नो कानुनी अवस्थाको बारेमा बताउनुहोस्!",
-    thanks_farewell: "तपाईंलाई स्वागत छ! म मद्दत गर्न पाउँदा खुसी छु। भविष्यमा नेपाली कानूनको बारेमा कुनै प्रश्नहरू भएमा फेरि सोध्नुहोला। तपाईंको कानुनी मामिलामा शुभकामना।",
+    greeting: "नमस्ते! KanoonSathi मा तपाईंलाई स्वागत छ। म तपाईंको नेपाली कानून सहायक हुँ। तपाईंलाई कसरी मद्दत गर्न सक्छु? कृपया नेपाली कानूनको बारेमा जे पनि सोध्नुहोस् - सम्पत्ति, पारिवारिक, फौजदारी, साइबर, व्यवसाय वा अन्य कानुनी मामिला।",
+    small_talk: "नमस्ते! म ठीक छु, धन्यवाद! म KanoonSathi, तपाईंको नेपाली कानून सहायक हुँ। म तपाईंलाई कानुनी अधिकारहरू बुझ्न, कानूनहरू व्याख्या गर्न, र नेपालमा कानुनी प्रक्रियाहरूमा मार्गदर्शन गर्न मद्दत गर्न सक्छु। तपाईंको लागि कुन कानुनी प्रश्न छ?",
+    thanks_farewell: "तपाईंलाई धेरै धेरै स्वागत छ! मद्दत गर्न पाएर खुसी लाग्यो। भविष्यमा कानुनी मार्गदर्शन चाहियो भने, म सधैं यहाँ छु। ख्याल राख्नुहोस् र शुभकामना!",
     emergency_legal: "⚠️ महत्वपूर्ण: यदि तपाईं तत्काल खतरामा हुनुहुन्छ भने, कृपया तुरुन्तै १०० (नेपाल प्रहरी) वा ११४५ (महिला हेल्पलाइन) मा सम्पर्क गर्नुहोस्।\n\nम सामान्य कानुनी जानकारी प्रदान गर्न सक्छु, तर आपतकालीन अवस्थाहरूमा तत्काल पेशेवर कानुनी सहायता आवश्यक छ। कृपया नजिकको प्रहरी चौकी वा अदालतमा सम्पर्क गर्नुहोस्।"
   }
 };
 
 const OUT_OF_SCOPE_RESPONSE = {
-  english: "I specialize in Nepal legal information and consultation. I may not provide the best answer for general topics. Would you like assistance with a Nepal legal matter? I can help with questions about property law, family law, criminal law, business registration, and many other areas of Nepali law.",
-  nepali: "म नेपाली कानूनी जानकारी र परामर्शमा विशेषज्ञ छु। सामान्य विषयहरूको लागि म उत्तम जवाफ प्रदान गर्न सक्दिन। के तपाईं नेपाली कानूनी मामिलामा सहायता चाहनुहुन्छ?"
+  english: "I am sorry, I can only help with Nepal law related questions. I can assist you with property law, family law, criminal law, business registration, cyber law, consumer rights, labor law, tax, immigration, and other areas of Nepali law. Please ask me a question about Nepal law.",
+  nepali: "माफ गर्नुहोस्, म केवल नेपाली कानूनसँग सम्बन्धित प्रश्नहरूमा मात्र मद्दत गर्न सक्छु। म तपाईंलाई सम्पत्ति कानून, पारिवारिक कानून, फौजदारी कानून, व्यवसाय दर्ता, साइबर कानून, उपभोक्ता अधिकार, श्रम कानून, कर, आप्रवासन र नेपाली कानूनका अन्य क्षेत्रहरूमा मद्दत गर्न सक्छु। कृपया नेपाली कानूनको बारेमा प्रश्न सोध्नुहोस्।"
 };
 
 const INCOMPLETE_QUESTION_INTRO = {

@@ -31,7 +31,7 @@
     "id": "criminal-5",
     "caseType": "Criminal",
     "title": "Cyber Crime and Online Fraud",
-    "content": "Cyber crimes in Nepal are governed by the Electronic Transaction Act 2065. This covers hacking, identity theft, online fraud, cyber bullying, and unauthorized data access. Victims should immediately report to the Nepal Police Cyber Bureau at 01-4779900 or visit their office at Narayanhiti, Kathmandu. Save all evidence including screenshots, transaction records, emails, and chat logs. The law provides for imprisonment up to 5 years and fines up to NPR 200,000 for hacking offenses. Banking fraud should also be reported to Nepal Rastra Bank and your bank immediately.",
+    "content": "Cyber crimes in Nepal are governed by the Electronic Transaction Act 2063. This covers hacking, identity theft, online fraud, cyber bullying, and unauthorized data access. Victims should immediately report to the Nepal Police Cyber Bureau at 01-4779900 or visit their office at Narayanhiti, Kathmandu. Save all evidence including screenshots, transaction records, emails, and chat logs. The law provides for imprisonment up to 5 years and fines up to NPR 200,000 for hacking offenses. Banking fraud should also be reported to Nepal Rastra Bank and your bank immediately.",
     "keywords": ["cyber crime", "online fraud", "hacking", "identity theft", "cyber bullying", "phishing", "साइबर अपराध", "अनलाइन ठगी", "ह्याकिङ"]
   },
   {
@@ -220,7 +220,7 @@
     "id": "consumer-2",
     "caseType": "Consumer",
     "title": "Online Shopping and E-Commerce Rights",
-    "content": "Online shopping in Nepal is regulated under the Electronic Transaction Act 2065 and Consumer Protection Act. Consumers have the right to cancel online orders within 48 hours of purchase. Products must be delivered within the promised timeframe. If goods are damaged or not as described, consumers can demand replacement or refund. Payment security is the responsibility of the e-commerce platform. Fraudulent online stores should be reported to the Cyber Bureau. Keep screenshots of orders, payment confirmations, and communication with sellers. Cross-border online purchases may be subject to customs duties.",
+    "content": "Online shopping in Nepal is regulated under the Electronic Transaction Act 2063 and Consumer Protection Act. Consumers have the right to cancel online orders within 48 hours of purchase. Products must be delivered within the promised timeframe. If goods are damaged or not as described, consumers can demand replacement or refund. Payment security is the responsibility of the e-commerce platform. Fraudulent online stores should be reported to the Cyber Bureau. Keep screenshots of orders, payment confirmations, and communication with sellers. Cross-border online purchases may be subject to customs duties.",
     "keywords": ["online shopping", "ecommerce", "online order", "e-commerce", "online fraud", "अनलाइन किनमेल", "अनलाइन अर्डर", "इ-कमर्स"]
   },
   {
@@ -624,9 +624,9 @@
   },
   {
     "id": "media-2",
-    "caseType": "Constitutional",
+    "caseType": "Cyber",
     "title": "Cyber Law and Digital Rights in Nepal",
-    "content": "The Electronic Transaction Act 2065 (ETA) is the primary cyber law in Nepal. It recognizes digital signatures and electronic records as legally valid. Key provisions: Unauthorized access to computer systems (up to 5 years imprisonment + NPR 200,000 fine), Hacking (up to 5 years + NPR 200,000 fine), Damage to computer system (up to 5 years + NPR 300,000 fine), Publication of illegal content (up to 5 years + NPR 200,000 fine). The Information Technology Emergency Response Team (ITERT) handles cyber incident response. The Nepal Police Cyber Bureau investigates cyber crimes. The Department of Information Technology manages IT policy. The Right to Information extends to digital records. Social media regulations require platforms to remove illegal content within 72 hours. Data protection provisions are limited under current law. The proposed Data Protection Bill will introduce comprehensive privacy protections.",
+    "content": "The Electronic Transaction Act 2063 (ETA) is the primary cyber law in Nepal. It recognizes digital signatures and electronic records as legally valid. Key provisions: Unauthorized access to computer systems (up to 5 years imprisonment + NPR 200,000 fine), Hacking (up to 5 years + NPR 200,000 fine), Damage to computer system (up to 5 years + NPR 300,000 fine), Publication of illegal content (up to 5 years + NPR 200,000 fine). The Information Technology Emergency Response Team (ITERT) handles cyber incident response. The Nepal Police Cyber Bureau investigates cyber crimes. The Department of Information Technology manages IT policy. The Right to Information extends to digital records. Social media regulations require platforms to remove illegal content within 72 hours. Data protection provisions are limited under current law. The proposed Data Protection Bill will introduce comprehensive privacy protections.",
     "keywords": ["cyber law", "digital rights", "electronic transaction", "data protection", "privacy", "साइबर कानुन", "डिजिटल अधिकार", "इलेक्ट्रोनिक कारोबार", "डाटा संरक्षण", "गोपनीयता"]
   },
   {
@@ -635,5 +635,26 @@
     "title": "Sexual Offenses and Rape Laws in Nepal",
     "content": "Sexual offenses in Nepal are governed by the Muluki Criminal Code 2017 (Chapter on Sexual Offenses). Rape (Section 219): A person who engages in sexual intercourse without consent commits rape. Punishment: 10-15 years imprisonment. Marital rape: recognized under Section 219 (exemption for husbands removed in 2074). Child sexual abuse: Section 220 provides for additional penalties when the victim is under 18. Attempted rape: half the maximum punishment. Statutory rape: sexual intercourse with a child under 16 is automatically considered rape. Evidence rules protect victim identity. Victim's previous sexual history is generally inadmissible. Government provides free legal aid to rape victims. The One Door Crisis Management Centers at government hospitals provide integrated services for sexual violence victims. Psychological counseling and rehabilitation services are available.",
     "keywords": ["rape", "sexual assault", "sexual offense", "marital rape", "child abuse", "बलात्कार", "यौन दुर्व्यवहार", "यौन अपराध", "बाल यौन दुरुपयोग"]
+  },
+  {
+    "id": "cyber-1",
+    "caseType": "Cyber",
+    "title": "Electronic Transaction Act 2063 - Complete Guide",
+    "content": "The Electronic Transaction Act 2063 (ETA) is Nepal's primary cyber law enacted in 2006. It provides legal recognition to electronic records and digital signatures. Key offenses and penalties: (1) Unauthorized access to computer material - up to 3 years imprisonment or NPR 100,000 fine or both; (2) Unauthorized access with intent to commit offense - up to 5 years imprisonment or NPR 200,000 fine or both; (3) Damage to computer system - up to 5 years imprisonment and NPR 300,000 fine; (4) Hacking - up to 5 years imprisonment and NPR 200,000 fine; (5) Publication of illegal content - up to 5 years imprisonment and NPR 200,000 fine; (6) Breach of confidentiality and privacy - up to 3 years or NPR 100,000 or both; (7) Publishing false digital signature - up to 2 years or NPR 50,000 or both. The Act also establishes the Controller of Certifying Authorities for digital signature regulation. The Nepal Police Cyber Bureau at Narayanhiti, Kathmandu (phone 01-4779900) is the primary enforcement agency. The Information Technology Emergency Response Team (ITERT) handles cyber incident response. The Act applies to any offense committed within Nepal or affecting a computer system located in Nepal.",
+    "keywords": ["cyber law", "electronic transaction act", "eta 2063", "cyber offense", "digital signature", "साइबर कानुन", "इलेक्ट्रोनिक कारोबार ऐन", "डिजिटल हस्ताक्षर", "साइबर अपराध"]
+  },
+  {
+    "id": "cyber-2",
+    "caseType": "Cyber",
+    "title": "Online Scam and Digital Fraud - Victim Response Steps",
+    "content": "If you are a victim of an online scam or digital fraud in Nepal, take these immediate steps: (1) Contact your bank immediately to freeze accounts and reverse unauthorized transactions. Call Nepal Rastra Bank helpline at 01-4511155. (2) File a complaint at the Nepal Police Cyber Bureau within 24 hours. Visit their office at Narayanhiti, Kathmandu or call 01-4779900. You can also file online at cyberbureau.nepalpolice.gov.np. (3) Preserve ALL evidence: screenshots of conversations, transaction receipts, emails, WhatsApp/Facebook messages, bank statements, website URLs, and phone numbers. (4) For social media scams (fake Facebook profiles, Marketplace fraud), also report to the platform itself. (5) For investment scams (ponzi schemes, crypto fraud), file a complaint with the Securities Board of Nepal (SEBON) and Nepal Rastra Bank. (6) File a written complaint (FIR) at your nearest District Police Office. The police must register your complaint under Section 155 of the Criminal Procedure Code. If they refuse, approach the Superintendent of Police. (7) The Cyber Bureau investigates under the Electronic Transaction Act 2063. Offenders face up to 5 years imprisonment and fines up to NPR 200,000 for hacking and NPR 300,000 for computer damage. (8) Contact a cyber law lawyer for legal representation. Recovery of lost funds is possible through court order. Prevention tips: never share OTP or banking PIN, verify website URLs before payment, use secure payment gateways, and be cautious of too-good-to-be-true offers.",
+    "keywords": ["online scam", "digital fraud", "phishing", "social media scam", "investment scam", "money recovery", "अनलाइन ठगी", "डिजिटल धोखाधडी", "लगानी ठगी", "रकम फिर्ता", "साइबर ब्युरो"]
+  },
+  {
+    "id": "cyber-3",
+    "caseType": "Cyber",
+    "title": "Social Media Laws and Cyber Bullying",
+    "content": "Social media use in Nepal is regulated under the Electronic Transaction Act 2063 and the Criminal Code 2017. Cyber bullying includes posting offensive comments, sharing private photos without consent, creating fake profiles to harass, and online stalking. Penalties: (1) Publishing illegal content on social media (Section 47 of ETA) - up to 5 years imprisonment and/or NPR 200,000 fine. (2) Harassment through electronic means - treated as criminal harassment under the Criminal Code. Victims should: (1) Save all evidence (screenshots, URLs, dates). (2) Block the harasser and report to the social media platform. (3) File a complaint at the Nepal Police Cyber Bureau (01-4779900). (4) For urgent cases involving threats, file an FIR at your local police station. (5) Seek a court protection order if harassment continues. Impersonation (fake accounts using your identity) is a specific offense under the ETA. Defamation on social media can be pursued both as a criminal case (up to 1 year imprisonment) and civil case (damages). The Right to Privacy is protected under Article 28 of the Constitution of Nepal 2015.",
+    "keywords": ["social media", "cyber bullying", "harassment", "online harassment", "fake profile", "impersonation", "सामाजिक सञ्जाल", "साइबर बुलिङ", "अनलाइन उत्पीडन", "नक्कली प्रोफाइल", "साइबर उत्पीडन"]
   }
 ]
