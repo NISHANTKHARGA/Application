@@ -186,7 +186,7 @@ const updateAppointmentStatus = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized access' });
     }
 
-    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled', 'reschedule_requested'];
+    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled', 'reschedule_requested', 'reschedule_pending'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
@@ -315,12 +315,12 @@ const respondReschedule = async (req, res) => {
     }
 
     appointment.dateTime = dateTime;
-    appointment.status = 'confirmed';
+    appointment.status = 'reschedule_pending';
     await appointment.save();
 
     res.json({
       success: true,
-      message: 'Appointment rescheduled successfully',
+      message: 'New time proposed. Waiting for lawyer to confirm.',
       appointment
     });
   } catch (error) {

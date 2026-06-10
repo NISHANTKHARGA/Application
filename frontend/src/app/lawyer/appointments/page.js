@@ -86,6 +86,8 @@ export default function LawyerAppointmentsPage() {
       case 'pending': return 'badge-pending';
       case 'completed': return 'bg-blue-100 text-blue-800';
       case 'cancelled': return 'badge-rejected';
+      case 'reschedule_requested': return 'bg-amber-100 text-amber-800';
+      case 'reschedule_pending': return 'bg-purple-100 text-purple-800';
       default: return 'badge-pending';
     }
   };
@@ -151,7 +153,7 @@ export default function LawyerAppointmentsPage() {
             </div>
 
             <div className="flex gap-2 mb-6 flex-wrap">
-              {['all', 'upcoming', 'pending', 'confirmed', 'completed', 'cancelled'].map((f) => (
+              {['all', 'upcoming', 'pending', 'confirmed', 'completed', 'cancelled', 'reschedule_requested', 'reschedule_pending'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -229,53 +231,85 @@ export default function LawyerAppointmentsPage() {
                         )}
                       </div>
                       <div className="flex flex-col gap-2">
-                        {apt.status === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => updateStatus(apt.id, 'confirmed')}
-                              disabled={actionLoading === apt.id}
-                              className="btn-primary !py-2 !px-4 flex items-center justify-center gap-1 disabled:opacity-50"
+                          {apt.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => updateStatus(apt.id, 'confirmed')}
+                                disabled={actionLoading === apt.id}
+                                className="btn-primary !py-2 !px-4 flex items-center justify-center gap-1 disabled:opacity-50"
+                              >
+                                <Check className="w-4 h-4" />
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => setRescheduleModal(apt)}
+                                disabled={actionLoading === apt.id}
+                                className="bg-amber-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-600 flex items-center justify-center gap-1 disabled:opacity-50"
+                              >
+                                <Calendar className="w-4 h-4" />
+                                Reschedule
+                              </button>
+                              <button
+                                onClick={() => updateStatus(apt.id, 'cancelled')}
+                                disabled={actionLoading === apt.id}
+                                className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 flex items-center justify-center gap-1 disabled:opacity-50"
+                              >
+                                <X className="w-4 h-4" />
+                                Cancel
+                              </button>
+                            </>
+                          )}
+                          {apt.status === 'reschedule_pending' && (
+                            <div className="flex flex-col gap-2">
+                              <div className="bg-purple-50 p-3 rounded-lg text-sm">
+                                <p className="font-medium text-purple-800">Proposed new time:</p>
+                                <p className="text-purple-600">
+                                  {new Date(apt.dateTime).toLocaleDateString('en-US', {
+                                    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+                                  })}
+                                  {' at '}
+                                  {new Date(apt.dateTime).toLocaleTimeString('en-US', {
+                                    hour: '2-digit', minute: '2-digit'
+                                  })}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => updateStatus(apt.id, 'confirmed')}
+                                disabled={actionLoading === apt.id}
+                                className="btn-primary !py-2 !px-4 flex items-center justify-center gap-1 disabled:opacity-50"
+                              >
+                                <Check className="w-4 h-4" />
+                                Confirm New Time
+                              </button>
+                              <button
+                                onClick={() => updateStatus(apt.id, 'pending')}
+                                disabled={actionLoading === apt.id}
+                                className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 flex items-center justify-center gap-1 disabled:opacity-50"
+                              >
+                                <X className="w-4 h-4" />
+                                Reject & Keep Original
+                              </button>
+                            </div>
+                          )}
+                          {apt.meetingLink && !['cancelled'].includes(apt.status) && (
+                            <a
+                              href={apt.meetingLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn-outline !py-2 !px-4 flex items-center justify-center gap-1"
                             >
-                              <Check className="w-4 h-4" />
-                              Accept
-                            </button>
+                              <Video className="w-4 h-4" />
+                              Join Meeting
+                            </a>
+                          )}
+                          {apt.status === 'confirmed' && (
                             <button
-                              onClick={() => setRescheduleModal(apt)}
-                              disabled={actionLoading === apt.id}
-                              className="bg-amber-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-600 flex items-center justify-center gap-1 disabled:opacity-50"
+                              onClick={() => updateStatus(apt.id, 'completed')}
+                              className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center gap-1"
                             >
-                              <Calendar className="w-4 h-4" />
-                              Reschedule
+                              Mark Complete
                             </button>
-                            <button
-                              onClick={() => updateStatus(apt.id, 'cancelled')}
-                              disabled={actionLoading === apt.id}
-                              className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 flex items-center justify-center gap-1 disabled:opacity-50"
-                            >
-                              <X className="w-4 h-4" />
-                              Cancel
-                            </button>
-                          </>
-                        )}
-                        {apt.meetingLink && !['cancelled'].includes(apt.status) && (
-                          <a
-                            href={apt.meetingLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-outline !py-2 !px-4 flex items-center justify-center gap-1"
-                          >
-                            <Video className="w-4 h-4" />
-                            Join Meeting
-                          </a>
-                        )}
-                        {apt.status === 'confirmed' && (
-                          <button
-                            onClick={() => updateStatus(apt.id, 'completed')}
-                            className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center gap-1"
-                          >
-                            Mark Complete
-                          </button>
-                        )}
+                          )}
                       </div>
                     </div>
                   </div>

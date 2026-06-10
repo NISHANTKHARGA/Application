@@ -75,6 +75,7 @@ export default function AppointmentsPage() {
       case 'completed': return 'bg-blue-100 text-blue-800';
       case 'cancelled': return 'badge-rejected';
       case 'reschedule_requested': return 'bg-amber-100 text-amber-800';
+      case 'reschedule_pending': return 'bg-purple-100 text-purple-800';
       default: return 'badge-pending';
     }
   };
