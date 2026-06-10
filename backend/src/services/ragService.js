@@ -355,12 +355,50 @@ async function processWithRAG(userMessage, userId, lawyers = [], language = 'eng
 
 LEGAL REFERENCES YOU MUST USE:
 1. Constitution of Nepal 2072 (2015) - Fundamental Rights: Articles 16-46, Right to equality (Art 18), right to justice (Art 20), right to property (Art 25), right to employment (Art 33)
-2. Muluki Civil Code 2074 (2017) - Contracts, property, inheritance, family law
-3. Muluki Criminal Code 2074 (2017) - Criminal offenses, punishments, procedures
-4. Labour Act 2074 (2017) - Worker rights, minimum wage, termination rules
-5. Company Act 2063 (2006) - Business registration, corporate structure
-6. Consumer Protection Act 2075 (2018) - Consumer rights, complaints, remedies
-7. Electronic Transaction Act 2063 (2006) - Cyber law, digital signatures, online fraud, hacking
+2. Muluki Civil Code 2074 (2017) - Contracts, property, inheritance, family law, succession
+3. Muluki Criminal Code 2074 (2017) - Criminal offenses, punishments, procedures, sexual offenses
+4. Criminal Procedure Code 2074 (2017) - FIR, bail, trial, appeals, limitation periods
+5. Civil Procedure Code 2074 (2017) - Civil litigation, summons, evidence, judgments
+6. Labour Act 2074 (2017) - Worker rights, minimum wage, termination, overtime, leave
+7. Social Security Act 2075 (2017) - SSF contributions, employee benefits, pension
+8. Company Act 2063 (2006) - Business registration, corporate governance, shareholders
+9. Consumer Protection Act 2075 (2018) - Consumer rights, complaints, defective products
+10. Electronic Transaction Act 2063 (2006) - Cyber law, digital signatures, online fraud, hacking, data protection
+11. Human Trafficking and Transportation (Control) Act 2064 (2007) - Trafficking, forced labor, prostitution
+12. Money Laundering Prevention Act 2064 (2007) - Financial crime, KYC, suspicious transactions
+13. Evidence Act 2031 (1974) - Admissibility of evidence, witnesses, confessions, documents
+14. Arbitration Act 2055 (1999) - Alternative dispute resolution, arbitral awards
+15. Insolvency Act 2063 (2006) - Bankruptcy, liquidation, debt restructuring
+16. Limitation Act 2049 (1992) - Time limits for filing cases
+17. Domestic Violence (Offense and Punishment) Act 2066 (2009) - Domestic abuse, protection orders
+18. Children's Act 2075 (2018) - Child rights, juvenile justice, child labor
+19. Senior Citizens Act 2063 (2006) - Elderly rights, social security allowance
+20. Persons with Disabilities Rights Act 2074 (2017) - Disability rights, accessibility
+21. Caste-based Discrimination and Untouchability Act 2068 (2011) - Dalit rights, anti-discrimination
+22. Foreign Investment and Technology Transfer Act 2075 (2018) - FDI, repatriation, incentives
+23. Industrial Enterprises Act 2020 (2019) - Industry registration, incentives, classifications
+24. Cooperative Act 2048 (1992) - Savings and credit cooperatives, member rights
+25. Securities Act 2063 (2006) - Stock market, NEPSE, SEBON, insider trading
+26. Public Procurement Act 2063 (2006) - Government tenders, bidding, blacklisting
+27. Advocates Act 2055 (1999) - Legal profession, Bar Council, lawyer licensing
+28. Notary Public Act 2063 (2006) - Document certification, attestation
+29. Water Resources Act 2049 (1992) - Water rights, hydropower, irrigation
+30. Telecommunications Act 2053 (1996) - Telecom, internet, ISP regulation
+31. Social Welfare Act 2049 (1992) - Social security allowances, welfare programs
+32. Food Act 2033 (1976) - Food safety, adulteration, hygiene
+33. Extradition Act 2071 (2014) - International fugitive surrender
+34. Nepal Rastra Bank Act 2058 (2001) - Central banking, monetary policy
+35. Bank and Financial Institution Act 2073 (2016) - Banking regulation, NRB supervision
+36. Banking Offenses Act 2064 (2007) - Bank fraud, loan fraud, unauthorized transactions
+37. Nepal Citizenship Act 2063 (2006) - Citizenship by birth, descent, naturalization, NRN
+38. Foreign Employment Act 2076 (2019) - Work abroad, recruitment agency, labor permit
+39. Rights to Information Act 2064 (2007) - Public information access, Information Commission
+40. Environment Protection Act 2076 (2019) - Environmental impact assessment, pollution
+41. Land Revenue Act 2034 (1977) - Land registration, malpot, lalpurja
+42. Land Acquisition Act 2034 (1977) - Government land acquisition, compensation
+43. Local Government Operation Act 2074 (2017) - Municipality, ward, local services
+44. Election Commission Act 2073 (2016) - Voting rights, election process, EVM
+45. Insurance Act 2079 (2022) - Insurance claims, Beema Samiti, policyholder rights
 
 ${langInstruction}
 
