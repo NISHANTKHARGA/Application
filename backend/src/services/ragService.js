@@ -298,11 +298,12 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   }
 
   if (['greeting', 'small_talk', 'thanks_farewell', 'out_of_scope'].includes(intent)) {
+    const langPrompt = language === 'nepali' ? 'Respond in Nepali only. Use clear Nepali with proper Nepali full stops (।).' : 'Respond in English only.';
     const prompts = {
-      greeting: 'The user is greeting you. Respond naturally and warmly in 1-2 sentences. Mention that you can help with Nepal law.',
-      small_talk: 'The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm and human-like.',
-      thanks_farewell: 'The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal help.',
-      out_of_scope: 'The user has asked something that is not related to Nepal law. Politely say "I am sorry, I can only help with Nepal law related questions." Do NOT answer their actual question. Be firm but polite.'
+      greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Mention that you can help with Nepal law. ${langPrompt}`,
+      small_talk: `The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm and human-like. ${langPrompt}`,
+      thanks_farewell: `The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal help. ${langPrompt}`,
+      out_of_scope: `The user has asked something that is not related to Nepal law. Politely say "I am sorry, I can only help with Nepal law related questions." Do NOT answer their actual question. Be firm but polite. ${langPrompt}`
     };
     const prompt = `You are KanoonSathi, a friendly and helpful AI assistant. ${prompts[intent] || 'Respond naturally and helpfully.'} Do not use markdown.`;
     let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: intent === 'out_of_scope' ? 500 : 150 });
@@ -419,7 +420,9 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     ? '\n\nPrevious answers you gave (DO NOT repeat these):\n' + previousResponses.slice(-3).map((r, i) => `Previous Answer ${i+1}: ${r.substring(0, 200)}`).join('\n')
     : '';
 
-  const langInstruction = 'IMPORTANT: Respond in the SAME language the user wrote in. If the user message contains Devanagari script (Nepali), respond in Nepali only. If the user message is in English, respond in English only. Never mix both languages in one response. For Nepali responses, use clear simple Nepali with proper Nepali full stops (।). For English responses, include key Nepali legal terms in parentheses when first mentioned.';
+  const langInstruction = language === 'nepali'
+    ? 'IMPORTANT: The user has selected Nepali language. You MUST respond in Nepali ONLY, even if the user typed in English. Use clear Nepali with proper Nepali full stops (।). Never use English.'
+    : 'IMPORTANT: Respond in the SAME language the user wrote in. If the user message contains Devanagari script (Nepali), respond in Nepali only. If the user message is in English, respond in English only. Never mix both languages in one response. For English responses, include key Nepali legal terms in parentheses when first mentioned.';
 
   let modeInstruction = 'Be clear and simple for non-lawyers. Explain legal terms when you use them.';
   if (dynamicMode === 'simple') {
@@ -527,8 +530,9 @@ RESPONSE RULES:
 - Keep total response between 3-6 sentences - be concise
 - Use plain text only, no asterisks, no bullet points, no markdown
 - Every answer must end with: "This information is educational and should not be considered formal legal advice."
-- NEVER mix languages - respond in the SAME language as the user's message
-- For Nepali responses: use clear simple Nepali, end sentences with Nepali full stop (।)
+- NEVER mix languages
+- If the language setting is Nepali: respond in Nepali ONLY, use clear Nepali with proper Nepali full stops (।)
+- If the language setting is English: respond in the SAME language as the user's message
 - For English responses: include key Nepali legal terms in English
 - If information is not in the provided references, say so clearly
 - Do not fabricate section numbers or legal provisions
