@@ -285,9 +285,16 @@ async function processWithRAG(userMessage, userId, lawyers = [], language = 'eng
     return { response, caseType: 'General', source: 'intent_incomplete_intake' };
   }
 
+  const infoPatterns = /^(what|how|tell|explain|describe|define|list|give)\s+(is|are|can|do|does|to|me|about)\b/i;
+  const isInfoQuery = infoPatterns.test(userMessage.trim()) || 
+    /(?:process|procedure|steps|how\s+to|apply\s+for|renew|requirements?|eligibility|overview|guide)\b/i.test(userMessage) ||
+    /^\w+\s+(?:law|act|rule|process|passport|visa|tax|license)\s*$/i.test(userMessage.trim()) ||
+    /^\w+\s+in\s+nepal$/i.test(userMessage.trim()) ||
+    !/\b(my|i\s+(am|was|have|had|got|need|want|filed|received|did|hired|lost|bought|sold|paid|signed|agreed|called|went|visited|own|live))\b/i.test(userMessage);
+
   const completeness = await checkQuestionCompleteness(userMessage, userId, conversationHistory);
 
-  if (!completeness.isComplete && intent !== 'follow_up_legal_question') {
+  if (!completeness.isComplete && intent !== 'follow_up_legal_question' && !isInfoQuery) {
     const missingFields = completeness.missingFields.length > 0
       ? completeness.missingFields
       : getMissingFields(userId).map(f => f.field);

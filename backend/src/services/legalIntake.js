@@ -45,8 +45,27 @@ const NEPAL_DISTRICTS = [
   'east', 'west', 'nepal',
 ];
 
+function isGeneralInfoQuery(message) {
+  const lower = message.toLowerCase().trim();
+  const generalInfoPatterns = [
+    /^(what|how|tell|explain|describe|define|show|list|give)\b/i,
+    /\b(process|procedure|steps|requirement|eligibility|how to|apply for|renew|get|obtain|register|file for)\b/i,
+    /\b(law|act|rule|regulation|section|article|provision|overview|guide|information)\s+(in\s+)?nepal\b/i,
+    /\bnepal\s+(law|act|rule|regulation|passport|citizenship|visa|tax|vat|company)\b/i,
+    /^\w+\s+(law|act|rule|process|procedure)\s*$/i,
+    /^\w+\s+in\s+nepal$/i,
+    /\b(about|regarding|concerning)\s+(nepal|nepali)\b/i,
+  ];
+  if (generalInfoPatterns.some(p => p.test(lower))) return true;
+  const personalPatterns = /\b(my|i\s+(am|was|have|had|got|need|want|filed|received|did|hired|lost|bought|sold|paid|signed|agreed|called|went|visited))\b/i;
+  const shortWordCount = lower.split(/\s+/).length;
+  if (!personalPatterns.test(lower) && shortWordCount <= 5) return true;
+  return false;
+}
+
 function keywordCompletenessCheck(message) {
   const lower = message.toLowerCase();
+  if (isGeneralInfoQuery(message)) return { isComplete: true, missingFields: [] };
   const hasLocation = NEPAL_DISTRICTS.some(d => lower.includes(d));
   const hasTimeline = /\b(today|yesterday|tomorrow|last\s+\w+|this\s+\w+|next\s+\w+|ago|\d+\s*(day|week|month|year)s?\s+ago|january|february|march|april|may|june|july|august|september|october|november|december|20\d{2})\b/i.test(lower);
   const hasParties = /\b(my\s+(husband|wife|father|mother|brother|sister|son|daughter|uncle|aunt|cousin|neighbor|friend|employer|employee|landlord|tenant|partner|company|bank|organization))\b/i.test(lower);
@@ -84,7 +103,9 @@ async function checkQuestionCompleteness(message, userId, conversationHistory = 
 
   const prompt = `You are a Nepal legal intake specialist. Determine if the user's message contains enough specific information to provide accurate legal guidance.
 
-A complete legal question should have:
+IMPORTANT: A "general informational question" about a law, procedure, or legal topic (e.g., "what is", "tell me about", "how to apply for", "nepal passport", "passport process", "X law in Nepal") is ALWAYS COMPLETE. These do NOT need location, timeline, or personal details. The user is just asking for information.
+
+A "personal legal case" (e.g., "my landlord evicted me", "I was in an accident", "someone stole my property") needs:
 1. The legal issue or problem clearly stated
 2. Location (which district/city in Nepal)
 3. Timeline (when it happened or deadline)
@@ -94,8 +115,8 @@ A complete legal question should have:
 The user's message: "${message}"${historyText}${factsText}
 
 Respond with:
-- COMPLETE: if the query has enough specific facts to give meaningful legal guidance
-- INCOMPLETE: if critical information is missing
+- COMPLETE: if this is a general informational question OR has enough specific facts for a personal case
+- INCOMPLETE: only if this is clearly a personal legal situation AND critical information is missing
 
 Then on a new line, list which specific pieces of information are still needed from this list if INCOMPLETE:
 location, timeline, parties, documents, actionsTaken
