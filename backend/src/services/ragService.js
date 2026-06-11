@@ -4,7 +4,7 @@ const { Pool } = require('pg');
 const { generateWithGroq } = require('./groqClient');
 const intentClassifier = require('./intentClassifier');
 const { extractFacts, checkQuestionCompleteness, hasMinimumFacts, getNextQuestion, generateFollowUpQuestions, getMissingFields } = require('./legalIntake');
-const { getFacts, setLastIntent, getLastIntent, addPreviousResponse, getPreviousResponses, setLegalIssueType, getLegalIssueType, setIntakeState, getIntakeState } = require('./conversationMemory');
+const { getFacts, setLastIntent, getLastIntent, addPreviousResponse, getPreviousResponses, setLegalIssueType, getLegalIssueType, setIntakeState, getIntakeState, setCountryConfirmed, getCountryConfirmed } = require('./conversationMemory');
 
 let pool = null;
 try {
@@ -211,7 +211,8 @@ function getDynamicMode(userMessage) {
   return 'standard';
 }
 
-async function processWithRAG(userMessage, userId, lawyers = [], language = 'english', conversationHistory = []) {
+async function processWithRAG(rawUserMessage, userId, lawyers = [], language = 'english', conversationHistory = []) {
+  let userMessage = rawUserMessage;
   const historyText = conversationHistory.length > 0
     ? '\n\nRecent conversation:\n' + conversationHistory.slice(-6).map(m =>
         m.role === 'user' ? `User: ${m.content.substring(0, 300)}` : `Assistant: ${m.content.substring(0, 300)}`
@@ -224,10 +225,53 @@ async function processWithRAG(userMessage, userId, lawyers = [], language = 'eng
     : '';
 
   await extractFacts(userMessage, userId);
-  const { intent, confidence: intentConfidence } = await intentClassifier.classifyIntent(userMessage, conversationHistory);
+  let { intent, confidence: intentConfidence } = await intentClassifier.classifyIntent(userMessage, conversationHistory);
   setLastIntent(userId, intent);
 
   const dynamicMode = getDynamicMode(userMessage);
+
+  const hasNepalMention = /\b(nepal|nepali|nepalese|kathmandu|प्रदेश|जिल्ला|मुलुकी)\b/i.test(userMessage);
+  const countryConfirmed = getCountryConfirmed(userId);
+  const hasLegalTopic = intentClassifier.LEGAL_TOPIC_KEYWORDS.some(kw => userMessage.toLowerCase().includes(kw));
+  const isConfirmationResponse = /^(yes|yeah|sure|ok|okay|alright|fine|of course|definitely|absolutely|right|that's right|correct|हो|हुन्छ|ठिक|ठीक छ|पक्कै|अवश्य)\b/i.test(userMessage.trim());
+  const isOtherCountry = /\b(india|china|usa|uk|australia|canada|bangladesh|pakistan|sri lanka|bhutan|maldives|myanmar|uk|europe|america|france|germany|japan|korea|russia)\b/i.test(userMessage) && !hasNepalMention;
+
+  if (!hasNepalMention && hasLegalTopic && !countryConfirmed && !isConfirmationResponse && !['greeting', 'small_talk', 'thanks_farewell', 'emergency_legal'].includes(intent)) {
+    if (isOtherCountry) {
+      const resp = language === 'nepali' ? intentClassifier.OUT_OF_SCOPE_RESPONSE.nepali : intentClassifier.OUT_OF_SCOPE_RESPONSE.english;
+      addPreviousResponse(userId, resp);
+      return { response: resp, caseType: 'General', source: 'intent_out_of_scope' };
+    }
+    const topicMatch = intentClassifier.LEGAL_TOPIC_KEYWORDS.find(kw => userMessage.toLowerCase().includes(kw)) || 'this';
+    const askMsg = language === 'nepali'
+      ? `के तपाईं नेपालको ${topicMatch} बारेमा सोध्न चाहनुहुन्छ? म नेपाली कानूनमा मात्र विशेषज्ञ छु।`
+      : `Are you asking about Nepal ${topicMatch}? I specialize in Nepal law only. If yes, I'd be happy to help!`;
+    addPreviousResponse(userId, askMsg);
+    return { response: askMsg, caseType: 'General', source: 'intent_country_confirm' };
+  }
+
+  if (isConfirmationResponse && hasLegalTopic && !hasNepalMention && !countryConfirmed) {
+    setCountryConfirmed(userId, true);
+    const prevUserMsgs = conversationHistory.filter(m => m.role === 'user');
+    const lastUserMsg = prevUserMsgs.length > 0 ? prevUserMsgs[prevUserMsgs.length - 1].content : null;
+    if (lastUserMsg && !/\b(nepal|nepali)\b/i.test(lastUserMsg)) {
+      userMessage = lastUserMsg + ' in Nepal';
+    } else if (lastUserMsg) {
+      userMessage = lastUserMsg;
+    }
+    const { intent: newIntent } = await intentClassifier.classifyIntent(userMessage, conversationHistory);
+    intent = newIntent;
+  }
+
+  if (hasNepalMention && !countryConfirmed) {
+    setCountryConfirmed(userId, true);
+  }
+
+  if (isOtherCountry) {
+    const resp = language === 'nepali' ? intentClassifier.OUT_OF_SCOPE_RESPONSE.nepali : intentClassifier.OUT_OF_SCOPE_RESPONSE.english;
+    addPreviousResponse(userId, resp);
+    return { response: resp, caseType: 'General', source: 'intent_out_of_scope' };
+  }
 
   if (['greeting', 'small_talk', 'thanks_farewell', 'out_of_scope'].includes(intent)) {
     const prompts = {

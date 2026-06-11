@@ -197,6 +197,31 @@ const HIGH_RISK_DISCLAIMER = {
   nepali: "\n\n⚠️ महत्वपूर्ण: यो अवस्थामा तत्काल कानुनी कदम चाल्न आवश्यक हुन सक्छ। कृपया सकेसम्म चाँडो एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्। यो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।"
 };
 
+const LEGAL_TOPIC_KEYWORDS = [
+  'law', 'act', 'legal', 'court', 'case', 'rights', 'petition', 'appeal',
+  'passport', 'visa', 'citizenship', 'passport',
+  'cyber', 'hacking', 'online fraud', 'phishing', 'ransomware',
+  'divorce', 'marriage', 'custody', 'alimony', 'adoption',
+  'property', 'land', 'rent', 'tenant', 'landlord', 'eviction', 'lalpurja',
+  'tax', 'vat', 'income tax', 'pan',
+  'company', 'business', 'registration', 'license',
+  'crime', 'theft', 'fraud', 'murder', 'assault', 'rape', 'bail', 'arrest',
+  'labor', 'employee', 'salary', 'termination', 'overtime',
+  'consumer', 'complaint', 'refund', 'warranty',
+  'insurance', 'claim', 'compensation',
+  'inheritance', 'will', 'succession',
+  'traffic', 'driving license', 'accident',
+  'environment', 'pollution', 'forest',
+  'constitution', 'fundamental rights', 'writ',
+  'bank', 'loan', 'debt', 'bankruptcy', 'interest',
+  'contract', 'agreement', 'partnership',
+  'NGO', 'INGO', 'social security', 'allowance',
+  'drug', 'narcotics',
+  'education', 'school', 'college', 'university',
+  'health', 'hospital', 'medical',
+  'election', 'voting',
+];
+
 const STANDARD_DISCLAIMER = {
   english: "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis information is educational and should not be considered formal legal advice. For personalized legal advice, please consult a qualified Nepal lawyer.",
   nepali: "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन। व्यक्तिगत कानुनी सल्लाहको लागि कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।"
@@ -209,5 +234,6 @@ module.exports = {
   OUT_OF_SCOPE_RESPONSE,
   INCOMPLETE_QUESTION_INTRO,
   HIGH_RISK_DISCLAIMER,
-  STANDARD_DISCLAIMER
+  STANDARD_DISCLAIMER,
+  LEGAL_TOPIC_KEYWORDS
 };

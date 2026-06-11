@@ -94,6 +94,16 @@ function getPreviousResponses(userId) {
   return session ? [...session.previousResponses] : [];
 }
 
+function setCountryConfirmed(userId, confirmed) {
+  const session = getSession(userId);
+  if (session) session.countryConfirmed = confirmed;
+}
+
+function getCountryConfirmed(userId) {
+  const session = getSession(userId);
+  return session ? session.countryConfirmed : false;
+}
+
 function clearSession(userId) {
   memoryStore.delete(userId);
 }
@@ -119,6 +129,8 @@ module.exports = {
   getLastIntent,
   addPreviousResponse,
   getPreviousResponses,
+  setCountryConfirmed,
+  getCountryConfirmed,
   clearSession,
   formatHistoryForPrompt,
   memoryStore
