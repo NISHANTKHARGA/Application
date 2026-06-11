@@ -257,8 +257,8 @@ const LEGAL_TOPIC_KEYWORDS = [
 ];
 
 const STANDARD_DISCLAIMER = {
-  english: "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis information is educational and should not be considered formal legal advice. For personalized legal advice, please consult a qualified Nepal lawyer.",
-  nepali: "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन। व्यक्तिगत कानुनी सल्लाहको लागि कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।"
+  english: "\n\nDisclaimer: This information is for educational purposes only and does not constitute legal advice. For personalized legal advice regarding your specific situation, please consult a qualified Nepal lawyer.",
+  nepali: "\n\nसूचना: यो जानकारी शैक्षिक उद्देश्यको लागि मात्र हो र यसलाई कानुनी सल्लाहको रूपमा लिनु हुँदैन। आफ्नो विशेष अवस्थाको लागि व्यक्तिगत कानुनी सल्लाहको लागि कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।"
 };
 
 module.exports = {

@@ -1,4 +1,5 @@
 const knowledgeBase = require('../data/legal-knowledge.json');
+const legalReferences = require('../data/legal-references.json');
 const { getEmbedding, cosineSimilarity } = require('./embeddingService');
 const { Pool } = require('pg');
 const { generateWithGroq } = require('./groqClient');
@@ -444,7 +445,9 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
 
   const safetyInstruction = 'NEVER claim to be a lawyer. Always recommend consulting a licensed Nepali lawyer for serious matters. End with: "This information is educational and should not be considered formal legal advice."';
 
-  const sourceInstruction = 'Always cite the specific Act name and Section/Article number from the provided references. ONLY use references that were actually provided above. Do not fabricate section numbers. If the user asks about acts and sections only, give the relevant acts/sections with brief explanations and do not recommend a lawyer or any suggestions.';
+  const refUrlText = legalReferences.map(r => `${r.act}: ${r.url} (${r.source})`).join('\n');
+
+const sourceInstruction = `Always cite the specific Act name and Section/Article number from the provided references. ONLY use references that were actually provided above. Do not fabricate section numbers. If the user asks about acts and sections only, give the relevant acts/sections with brief explanations and do not recommend a lawyer or any suggestions.\n\nOFFICIAL REFERENCE SOURCES:\n${refUrlText}\n\nWhen citing an Act, include its official reference URL from the list above when relevant.`;
 
   const responsePrompt = `You are KanoonSathi, an AI legal consultant specializing in Nepali law.
 
@@ -514,26 +517,27 @@ ${historyText || 'This is a new conversation.'}
 ${prevRepText}
 
 RESPONSE RULES:
-- FIRST LINE: One single direct sentence answering what the user should do
-- Explain with the relevant Act and section number
-- End with the specific type of lawyer to consult if applicable
-- If the user reports being a victim of fraud, scam, or crime: immediately suggest specific actionable steps (report to Cyber Bureau at 01-4779900, file FIR, preserve evidence)
-- If the user just asks about a specific law (e.g. "tell me about cyber law"), explain the law clearly with provisions and penalties
-- If the user's question is in Devanagari script (Nepali), respond in Nepali only
-- If the user's question is in English, respond in English only
-- Never mix both languages in one response
-- While answering in Nepali, give answer in only three main points ending each with Nepali full stop (।)
-- Do NOT use ** or * or bullet points - plain text only
-- Total response must be under 6 sentences
-- Always cite the specific Act and Article/Section number from the references
-- If unsure, say so - do not guess on legal matters
-- Keep answers clear and simple for non-lawyers
+- Structure your answer in this order: direct answer → key legal provision → actionable steps
+- FIRST SENTENCE: Answer the question directly and clearly
+- Cite the specific Act name and Section/Article number for every legal claim
+- If the user asks about a specific law (e.g. "cyber law"), explain: what it covers, key provisions, penalties for violations
+- If the user reports fraud/scam/crime: include specific steps (report to Cyber Bureau 01-4779900, file FIR, preserve evidence)
+- For procedural questions (how to register, apply, file): include which government office to visit, documents needed, approximate timeline
+- For personal legal situations: be empathetic, give actionable advice, recommend consulting a lawyer
+- Keep total response between 3-6 sentences - be concise
+- Use plain text only, no asterisks, no bullet points, no markdown
+- Every answer must end with: "This information is educational and should not be considered formal legal advice."
+- NEVER mix languages - respond in the SAME language as the user's message
+- For Nepali responses: use clear simple Nepali, end sentences with Nepali full stop (।)
+- For English responses: include key Nepali legal terms in English
+- If information is not in the provided references, say so clearly
+- Do not fabricate section numbers or legal provisions
 
 Confidence level: ${confidenceLevel}
 Case type detected: ${caseType}
 If confidence is low, acknowledge limitations rather than providing uncertain information.
 
-Do NOT use markdown formatting like ** or *. Use plain text only.`;
+Use plain text only. Do NOT use any markdown formatting.`;
 
   let response = await generateWithGroq(responsePrompt, userMessage, context);
 

@@ -5,8 +5,9 @@ const path = require('path');
 
 let sequelize = null;
 let sequelizeInitError = null;
-let authRoutes, lawyerRoutes, appointmentRoutes, chatRoutes;
+let authRoutes, lawyerRoutes, appointmentRoutes, chatRoutes, dateConverterRoutes;
 let authRoutesError, lawyerRoutesError, apptRoutesError, chatRoutesError;
+let dateConverterRoutesError;
 try {
   const models = require('./models');
   sequelize = models.sequelize;
@@ -15,6 +16,9 @@ try {
   console.error('Model load error:', e?.message);
 }
 try { authRoutes = require('./routes/auth'); } catch (e) { authRoutesError = e; console.error('Auth routes error:', e?.message); }
+try { dateConverterRoutes = require('./routes/dateConverter'); } catch (e) { dateConverterRoutesError = e; console.error('Date converter routes error:', e?.message); }
+
+
 try { lawyerRoutes = require('./routes/lawyer'); } catch (e) { lawyerRoutesError = e; console.error('Lawyer routes error:', e?.message); }
 try { appointmentRoutes = require('./routes/appointment'); } catch (e) { apptRoutesError = e; console.error('Appt routes error:', e?.message); }
 try { chatRoutes = require('./routes/chat'); } catch (e) { chatRoutesError = e; console.error('Chat routes error:', e?.message); }
@@ -102,6 +106,7 @@ if (authRoutes) {
 if (lawyerRoutes) app.use('/api/lawyer', lawyerRoutes);
 if (appointmentRoutes) app.use('/api/appointment', appointmentRoutes);
 if (chatRoutes) app.use('/api/chat', chatRoutes);
+if (dateConverterRoutes) app.use('/api/date', dateConverterRoutes);
 
 app.get('/api/debug', async (req, res) => {
   const info = {
