@@ -153,6 +153,20 @@ const lawyerRegister = async (req, res) => {
       return res.status(400).json({ message: 'Profile picture is required' });
     }
 
+    const userWithEmail = email ? await User.findOne({ where: { email } }) : null;
+    if (userWithEmail) {
+      return res.status(400).json({ message: 'This email is already registered as a user. Please use a different email to register as a lawyer.' });
+    }
+
+    if (phone) {
+      const phoneDigits = phone.replace(/\D/g, '');
+      const normalizedPhone = phoneDigits.length === 10 ? '+977 ' + phoneDigits : phone;
+      const userWithPhone = await User.findOne({ where: { phone: normalizedPhone } });
+      if (userWithPhone) {
+        return res.status(400).json({ message: 'This phone number is already registered as a user. Please use a different phone number to register as a lawyer.' });
+      }
+    }
+
     const lawyerExists = await Lawyer.findOne({ where: { email } });
     if (lawyerExists) {
       return res.status(400).json({ message: 'Lawyer already exists with this email' });
