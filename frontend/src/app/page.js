@@ -42,8 +42,8 @@ export default function Home() {
                   <MessageSquare className="w-5 h-5" />
                   Chat with AI
                 </Link>
-                <Link href="/register/lawyer" className="bg-white text-secondary px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2">
-                  Register as Lawyer
+                <Link href="/lawyers" className="bg-white text-secondary px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2">
+                  Consult with Lawyer
                   <ChevronRight className="w-5 h-5" />
                 </Link>
               </div>
