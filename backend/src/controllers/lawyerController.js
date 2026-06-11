@@ -12,7 +12,11 @@ const getAllLawyers = async (req, res) => {
     }
     
     if (search) {
-      whereClause.name = { [require('sequelize').Op.iLike]: `%${search}%` };
+      const { Op } = require('sequelize');
+      whereClause[Op.or] = [
+        { name: { [Op.iLike]: `%${search}%` } },
+        { specialization: { [Op.iLike]: `%${search}%` } }
+      ];
     }
 
     const lawyers = await Lawyer.findAll({

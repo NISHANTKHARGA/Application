@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, Star, MapPin, Phone, Mail, Calendar, ChevronRight } from 'lucide-react';
+import { Search, Star, Phone, Calendar } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -30,6 +30,7 @@ export default function LawyersPage() {
   const [search, setSearch] = useState('');
   const [selectedSpec, setSelectedSpec] = useState('All');
   const [selectedLawyer, setSelectedLawyer] = useState(null);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -41,24 +42,37 @@ export default function LawyersPage() {
     fetchLawyers();
   }, []);
 
-  const fetchLawyers = async () => {
+  const fetchLawyers = async (searchTerm = '', spec = 'All') => {
     try {
-      const response = await api.get('/lawyer/all');
+      setSearching(true);
+      const params = {};
+      if (searchTerm) params.search = searchTerm;
+      if (spec !== 'All') params.specialization = spec;
+      const response = await api.get('/lawyer/all', { params });
       setLawyers(response.data.lawyers || []);
     } catch (error) {
       console.error('Failed to fetch lawyers:', error);
       toast.error('Failed to load lawyers');
     } finally {
+      setSearching(false);
       setLoading(false);
     }
   };
 
-  const filteredLawyers = lawyers.filter(lawyer => {
-    const matchesSearch = (lawyer.name?.toLowerCase() || '').includes(search.toLowerCase()) ||
-      (lawyer.specialization?.toLowerCase() || '').includes(search.toLowerCase());
-    const matchesSpec = selectedSpec === 'All' || (lawyer.specialization?.toLowerCase() || '') === selectedSpec.toLowerCase();
-    return matchesSearch && matchesSpec;
-  });
+  const handleSearch = () => {
+    setLoading(true);
+    fetchLawyers(search, selectedSpec);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch();
+  };
+
+  const handleSpecChange = (spec) => {
+    setSelectedSpec(spec);
+    setLoading(true);
+    fetchLawyers(search, spec);
+  };
 
   if (isLoading) {
     return (
@@ -81,21 +95,31 @@ export default function LawyersPage() {
 
           <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by name or specialization..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="input-field pl-12"
-                />
+              <div className="flex-1 relative flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by name or specialization..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="input-field pl-12"
+                  />
+                </div>
+                <button
+                  onClick={handleSearch}
+                  disabled={searching}
+                  className="btn-primary !py-2 !px-6 whitespace-nowrap"
+                >
+                  {searching ? 'Searching...' : 'Search'}
+                </button>
               </div>
               <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
                 {specializations.map((spec) => (
                   <button
                     key={spec}
-                    onClick={() => setSelectedSpec(spec)}
+                    onClick={() => handleSpecChange(spec)}
                     className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
                       selectedSpec === spec
                         ? 'bg-primary text-white'
@@ -125,7 +149,7 @@ export default function LawyersPage() {
                 </div>
               ))}
             </div>
-          ) : filteredLawyers.length === 0 ? (
+          ) : lawyers.length === 0 ? (
             <div className="text-center py-16">
               <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-2">No lawyers found</h3>
@@ -133,7 +157,7 @@ export default function LawyersPage() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredLawyers.map((lawyer) => (
+              {lawyers.map((lawyer) => (
                 <div key={lawyer.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
                   <div className="p-6">
                     <div className="flex items-start gap-4 mb-4">
