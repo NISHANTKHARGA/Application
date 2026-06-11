@@ -55,11 +55,16 @@ function isGeneralInfoQuery(message) {
     /^\w+\s+(law|act|rule|process|procedure)\s*$/i,
     /^\w+\s+in\s+nepal$/i,
     /\b(about|regarding|concerning)\s+(nepal|nepali)\b/i,
+    /(?:difference|compare|versus|vs)\b.*\b(?:and|or)\b.*\b(?:law|act|right|offense|penalty|court|case|crime)\b/i,
+    /^(what\s+(is|are)\s+(the\s+)?(punishment|penalty|offense|fine|section|article|provision))\b/i,
+    /^(how\s+much|how\s+many|what\s+is\s+the\s+(cost|fee|price|amount))/i,
+    /^(tell\s+me\s+(everything|all|something)\s+(about|regarding))/i,
   ];
   if (generalInfoPatterns.some(p => p.test(lower))) return true;
-  const personalPatterns = /\b(my|i\s+(am|was|have|had|got|need|want|filed|received|did|hired|lost|bought|sold|paid|signed|agreed|called|went|visited))\b/i;
+  const personalPatterns = /\b(my|i\s+(am|was|have|had|got|need|want|filed|received|did|hired|lost|bought|sold|paid|signed|agreed|called|went|visited|own|live))\b/i;
   const shortWordCount = lower.split(/\s+/).length;
-  if (!personalPatterns.test(lower) && shortWordCount <= 5) return true;
+  if (shortWordCount <= 3 && !personalPatterns.test(lower)) return true;
+  if (shortWordCount <= 5 && !personalPatterns.test(lower) && (/(?:law|act|rule|right|penalty|fine|offense|punishment|section|article|provision|process|procedure|requirement)/i.test(lower) || /(?:passport|visa|court|police|license|permit|registration|tax|vat|pan|citizenship)/i.test(lower))) return true;
   return false;
 }
 

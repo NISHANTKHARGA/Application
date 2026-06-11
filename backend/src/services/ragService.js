@@ -211,6 +211,27 @@ function getDynamicMode(userMessage) {
   return 'standard';
 }
 
+function detectQuestionType(userMessage) {
+  const lower = userMessage.toLowerCase().trim();
+  if (/^(hi|hello|hey|namaste|नमस्ते|good\s*(morning|afternoon|evening))/i.test(lower)) return { type: 'greeting', label: 'Greeting' };
+  if (/^(thank|thanks|bye|goodbye|see\s*you|धन्यवाद)/i.test(lower)) return { type: 'greeting', label: 'Farewell' };
+  if (/^(how\s+(are|do|can)|what\s+(can|are)\s+you|tell\s+me\s+about\s+(yourself|kanoon))/i.test(lower)) return { type: 'small_talk', label: 'Small Talk' };
+  const questionWords = ['what', 'how', 'why', 'when', 'where', 'which', 'who', 'define', 'explain', 'describe', 'list', 'tell'];
+  const startsWithQW = questionWords.some(w => new RegExp(`^${w}\\b`, 'i').test(lower));
+  const hasCompare = /\b(difference|compare|versus|vs|or)\b/.test(lower) && /\b(and|or)\b/.test(lower);
+  const hasPersonalRef = /\b(my|i\s+(am|was|have|had|got|need|want|filed|received|did|hired|lost|bought|sold|paid|signed|agreed|called|went|visited|own|live|hired|consulted))\b/i.test(lower);
+  const hasProceduralWords = /\b(process|procedure|steps|how\s+to|apply\s+for|renew|register|file\s+(for|a|an)|get\s+a|obtain|requirements?|eligibility|documents?\s+needed)\b/i.test(lower);
+  const hasDefinitionWords = /^(define|what\s+is|what\s+are|explain|describe|tell\s+me\s+about)\b/i.test(lower);
+  const isShortPhrase = /^\w+\s+(law|act|rule|process|passport|visa|tax|license|rights|court)\s*$/i.test(lower);
+  if (hasCompare) return { type: 'comparative', label: 'Comparative' };
+  if (isShortPhrase || (startsWithQW && hasDefinitionWords && !hasPersonalRef && !hasProceduralWords)) return { type: 'informational', label: 'Informational' };
+  if (hasProceduralWords || /^(how\s+(to|do|can|should)|what\s+(is\s+the\s+process|are\s+the\s+(requirements?|steps|documents)))/i.test(lower)) return { type: 'procedural', label: 'Procedural' };
+  if (hasPersonalRef) return { type: 'personal_case', label: 'Personal Case' };
+  if (startsWithQW && /(?:law|act|rule|regulation|provision|section|article|offense|penalty|punishment|right|duty|obligation|benefit|scheme|allowance|fund|compensation)\b/i.test(lower)) return { type: 'informational', label: 'Informational' };
+  if (lower.length > 10 && /(?:lawyer|court|police|case|complaint|notice|legal|rights|fraud|theft|accident|insurance|claim|contract|agreement|lease|rent|tenant|landlord|eviction|divorce|marriage|custody|maintenance|alimony|property|inheritance|will|succession|partition|boundary|survey|crime|arrest|bail|license|registration|permit|tax|vat|pan|company|business|registration|ngo|ingg|fund|allowance|compensation|pension|social\s*security)/i.test(lower)) return { type: 'informational', label: 'Informational' };
+  return { type: 'general', label: 'General' };
+}
+
 async function processWithRAG(rawUserMessage, userId, lawyers = [], language = 'english', conversationHistory = []) {
   let userMessage = rawUserMessage;
   const historyText = conversationHistory.length > 0
@@ -229,6 +250,7 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   setLastIntent(userId, intent);
 
   const dynamicMode = getDynamicMode(userMessage);
+  let questionType = detectQuestionType(userMessage);
 
   const hasNepalMention = /\b(nepal|nepali|nepalese|kathmandu|प्रदेश|जिल्ला|मुलुकी)\b/i.test(userMessage);
   const countryConfirmed = getCountryConfirmed(userId);
@@ -261,6 +283,7 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     }
     const { intent: newIntent } = await intentClassifier.classifyIntent(userMessage, conversationHistory);
     intent = newIntent;
+    questionType = detectQuestionType(userMessage);
   }
 
   if (hasNepalMention && !countryConfirmed) {
@@ -329,8 +352,8 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     return { response, caseType: 'General', source: 'intent_incomplete_intake' };
   }
 
-  const infoPatterns = /^(what|how|tell|explain|describe|define|list|give)\s+(is|are|can|do|does|to|me|about)\b/i;
-  const isInfoQuery = infoPatterns.test(userMessage.trim()) || 
+  const isInfoQuery = ['informational', 'procedural', 'comparative', 'definition'].includes(questionType.type) ||
+    /^(what|how|tell|explain|describe|define|list|give)\s+(is|are|can|do|does|to|me|about)\b/i.test(userMessage.trim()) || 
     /(?:process|procedure|steps|how\s+to|apply\s+for|renew|requirements?|eligibility|overview|guide)\b/i.test(userMessage) ||
     /^\w+\s+(?:law|act|rule|process|passport|visa|tax|license)\s*$/i.test(userMessage.trim()) ||
     /^\w+\s+in\s+nepal$/i.test(userMessage.trim()) ||
@@ -359,9 +382,17 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   const topResults = highConfResults.length > 0 ? highConfResults : reranked.slice(0, 3);
 
   if (!topResults || topResults.length === 0 || topResults[0].score < 1.0) {
+    const suggestTerms = (() => {
+      const commonTopics = ['divorce', 'property', 'land', 'crime', 'cyber', 'traffic', 'tax', 'company', 'passport', 'visa', 'citizenship', 'consumer', 'labor', 'insurance', 'contract'];
+      const matched = commonTopics.filter(t => userMessage.toLowerCase().includes(t));
+      if (matched.length > 0) return matched.slice(0, 3);
+      const qWords = userMessage.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      const topicHints = qWords.filter(w => commonTopics.some(t => t.includes(w) || w.includes(t)));
+      return topicHints.length > 0 ? topicHints.slice(0, 3) : commonTopics.slice(0, 4);
+    })();
     const lowConfMsg = language === 'nepali'
-      ? 'माफ गर्नुहोस्, मैले तपाईंको प्रश्नको लागि सान्दर्भिक नेपाली कानूनी जानकारी फेला पार्न सकिन। कृपया थप विवरणहरू प्रदान गर्नुहोस् वा आफ्नो प्रश्न पुन: लेख्नुहोस्।'
-      : 'I could not find relevant Nepal legal information for this question. Could you provide more details or rephrase your query?';
+      ? `माफ गर्नुहोस्, मैले "${userMessage.substring(0, 60)}" को लागि सान्दर्भिक नेपाली कानूनी जानकारी फेला पार्न सकिन। कृपया थप विवरणहरू प्रदान गर्नुहोस् वा आफ्नो प्रश्न पुन: लेख्नुहोस्।\n\nतपाईं यी विषयहरूमा सोध्न सक्नुहुन्छ: ${suggestTerms.join(', ')}।`
+      : `I could not find specific Nepal legal information matching "${userMessage.substring(0, 60)}". Could you rephrase or try asking about one of these topics?\n\nYou can ask about: ${suggestTerms.join(', ')}.`;
     addPreviousResponse(userId, lowConfMsg);
     return { response: lowConfMsg, caseType: 'General', source: 'rag_low_confidence' };
   }
@@ -396,6 +427,19 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     modeInstruction = 'Provide thorough legal analysis. Cite specific act names, section numbers, and legal principles. Include procedural steps.';
   } else if (dynamicMode === 'summary') {
     modeInstruction = 'Provide a concise summary. Keep it brief and to the point. Focus on the most important information only.';
+  }
+
+  let questionTypeInstruction = '';
+  if (questionType.type === 'informational') {
+    questionTypeInstruction = 'The user is asking a general informational question about Nepal law. Give a clear, direct explanation of the law, its key provisions, and any relevant penalties or requirements. Do NOT ask for personal details or treat this as a personal case. Keep it educational.';
+  } else if (questionType.type === 'procedural') {
+    questionTypeInstruction = 'The user is asking about a procedure or process in Nepal law. Give step-by-step guidance on what to do, which office to visit, what documents are needed, approximate timeline, and any applicable fees. Be practical and actionable.';
+  } else if (questionType.type === 'personal_case') {
+    questionTypeInstruction = 'The user is describing a personal legal situation. Be empathetic and supportive. Provide actionable advice on next steps. Recommend consulting a Nepal lawyer for personalized representation. Include relevant helpline numbers if applicable.';
+  } else if (questionType.type === 'comparative') {
+    questionTypeInstruction = 'The user is asking for a comparison between two legal concepts, procedures, or areas. Clearly explain what each one is, then highlight the key differences. Use a side-by-side mental comparison.';
+  } else if (questionType.type === 'definition') {
+    questionTypeInstruction = 'The user is asking for a definition of a legal term or concept. Provide a clear, simple definition first, then explain its significance in Nepal law with relevant act/section references.';
   }
 
   const safetyInstruction = 'NEVER claim to be a lawyer. Always recommend consulting a licensed Nepali lawyer for serious matters. End with: "This information is educational and should not be considered formal legal advice."';
@@ -454,6 +498,8 @@ LEGAL REFERENCES YOU MUST USE:
 ${langInstruction}
 
 ${modeInstruction}
+
+${questionTypeInstruction}
 
 ${safetyInstruction}
 

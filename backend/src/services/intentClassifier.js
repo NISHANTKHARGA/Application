@@ -15,12 +15,21 @@ const CLASSIFICATION_PROMPT = `You are a precise intent classifier for a Nepal l
 
 - greeting: The user is saying hello, hi, good morning, etc. Simple social openings.
 - small_talk: General non-legal conversation like "how are you", "what can you do", "tell me about yourself"
-- nepal_legal_question: A complete question about Nepal law with enough specific facts (who, what, where, when) to provide meaningful guidance
-- incomplete_legal_question: A legal question that lacks critical details - missing location, parties involved, timeline, or specific legal context needed to give accurate advice
+- nepal_legal_question: A question about Nepal law. This includes general informational questions ("what is cyber law", "tell me about divorce in Nepal"), procedural questions ("how to register a company"), AND personal case descriptions ("my landlord evicted me"). If the message mentions ANY law-related topic, it is nepal_legal_question.
+- incomplete_legal_question: ONLY use when the user is clearly describing a personal legal situation BUT has not provided enough key details (missing location, parties involved, timeline). Do NOT use for general informational questions.
 - follow_up_legal_question: A question that refers to previous conversation context, like "what about appeals?", "how long does that take?", "what documents do I need?"
-- out_of_scope: Questions about non-Nepal topics, general knowledge, technical topics, entertainment, sports, cooking, programming, etc.
+- out_of_scope: Questions about non-Nepal topics, general knowledge, technical topics, entertainment, sports, cooking, programming, etc. ONLY use when the question has NO connection to law or Nepal.
 - thanks_farewell: Thank you messages, goodbye, "thanks for your help", "that's all", "see you"
-- emergency_legal: Imminent legal emergency requiring urgent action - ongoing domestic violence, active arrest, court deadline today/tomorrow, child in immediate danger
+- emergency_legal: Imminent legal emergency requiring urgent action - ongoing domestic violence, active arrest, court deadline today/tomorrow, child in immediate danger. Only use for true emergencies.
+
+IMPORTANT GUIDELINES:
+- "what is", "tell me about", "explain", "define" followed by a legal topic -> nepal_legal_question (even if no personal details)
+- "how to" followed by a legal process -> nepal_legal_question
+- Short phrases like "cyber law", "divorce process", "passport" -> nepal_legal_question (these are topic queries)
+- Personal situations with missing info ("my landlord evicted me", "I have a property dispute") -> nepal_legal_question (not incomplete, as the question is still answerable)
+- Only use incomplete_legal_question when the user is clearly asking for personalized advice on a specific case AND critical details are absent
+- Questions about programming, cooking, sports, entertainment -> out_of_scope
+- Questions about another country's law (india, usa, etc.) -> out_of_scope
 
 Examples:
 "hello" -> greeting
@@ -31,14 +40,19 @@ Examples:
 "my landlord evicted me without notice in Kathmandu last week" -> nepal_legal_question
 "what is the divorce process in Nepal?" -> nepal_legal_question
 "how do I register land in Nepal?" -> nepal_legal_question
-"my landlord kicked me out" -> incomplete_legal_question (missing: notice period, location, written agreement)
-"I have a property dispute" -> incomplete_legal_question (missing: location, nature of dispute, parties)
-"what about court fees?" -> follow_up_legal_question (refers to previous context about filing a case)
+"cyber law" -> nepal_legal_question (short topic query)
+"passport" -> nepal_legal_question (legal topic)
+"what is cyber law" -> nepal_legal_question
+"tell me about divorce" -> nepal_legal_question
+"my landlord kicked me out" -> nepal_legal_question (personal situation, answerable)
+"I have a property dispute" -> nepal_legal_question (answerable)
+"what about court fees?" -> follow_up_legal_question (refers to previous context)
 "how long does it take?" -> follow_up_legal_question
 "can I appeal?" -> follow_up_legal_question
 "what is python programming" -> out_of_scope
 "who won the world cup" -> out_of_scope
 "bake a cake recipe" -> out_of_scope
+"what is the divorce law in India" -> out_of_scope (not Nepal)
 "thank you" -> thanks_farewell
 "thanks for your help" -> thanks_farewell
 "goodbye" -> thanks_farewell
@@ -69,6 +83,10 @@ const OUT_OF_SCOPE_PATTERNS = [
   /(movie|film|song|music|celebrity|actor|actress|singer)/i,
   /(sport|football|cricket|world\s*cup|olympics|match|game|player|team|score)/i,
   /(write\s*(poem|story|essay|code|program))|(translate\s*(to|into))/i,
+  /^(what\s+is\s+(your\s+name|the\s+(weather|time|date|capital|population|currency|flag)))/i,
+  /(horoscope|astrology|palmistry|fortune)/i,
+  /(fashion|makeup|hairstyle|outfit)/i,
+  /(pizza|burger|noodle|momo|recipe|dish|cuisine|restaurant)/i,
 ];
 
 const EMERGENCY_KEYWORDS = [
@@ -76,6 +94,10 @@ const EMERGENCY_KEYWORDS = [
   'being arrested', 'at the police station', 'police station right now',
   'domestic violence', 'child in danger', 'immediate protection',
   'court today', 'deadline today', 'urgent legal',
+  'fighting', 'abusing me', 'threatening', 'harassing me right now',
+  'police came', 'arrested my', 'lockdown', 'detained',
+  'husband is beating', 'wife is beating', 'partner is hitting',
+  'need help now', 'emergency', 'help me please',
 ];
 
 async function classifyByKeywords(message) {
@@ -94,7 +116,9 @@ async function classifyByKeywords(message) {
     if (pat.test(lower)) return { intent: 'out_of_scope', confidence: 0.8 };
   }
 
-  if (/^(what\s+is|how\s+(to|do|can|does)|define|explain)\b/i.test(lower) && !/(law|court|legal|right|case|act|rule|section|complaint|petition|suit|appeal|notice|license|permit|registration|inheritance|property|land|rent|tenant|landlord|divorce|marriage|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|claim|contract|agreement|lease|mortgage|loan|debt|bankruptcy|tax|fine|penalty|violation|offense|punishment|imprisonment|bail|arrest|witness|evidence|judgment|decree|order|writ|petition|appeal|nepal|nepali)/i.test(lower) && !/(nepal|nepali|kathmandu|मुलुकी)/i.test(lower)) {
+  if (/^(what\s+is|how\s+(to|do|can|does)|define|explain|tell\s+me\s+about)\b/i.test(lower) &&
+      !/(law|court|legal|right|case|act|rule|section|complaint|petition|suit|appeal|notice|license|permit|registration|inheritance|property|land|rent|tenant|landlord|divorce|marriage|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|claim|contract|agreement|lease|mortgage|loan|debt|bankruptcy|tax|fine|penalty|violation|offense|punishment|imprisonment|bail|arrest|witness|evidence|judgment|decree|order|writ|petition|appeal|passport|visa|citizenship|cyber|hacking|online|fraud|phishing|ransomware|harassment|stalking|deepfake|OTT|ecommerce|gambling|piracy|digital|wallet|crypto|cryptocurrency|blockchain|mining|nepal|nepali|kathmandu|मुलुकी)/i.test(lower) &&
+      !/\b(nepal|nepali|kathmandu|प्रदेश|जिल्ला|मुलुकी)\b/i.test(lower)) {
     if (lower.split(/\s+/).length > 3) {
       return { intent: 'out_of_scope', confidence: 0.7 };
     }
@@ -200,26 +224,36 @@ const HIGH_RISK_DISCLAIMER = {
 const LEGAL_TOPIC_KEYWORDS = [
   'law', 'act', 'legal', 'court', 'case', 'rights', 'petition', 'appeal',
   'passport', 'visa', 'citizenship', 'passport',
-  'cyber', 'hacking', 'online fraud', 'phishing', 'ransomware',
-  'divorce', 'marriage', 'custody', 'alimony', 'adoption',
-  'property', 'land', 'rent', 'tenant', 'landlord', 'eviction', 'lalpurja',
+  'cyber', 'hacking', 'online fraud', 'phishing', 'ransomware', 'deepfake', 'stalking', 'ott', 'ecommerce', 'gambling', 'piracy', 'digital wallet', 'crypto', 'cryptocurrency', 'blockchain', 'mining',
+  'divorce', 'marriage', 'custody', 'alimony', 'adoption', 'maintenance',
+  'property', 'land', 'rent', 'tenant', 'landlord', 'eviction', 'lalpurja', 'malpot', 'survey', 'boundary',
   'tax', 'vat', 'income tax', 'pan',
-  'company', 'business', 'registration', 'license',
-  'crime', 'theft', 'fraud', 'murder', 'assault', 'rape', 'bail', 'arrest',
-  'labor', 'employee', 'salary', 'termination', 'overtime',
-  'consumer', 'complaint', 'refund', 'warranty',
-  'insurance', 'claim', 'compensation',
-  'inheritance', 'will', 'succession',
-  'traffic', 'driving license', 'accident',
+  'company', 'business', 'registration', 'license', 'partnership', 'firm',
+  'crime', 'theft', 'fraud', 'murder', 'assault', 'rape', 'bail', 'arrest', 'harassment', 'dowry', 'torture',
+  'labor', 'employee', 'salary', 'termination', 'overtime', 'provident fund', 'ssf',
+  'consumer', 'complaint', 'refund', 'warranty', 'defective',
+  'insurance', 'claim', 'compensation', 'beema',
+  'inheritance', 'will', 'succession', 'partition',
+  'traffic', 'driving license', 'accident', 'challan',
   'environment', 'pollution', 'forest',
-  'constitution', 'fundamental rights', 'writ',
-  'bank', 'loan', 'debt', 'bankruptcy', 'interest',
+  'constitution', 'fundamental rights', 'writ', 'habeas corpus',
+  'bank', 'loan', 'debt', 'bankruptcy', 'interest', 'finance',
   'contract', 'agreement', 'partnership',
-  'NGO', 'INGO', 'social security', 'allowance',
-  'drug', 'narcotics',
+  'NGO', 'INGO', 'social security', 'allowance', 'pension',
+  'drug', 'narcotics', 'substance',
   'education', 'school', 'college', 'university',
-  'health', 'hospital', 'medical',
-  'election', 'voting',
+  'health', 'hospital', 'medical', 'treatment',
+  'election', 'voting', 'voter',
+  'arbitration', 'mediation', 'dispute resolution', 'settlement',
+  'advocate', 'lawyer', 'bar council',
+  'citizenship', 'nrn', 'non-resident',
+  'extradition', 'interpol', 'fugitive',
+  'securities', 'nepse', 'sebon', 'stock', 'share',
+  'cooperative', 'saving', 'credit',
+  'public procurement', 'tender', 'bid',
+  'labour', 'workplace', 'factory',
+  'food', 'adulteration', 'hygiene',
+  'telecom', 'isp', 'internet', 'mobile',
 ];
 
 const STANDARD_DISCLAIMER = {
