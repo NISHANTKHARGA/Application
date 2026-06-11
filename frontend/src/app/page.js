@@ -1,8 +1,12 @@
 'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Scale, MessageSquare, Calendar, Video, Shield, Globe, Clock, Users, ChevronRight, Star, CheckCircle } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
   return (
     <div className="min-h-screen">
       <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 z-50">
@@ -42,10 +46,10 @@ export default function Home() {
                   <MessageSquare className="w-5 h-5" />
                   Chat with AI
                 </Link>
-                <Link href="/lawyers" className="bg-white text-secondary px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2">
+                <button onClick={() => router.push(isAuthenticated ? '/lawyers' : '/login')} className="bg-white text-secondary px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2">
                   Consult with Lawyer
                   <ChevronRight className="w-5 h-5" />
-                </Link>
+                </button>
               </div>
               <div className="flex items-center gap-8 mt-10">
                 <div>
