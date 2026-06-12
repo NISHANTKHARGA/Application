@@ -4,12 +4,17 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Scale, MessageSquare, Users, Calendar, User, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
-const allNavItems = [
+const userNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
   { icon: Users, label: 'Find Lawyers', href: '/lawyers' },
   { icon: Calendar, label: 'Appointments', href: '/appointments' },
   { icon: User, label: 'Profile', href: '/profile' },
+];
+
+const lawyerNavItems = [
+  { icon: LayoutDashboard, label: 'Dashboard', href: '/lawyer/dashboard' },
+  { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
 ];
 
 export default function UserNav({ children }) {
@@ -22,7 +27,7 @@ export default function UserNav({ children }) {
     router.push('/');
   };
 
-  const navItems = allNavItems.filter(item =>
+  const navItems = role === 'lawyer' ? lawyerNavItems : userNavItems.filter(item =>
     item.href === '/lawyers' ? role !== 'lawyer' : true
   );
 

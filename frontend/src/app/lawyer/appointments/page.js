@@ -102,7 +102,6 @@ export default function LawyerAppointmentsPage() {
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard' },
     { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
-    { icon: Calendar, label: 'Appointments', href: '/lawyer/appointments', active: true },
   ];
 
   return (
