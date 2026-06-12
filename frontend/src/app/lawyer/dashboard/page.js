@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Calendar, Clock, Video, Check, Users, Star, LogOut, Home, MessageSquare, X, User } from 'lucide-react';
+import { Scale, Calendar, Clock, Video, Check, Users, Star, LogOut, Home, MessageSquare, X, User, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -254,42 +254,25 @@ export default function LawyerDashboardPage() {
               )}
             </div>
 
-            <div className="mt-8">
-              <div className="card">
-                <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <Link
-                    href="/chat"
-                    className="flex items-center gap-4 p-4 bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors"
-                  >
-                    <MessageSquare className="w-8 h-8 text-primary" />
-                    <div>
-                      <p className="font-medium">AI Assistant</p>
-                      <p className="text-sm text-gray-500">Get help with legal queries</p>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/lawyer/profile"
-                    className="flex items-center gap-4 p-4 bg-accent/10 rounded-xl hover:bg-accent/20 transition-colors"
-                  >
-                    <User className="w-8 h-8 text-accent" />
-                    <div>
-                      <p className="font-medium">Profile</p>
-                      <p className="text-sm text-gray-500">Update your information</p>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/lawyer/appointments"
-                    className="flex items-center gap-4 p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-colors"
-                  >
-                    <Calendar className="w-8 h-8 text-secondary" />
-                    <div>
-                      <p className="font-medium">All Appointments</p>
-                      <p className="text-sm text-gray-500">View and manage all appointments</p>
-                    </div>
-                  </Link>
-                </div>
+            <div className="mt-8 card">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold">Profile</h2>
               </div>
+              <Link
+                href="/lawyer/profile"
+                className="flex items-center justify-between p-4 bg-accent/10 rounded-xl hover:bg-accent/20 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Edit Profile</p>
+                    <p className="text-sm text-gray-500">Update your information</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </Link>
             </div>
           </div>
         </main>
