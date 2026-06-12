@@ -75,9 +75,10 @@ function keywordCompletenessCheck(message) {
   const hasTimeline = /\b(today|yesterday|tomorrow|last\s+\w+|this\s+\w+|next\s+\w+|ago|\d+\s*(day|week|month|year)s?\s+ago|january|february|march|april|may|june|july|august|september|october|november|december|20\d{2})\b/i.test(lower);
   const hasParties = /\b(my\s+(husband|wife|father|mother|brother|sister|son|daughter|uncle|aunt|cousin|neighbor|friend|employer|employee|landlord|tenant|partner|company|bank|organization))\b/i.test(lower);
   const hasNepalKeyword = /(nepal|nepali|nepalese|kathmandu|malpot|lalpurja)\b/i.test(lower);
-  const hasLegalIssue = /(landlord|tenant|eviction|rent|lease|divorce|marriage|property|inheritance|will|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|contract|agreement|loan|debt|bankruptcy|court|case|police|complaint|notice|license|registration|tax|fine|penalty|arrest|bail|lawyer|legal|law)/i.test(lower);
+  const hasPersonalScenario = /\b(my\s+\w+|i\s+(am|was|have|had|got|need|want|filed|received|did|hired|lost|bought|sold|paid|signed|agreed|called|went|visited|own|live))\b/i.test(lower);
+  const hasLegalIssue = /(landlord|tenant|eviction|rent|lease|divorce|marriage|property|inheritance|will|custody|maintenance|alimony|crime|theft|fraud|assault|murder|accident|insurance|contract|agreement|loan|debt|bankruptcy|court|case|police|complaint|notice|license|registration|tax|fine|penalty|arrest|bail|lawyer|legal|law|wage|salary|pay|paid|unpaid|overtime|lost|missing|disappear|kidnap|abduct|stolen|robbery|cheat|scam|harass|discriminat|termination|fired|laid\s?off|resign|notice\s*period|salary|bonus|settlement|gratuity|provident\s*|fund|pension|allowance|compensation|burn|hurt|injured|hospital|medical|treatment|operation|death|died|suicide|accident|hit\s+(and|&)\s*run|fight|assault|beat|torture|rape|sexual|molest|traffick|smuggle|smoking|drug|alcohol|drunk|gambling|hate|defame|slander|libel|blackmail|extortion|threat|intimidate|kidnap|hostage|ransom)/i.test(lower);
 
-  if (!hasLegalIssue) return { isComplete: false, missingFields: ['location'] };
+  if (!hasLegalIssue && !hasPersonalScenario) return { isComplete: false, missingFields: ['location'] };
   if (!hasLocation && !hasTimeline && !hasNepalKeyword) {
     return { isComplete: false, missingFields: ['location', 'timeline'] };
   }
