@@ -2,14 +2,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Calendar, Clock, Check, Users, Star, LogOut, Home, MessageSquare } from 'lucide-react';
+import { Scale, Calendar, Clock, Video, Check, Users, Star, LogOut, Home, MessageSquare, X, User, Eye } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export default function LawyerDashboardPage() {
   const { user, isAuthenticated, isLoading, logout, role } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState(null);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +37,23 @@ export default function LawyerDashboardPage() {
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }
+    try {
+      const appointmentsRes = await api.get('/appointment/lawyer/me');
+      setAppointments(appointmentsRes.data.appointments || []);
+    } catch (error) {
+      console.error('Failed to fetch appointments:', error);
+    }
     setLoading(false);
+  };
+
+  const updateStatus = async (appointmentId, status) => {
+    try {
+      await api.put(`/appointment/${appointmentId}/status`, { status });
+      toast.success(`Appointment ${status}`);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
   };
 
   if (isLoading || role !== 'lawyer') {
@@ -49,7 +67,12 @@ export default function LawyerDashboardPage() {
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard', active: true },
     { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+    { icon: Calendar, label: 'Appointments', href: '/lawyer/appointments' },
   ];
+
+  const upcomingAppointments = appointments.filter(a => 
+    new Date(a.dateTime) >= new Date() && !['cancelled', 'completed'].includes(a.status)
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -154,31 +177,135 @@ export default function LawyerDashboardPage() {
               </div>
             </div>
 
-
-
-            <div className="mt-8 card">
-              <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Link
-                  href="/chat"
-                  className="flex items-center gap-4 p-4 bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors"
-                >
-                  <MessageSquare className="w-8 h-8 text-primary" />
-                  <div>
-                    <p className="font-medium">AI Assistant</p>
-                    <p className="text-sm text-gray-500">Get help with legal queries</p>
-                  </div>
+            <div className="card">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold">Upcoming Appointments</h2>
+                <Link href="/lawyer/appointments" className="text-sm text-primary hover:underline">
+                  View all
                 </Link>
-                <Link
-                  href="/lawyer/profile"
-                  className="flex items-center gap-4 p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-colors"
-                >
-                  <Users className="w-8 h-8 text-secondary" />
+              </div>
+
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+                  ))}
+                </div>
+              ) : upcomingAppointments.length === 0 ? (
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No upcoming appointments</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingAppointments.map((apt) => (
+                    <div key={apt.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center">
+                          <span className="text-white font-semibold">
+                            {apt.user?.name?.charAt(0)?.toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium">{apt.user?.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(apt.dateTime).toLocaleDateString('en-US', {
+                              weekday: 'short',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {apt.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => updateStatus(apt.id, 'confirmed')}
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                              title="Accept"
+                            >
+                              <Check className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => updateStatus(apt.id, 'cancelled')}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                              title="Cancel"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </>
+                        )}
+                        {apt.meetingLink && (
+                          <Link
+                            href={`/video/${apt.id}`}
+                            className="btn-primary !py-2 !px-4 flex items-center gap-1"
+                          >
+                            <Video className="w-4 h-4" />
+                            Join Meeting
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 grid sm:grid-cols-2 gap-6">
+              <div className="card">
+                <div className="flex items-center gap-3 mb-4">
+                  <User className="w-6 h-6 text-primary" />
+                  <h2 className="text-lg font-semibold">Profile</h2>
+                </div>
+                <div className="space-y-3">
                   <div>
-                    <p className="font-medium">Update Profile</p>
-                    <p className="text-sm text-gray-500">Manage your availability</p>
+                    <p className="text-sm text-gray-500">Name</p>
+                    <p className="font-medium">{user?.name}</p>
                   </div>
-                </Link>
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="font-medium">{user?.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Specialization</p>
+                    <p className="font-medium">{user?.specialization || 'Not set'}</p>
+                  </div>
+                  <Link
+                    href="/lawyer/profile"
+                    className="inline-flex items-center gap-2 text-primary text-sm font-medium hover:underline mt-2"
+                  >
+                    <User className="w-4 h-4" />
+                    Edit Profile
+                  </Link>
+                </div>
+              </div>
+              <div className="card">
+                <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+                <div className="grid gap-4">
+                  <Link
+                    href="/chat"
+                    className="flex items-center gap-4 p-4 bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors"
+                  >
+                    <MessageSquare className="w-8 h-8 text-primary" />
+                    <div>
+                      <p className="font-medium">AI Assistant</p>
+                      <p className="text-sm text-gray-500">Get help with legal queries</p>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/lawyer/appointments"
+                    className="flex items-center gap-4 p-4 bg-secondary/5 rounded-xl hover:bg-secondary/10 transition-colors"
+                  >
+                    <Calendar className="w-8 h-8 text-secondary" />
+                    <div>
+                      <p className="font-medium">All Appointments</p>
+                      <p className="text-sm text-gray-500">View and manage all appointments</p>
+                    </div>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
