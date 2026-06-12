@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Calendar, Clock, Video, Check, Users, Star, LogOut, Home, MessageSquare, X, User, Eye } from 'lucide-react';
+import { Scale, Calendar, Clock, Video, Check, Users, Star, LogOut, Home, MessageSquare, X, User } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -254,37 +254,10 @@ export default function LawyerDashboardPage() {
               )}
             </div>
 
-            <div className="mt-8 grid sm:grid-cols-2 gap-6">
-              <div className="card">
-                <div className="flex items-center gap-3 mb-4">
-                  <User className="w-6 h-6 text-primary" />
-                  <h2 className="text-lg font-semibold">Profile</h2>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-gray-500">Name</p>
-                    <p className="font-medium">{user?.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{user?.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Specialization</p>
-                    <p className="font-medium">{user?.specialization || 'Not set'}</p>
-                  </div>
-                  <Link
-                    href="/lawyer/profile"
-                    className="inline-flex items-center gap-2 text-primary text-sm font-medium hover:underline mt-2"
-                  >
-                    <User className="w-4 h-4" />
-                    Edit Profile
-                  </Link>
-                </div>
-              </div>
+            <div className="mt-8">
               <div className="card">
                 <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-                <div className="grid gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <Link
                     href="/chat"
                     className="flex items-center gap-4 p-4 bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors"
@@ -293,6 +266,16 @@ export default function LawyerDashboardPage() {
                     <div>
                       <p className="font-medium">AI Assistant</p>
                       <p className="text-sm text-gray-500">Get help with legal queries</p>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/lawyer/profile"
+                    className="flex items-center gap-4 p-4 bg-accent/10 rounded-xl hover:bg-accent/20 transition-colors"
+                  >
+                    <User className="w-8 h-8 text-accent" />
+                    <div>
+                      <p className="font-medium">Profile</p>
+                      <p className="text-sm text-gray-500">Update your information</p>
                     </div>
                   </Link>
                   <Link
