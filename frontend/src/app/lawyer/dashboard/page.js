@@ -68,6 +68,7 @@ export default function LawyerDashboardPage() {
     { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard', active: true },
     { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
     { icon: Calendar, label: 'Appointments', href: '/lawyer/appointments' },
+    { icon: User, label: 'Profile', href: '/lawyer/profile' },
   ];
 
   const upcomingAppointments = appointments.filter(a => 
