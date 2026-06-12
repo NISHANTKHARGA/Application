@@ -193,23 +193,20 @@ async function classifyIntent(message, conversationHistory = []) {
 
 const GREETING_RESPONSES = {
   english: {
-    greeting: "Hi there! Welcome to KanoonSathi. I'm your Nepal law assistant. How can I help you today? Feel free to ask me anything about Nepali law - property, family, criminal, cyber, business, or any other legal matter.",
-    small_talk: "Hey! I'm doing great, thanks for asking! I'm KanoonSathi, your Nepal law assistant. I can help you understand legal rights, explain laws, and guide you through legal processes in Nepal. What legal question do you have for me?",
-    thanks_farewell: "You're very welcome! Happy to help. If you ever need legal guidance in the future, I'm just a message away. Take care and all the best!",
+    greeting: "Hello. I am a legal research assistant specializing in Nepali law. How may I assist you with your legal questions today?",
+    small_talk: "I am doing well, thank you. I am a legal research assistant here to provide guidance on Nepali legal matters. Please let me know how I can assist you.",
+    thanks_farewell: "You are welcome. I am glad I could assist with your legal questions. If you need further guidance on any legal matter, please feel free to ask. Have a good day.",
     emergency_legal: "⚠️ IMPORTANT: If you are in immediate danger, please call 100 (Nepal Police) or 1145 (Women's Helpline) right away.\n\nI can provide general legal information, but emergency situations require immediate professional legal assistance. Please contact a qualified Nepal lawyer or visit your nearest police station or court immediately.\n\nWould you like me to provide information on legal aid resources available in Nepal?"
   },
   nepali: {
-    greeting: "नमस्ते! KanoonSathi मा तपाईंलाई स्वागत छ। म तपाईंको नेपाली कानून सहायक हुँ। तपाईंलाई कसरी मद्दत गर्न सक्छु? कृपया नेपाली कानूनको बारेमा जे पनि सोध्नुहोस् - सम्पत्ति, पारिवारिक, फौजदारी, साइबर, व्यवसाय वा अन्य कानुनी मामिला।",
-    small_talk: "नमस्ते! म ठीक छु, धन्यवाद! म KanoonSathi, तपाईंको नेपाली कानून सहायक हुँ। म तपाईंलाई कानुनी अधिकारहरू बुझ्न, कानूनहरू व्याख्या गर्न, र नेपालमा कानुनी प्रक्रियाहरूमा मार्गदर्शन गर्न मद्दत गर्न सक्छु। तपाईंको लागि कुन कानुनी प्रश्न छ?",
-    thanks_farewell: "तपाईंलाई धेरै धेरै स्वागत छ! मद्दत गर्न पाएर खुसी लाग्यो। भविष्यमा कानुनी मार्गदर्शन चाहियो भने, म सधैं यहाँ छु। ख्याल राख्नुहोस् र शुभकामना!",
+    greeting: "नमस्ते। म एक कानुनी अनुसन्धान सहायक हुँ जो नेपाली कानूनमा विशेषज्ञ छु। कृपया आफ्नो कानुनी प्रश्नहरू सोध्नुहोस्।",
+    small_talk: "म ठीक छु, धन्यवाद। म एक कानुनी अनुसन्धान सहायक हुँ जसले नेपाली कानुनी मामिलाहरूमा मार्गदर्शन प्रदान गर्दछ। कृपया मलाई थाहा दिनुहोस् म कसरी मद्दत गर्न सक्छु।",
+    thanks_farewell: "तपाईंलाई स्वागत छ। म तपाईंको कानुनी प्रश्नहरूमा सहयोग गर्न पाएर खुसी छु। यदि तपाईंलाई कुनै कानुनी मार्गदर्शन चाहिन्छ भने, कृपया सोध्नुहोस्। शुभ दिन।",
     emergency_legal: "⚠️ महत्वपूर्ण: यदि तपाईं तत्काल खतरामा हुनुहुन्छ भने, कृपया तुरुन्तै १०० (नेपाल प्रहरी) वा ११४५ (महिला हेल्पलाइन) मा सम्पर्क गर्नुहोस्।\n\nम सामान्य कानुनी जानकारी प्रदान गर्न सक्छु, तर आपतकालीन अवस्थाहरूमा तत्काल पेशेवर कानुनी सहायता आवश्यक छ। कृपया नजिकको प्रहरी चौकी वा अदालतमा सम्पर्क गर्नुहोस्।"
   }
 };
 
-const OUT_OF_SCOPE_RESPONSE = {
-  english: "I am sorry, I can only help with Nepal law related questions. I can assist you with property law, family law, criminal law, business registration, cyber law, consumer rights, labor law, tax, immigration, and other areas of Nepali law. Please ask me a question about Nepal law.",
-  nepali: "माफ गर्नुहोस्, म केवल नेपाली कानूनसँग सम्बन्धित प्रश्नहरूमा मात्र मद्दत गर्न सक्छु। म तपाईंलाई सम्पत्ति कानून, पारिवारिक कानून, फौजदारी कानून, व्यवसाय दर्ता, साइबर कानून, उपभोक्ता अधिकार, श्रम कानून, कर, आप्रवासन र नेपाली कानूनका अन्य क्षेत्रहरूमा मद्दत गर्न सक्छु। कृपया नेपाली कानूनको बारेमा प्रश्न सोध्नुहोस्।"
-};
+
 
 const INCOMPLETE_QUESTION_INTRO = {
   english: "I need a few more details before I can provide accurate legal information.",
@@ -265,7 +262,6 @@ module.exports = {
   classifyIntent,
   INTENTS,
   GREETING_RESPONSES,
-  OUT_OF_SCOPE_RESPONSE,
   INCOMPLETE_QUESTION_INTRO,
   HIGH_RISK_DISCLAIMER,
   STANDARD_DISCLAIMER,

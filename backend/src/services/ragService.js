@@ -262,7 +262,7 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   if (!hasNepalMention && hasLegalTopic && !countryConfirmed && !isConfirmationResponse && !['greeting', 'small_talk', 'thanks_farewell', 'emergency_legal'].includes(intent)) {
     if (mentionsOtherCountry) {
       const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
-      const prompt = `You are a knowledgeable general AI assistant. The user is asking about legal matters in another country (not Nepal). Answer their question accurately and informatively about that country's law. Do not refuse, do not mention that you only do Nepal law. ${langPrompt}`;
+      const prompt = `I am a legal research assistant providing guidance on legal issues. The user is asking about legal matters in another country (not Nepal). Answer their question accurately and informatively about that country's law. Give clear numbered steps if applicable. End with a note that this information is for educational purposes. ${langPrompt}`;
       let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
       if (!response) response = userMessage;
       addPreviousResponse(userId, response);
@@ -297,10 +297,10 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   if (['greeting', 'small_talk', 'thanks_farewell', 'out_of_scope'].includes(intent)) {
     const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
     const prompts = {
-      greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Mention that you can help with Nepal law. ${langPrompt}`,
-      small_talk: `The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm and human-like. ${langPrompt}`,
-      thanks_farewell: `The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal help. ${langPrompt}`,
-      out_of_scope: `The user has asked something not related to Nepal law. Answer their question helpfully and accurately using your general knowledge. Do NOT refuse. Be informative and concise. ${langPrompt}`
+      greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Identify yourself as a legal research assistant specializing in Nepali law. ${langPrompt}`,
+      small_talk: `The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm but professional. ${langPrompt}`,
+      thanks_farewell: `The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal guidance. ${langPrompt}`,
+      out_of_scope: `The user has asked something not related to law. Answer their question helpfully and accurately using your general knowledge. Do NOT refuse. Be informative and concise. ${langPrompt}`
     };
     const prompt = `You are a knowledgeable and helpful AI assistant. ${prompts[intent] || 'Respond naturally and helpfully.'} Do not use markdown.`;
     let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
@@ -452,7 +452,7 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
 
 const sourceInstruction = `Always cite the specific Act name and Section/Article number from the provided references. ONLY use references that were actually provided above. Do not fabricate section numbers. If the user asks about acts and sections only, give the relevant acts/sections with brief explanations and do not recommend a lawyer or any suggestions.\n\nOFFICIAL REFERENCE SOURCES:\n${refUrlText}\n\nWhen citing an Act, include its official reference URL from the list above when relevant.`;
 
-  const responsePrompt = `You are KanoonSathi, an AI legal consultant specializing in Nepali law.
+  const responsePrompt = `I am a legal research assistant and can only provide guidance on legal issues.
 
 LEGAL REFERENCES YOU MUST USE:
 1. Constitution of Nepal 2072 (2015) - Fundamental Rights: Articles 16-46, Right to equality (Art 18), right to justice (Art 20), right to property (Art 25), right to employment (Art 33)
@@ -520,14 +520,16 @@ ${historyText || 'This is a new conversation.'}
 ${prevRepText}
 
 RESPONSE RULES:
-- Structure your answer in this order: direct answer → key legal provision → actionable steps
-- FIRST SENTENCE: Answer the question directly and clearly
+- FIRST SENTENCE: "I am a legal research assistant and can only provide guidance on legal issues." Then directly address the user's situation.
+- Structure your answer in clear numbered steps (1., 2., 3.) outlining the legal procedures the user should follow
+- For personal case situations: give specific actionable steps like filing a complaint, contacting authorities, gathering evidence
+- For general informational queries: explain the law, its key provisions, and relevant procedures
 - Cite the specific Act name and Section/Article number for every legal claim
-- If the user asks about a specific law (e.g. "cyber law"), explain: what it covers, key provisions, penalties for violations
-- If the user reports fraud/scam/crime: include specific steps (report to Cyber Bureau 01-4779900, file FIR, preserve evidence)
+- If the user reports fraud/scam/crime: include specific steps (report to Cyber Bureau at 01-4779900, file FIR, preserve evidence)
 - For procedural questions (how to register, apply, file): include which government office to visit, documents needed, approximate timeline
-- For personal legal situations: be empathetic, give actionable advice, recommend consulting a lawyer
-- Keep total response between 3-6 sentences - be concise
+- For personal legal situations: be empathetic, give numbered actionable advice, recommend consulting a qualified lawyer
+- If the user has questions about emergency steps or safety measures outside the legal process, recommend contacting local authorities or emergency services
+- Keep total response between 3-8 sentences - be concise
 - Use plain text only, no asterisks, no bullet points, no markdown
 - Every answer must end with: "This information is educational and should not be considered formal legal advice."
 - NEVER mix languages
