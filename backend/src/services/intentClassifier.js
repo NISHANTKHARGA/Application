@@ -29,7 +29,7 @@ IMPORTANT GUIDELINES:
 - Personal situations with missing info ("my landlord evicted me", "I have a property dispute") -> nepal_legal_question (not incomplete, as the question is still answerable)
 - Only use incomplete_legal_question when the user is clearly asking for personalized advice on a specific case AND critical details are absent
 - Questions about programming, cooking, sports, entertainment -> out_of_scope
-- Questions about another country's law (india, usa, etc.) -> out_of_scope
+- Questions about another country's law (india, usa, etc.) -> nepal_legal_question (these are still legal questions, just not about Nepal - they will be handled by the general Groq fallback)
 
 Examples:
 "hello" -> greeting
@@ -52,7 +52,7 @@ Examples:
 "what is python programming" -> out_of_scope
 "who won the world cup" -> out_of_scope
 "bake a cake recipe" -> out_of_scope
-"what is the divorce law in India" -> out_of_scope (not Nepal)
+"what is the divorce law in India" -> nepal_legal_question (legal question, falls to general Groq)
 "thank you" -> thanks_farewell
 "thanks for your help" -> thanks_farewell
 "goodbye" -> thanks_farewell

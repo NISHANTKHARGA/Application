@@ -257,18 +257,21 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   const countryConfirmed = getCountryConfirmed(userId);
   const hasLegalTopic = intentClassifier.LEGAL_TOPIC_KEYWORDS.some(kw => userMessage.toLowerCase().includes(kw));
   const isConfirmationResponse = /^(yes|yeah|sure|ok|okay|alright|fine|of course|definitely|absolutely|right|that's right|correct|हो|हुन्छ|ठिक|ठीक छ|पक्कै|अवश्य)\b/i.test(userMessage.trim());
-  const isOtherCountry = /\b(india|china|usa|uk|australia|canada|bangladesh|pakistan|sri lanka|bhutan|maldives|myanmar|uk|europe|america|france|germany|japan|korea|russia)\b/i.test(userMessage) && !hasNepalMention;
+  const mentionsOtherCountry = /\b(india|china|usa|uk|australia|canada|bangladesh|pakistan|sri lanka|bhutan|maldives|myanmar|uk|europe|america|france|germany|japan|korea|russia)\b/i.test(userMessage) && !hasNepalMention;
 
   if (!hasNepalMention && hasLegalTopic && !countryConfirmed && !isConfirmationResponse && !['greeting', 'small_talk', 'thanks_farewell', 'emergency_legal'].includes(intent)) {
-    if (isOtherCountry) {
-      const resp = language === 'nepali' ? intentClassifier.OUT_OF_SCOPE_RESPONSE.nepali : intentClassifier.OUT_OF_SCOPE_RESPONSE.english;
-      addPreviousResponse(userId, resp);
-      return { response: resp, caseType: 'General', source: 'intent_out_of_scope' };
+    if (mentionsOtherCountry) {
+      const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
+      const prompt = `You are a knowledgeable general AI assistant. The user is asking about legal matters in another country (not Nepal). Answer their question accurately and informatively about that country's law. Do not refuse, do not mention that you only do Nepal law. ${langPrompt}`;
+      let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
+      if (!response) response = userMessage;
+      addPreviousResponse(userId, response);
+      return { response, caseType: 'General', source: 'intent_general_groq' };
     }
     const topicMatch = intentClassifier.LEGAL_TOPIC_KEYWORDS.find(kw => userMessage.toLowerCase().includes(kw)) || 'this';
     const askMsg = language === 'nepali'
-      ? `के तपाईं नेपालको ${topicMatch} बारेमा सोध्न चाहनुहुन्छ? म नेपाली कानूनमा मात्र विशेषज्ञ छु।`
-      : `Are you asking about Nepal ${topicMatch}? I specialize in Nepal law only. If yes, I'd be happy to help!`;
+      ? `के तपाईं नेपालको ${topicMatch} बारेमा सोध्न चाहनुहुन्छ?`
+      : `Are you asking about Nepal ${topicMatch}?`;
     addPreviousResponse(userId, askMsg);
     return { response: askMsg, caseType: 'General', source: 'intent_country_confirm' };
   }
@@ -291,22 +294,16 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     setCountryConfirmed(userId, true);
   }
 
-  if (isOtherCountry) {
-    const resp = language === 'nepali' ? intentClassifier.OUT_OF_SCOPE_RESPONSE.nepali : intentClassifier.OUT_OF_SCOPE_RESPONSE.english;
-    addPreviousResponse(userId, resp);
-    return { response: resp, caseType: 'General', source: 'intent_out_of_scope' };
-  }
-
   if (['greeting', 'small_talk', 'thanks_farewell', 'out_of_scope'].includes(intent)) {
-    const langPrompt = language === 'nepali' ? 'Respond in Nepali only. Use clear Nepali with proper Nepali full stops (।).' : 'Respond in English only.';
+    const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
     const prompts = {
       greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Mention that you can help with Nepal law. ${langPrompt}`,
       small_talk: `The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm and human-like. ${langPrompt}`,
       thanks_farewell: `The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal help. ${langPrompt}`,
-      out_of_scope: `The user has asked something that is not related to Nepal law. Politely say "I am sorry, I can only help with Nepal law related questions." Do NOT answer their actual question. Be firm but polite. ${langPrompt}`
+      out_of_scope: `The user has asked something not related to Nepal law. Answer their question helpfully and accurately using your general knowledge. Do NOT refuse. Be informative and concise. ${langPrompt}`
     };
-    const prompt = `You are KanoonSathi, a friendly and helpful AI assistant. ${prompts[intent] || 'Respond naturally and helpfully.'} Do not use markdown.`;
-    let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: intent === 'out_of_scope' ? 500 : 150 });
+    const prompt = `You are a knowledgeable and helpful AI assistant. ${prompts[intent] || 'Respond naturally and helpfully.'} Do not use markdown.`;
+    let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
     if (!response) {
       response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali[intent === 'small_talk' ? 'small_talk' : intent === 'thanks_farewell' ? 'thanks_farewell' : 'greeting'] : intentClassifier.GREETING_RESPONSES.english[intent === 'small_talk' ? 'small_talk' : intent === 'thanks_farewell' ? 'thanks_farewell' : 'greeting'];
     }
