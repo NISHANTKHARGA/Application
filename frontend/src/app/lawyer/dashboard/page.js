@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Calendar, Clock, Users, Star, LogOut, Home, MessageSquare } from 'lucide-react';
+import { Scale, Calendar, Clock, Check, Users, Star, LogOut, Home, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 
