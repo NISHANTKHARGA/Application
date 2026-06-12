@@ -276,7 +276,7 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     return { response: askMsg, caseType: 'General', source: 'intent_country_confirm' };
   }
 
-  if (isConfirmationResponse && hasLegalTopic && !hasNepalMention && !countryConfirmed) {
+  if (isConfirmationResponse && !hasNepalMention && !countryConfirmed) {
     setCountryConfirmed(userId, true);
     const prevUserMsgs = conversationHistory.filter(m => m.role === 'user');
     const lastUserMsg = prevUserMsgs.length > 0 ? prevUserMsgs[prevUserMsgs.length - 1].content : null;
