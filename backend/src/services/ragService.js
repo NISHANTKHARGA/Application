@@ -239,70 +239,39 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     .replace(/\bfried\b/gi, 'fired')
     .replace(/\bcheated\b/gi, 'cheated')
     .replace(/\bscamed\b/gi, 'scammed');
-  const historyText = conversationHistory.length > 0
-    ? '\n\nRecent conversation:\n' + conversationHistory.slice(-6).map(m =>
-        m.role === 'user' ? `User: ${m.content.substring(0, 300)}` : `Assistant: ${m.content.substring(0, 300)}`
-      ).join('\n')
-    : '';
 
-  const facts = getFacts(userId);
-  const factsText = Object.keys(facts).length > 0
-    ? '\n\nKnown facts about this case:\n' + Object.entries(facts).map(([k, v]) => `${k}: ${v}`).join('\n')
-    : '';
-
-  await extractFacts(userMessage, userId);
-  let { intent, confidence: intentConfidence } = await intentClassifier.classifyIntent(userMessage, conversationHistory);
+  let { intent } = await intentClassifier.classifyIntent(userMessage, conversationHistory);
   setLastIntent(userId, intent);
 
-  const dynamicMode = getDynamicMode(userMessage);
-  let questionType = detectQuestionType(userMessage);
+  const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
 
-  const hasNepalMention = /\b(nepal|nepali|nepalese|kathmandu|प्रदेश|जिल्ला|मुलुकी)\b/i.test(userMessage);
-  const countryConfirmed = getCountryConfirmed(userId);
-  const hasLegalTopic = intentClassifier.LEGAL_TOPIC_KEYWORDS.some(kw => userMessage.toLowerCase().includes(kw));
-  const isConfirmationResponse = /^(yes|yeah|sure|ok|okay|alright|fine|of course|definitely|absolutely|right|that's right|correct|हो|हुन्छ|ठिक|ठीक छ|पक्कै|अवश्य)\b/i.test(userMessage.trim());
-  const mentionsOtherCountry = /\b(india|china|usa|uk|australia|canada|bangladesh|pakistan|sri lanka|bhutan|maldives|myanmar|uk|europe|america|france|germany|japan|korea|russia)\b/i.test(userMessage) && !hasNepalMention;
-
-  if (!countryConfirmed) {
+  // Handle greetings, small talk, farewells warmly
+  if (['greeting', 'small_talk', 'thanks_farewell'].includes(intent)) {
     setCountryConfirmed(userId, true);
-  }
-
-  if (mentionsOtherCountry) {
-    const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
-    const prompt = `I am a legal research assistant providing guidance on legal issues. The user is asking about legal matters in another country (not Nepal). Answer their question accurately and informatively about that country's law. Give clear numbered steps if applicable. End with a note that this information is for educational purposes. ${langPrompt}`;
-    let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
-    if (!response) response = userMessage;
-    addPreviousResponse(userId, response);
-    return { response, caseType: 'General', source: 'intent_general_groq' };
-  }
-
-  if (['greeting', 'small_talk', 'thanks_farewell', 'out_of_scope'].includes(intent)) {
-    setCountryConfirmed(userId, true);
-    const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
     const prompts = {
-      greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Identify yourself as a legal research assistant specializing in Nepali law. ${langPrompt}`,
+      greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Identify yourself as KanoonSathi AI, a legal assistant specialized exclusively in the laws of Nepal. ${langPrompt}`,
       small_talk: `The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm but professional. ${langPrompt}`,
-      thanks_farewell: `The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal guidance. ${langPrompt}`,
-      out_of_scope: `The user has asked something not related to law. Answer their question helpfully and accurately using your general knowledge. Do NOT refuse. Be informative and concise. ${langPrompt}`
+      thanks_farewell: `The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal guidance. ${langPrompt}`
     };
-    const prompt = `You are a knowledgeable and helpful AI assistant. ${prompts[intent] || 'Respond naturally and helpfully.'} Do not use markdown.`;
+    const prompt = `You are KanoonSathi AI. ${prompts[intent] || 'Respond naturally and helpfully.'} Do not use markdown.`;
     let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
     if (!response) {
-      response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali[intent === 'small_talk' ? 'small_talk' : intent === 'thanks_farewell' ? 'thanks_farewell' : 'greeting'] : intentClassifier.GREETING_RESPONSES.english[intent === 'small_talk' ? 'small_talk' : intent === 'thanks_farewell' ? 'thanks_farewell' : 'greeting'];
+      response = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali[intent === 'small_talk' ? 'small_talk' : 'greeting'] : intentClassifier.GREETING_RESPONSES.english[intent === 'small_talk' ? 'small_talk' : 'greeting'];
     }
     addPreviousResponse(userId, response);
     return { response, caseType: 'General', source: `intent_${intent}` };
   }
 
+  // Handle emergency
   if (intent === 'emergency_legal') {
     const baseResponse = language === 'nepali' ? intentClassifier.GREETING_RESPONSES.nepali.emergency_legal : intentClassifier.GREETING_RESPONSES.english.emergency_legal;
 
-    const { results: searchResults, source: searchSource } = await hybridSearch(userMessage, 3);
+    const { results: searchResults } = await hybridSearch(userMessage, 3);
     const context = buildContext(searchResults);
 
     let legalInfo = '';
-    if (searchResults && searchResults.length > 0 && searchResults[0].score > CONFIDENCE_THRESHOLD) {
-      const emergencyPrompt = `You are a Nepal legal assistant responding to an urgent legal situation. Provide critical legal information only. Be clear and direct. Include relevant helplines and immediate steps. Do not use markdown. End with a strong recommendation to contact a lawyer.`;
+    if (searchResults && searchResults.length > 0) {
+      const emergencyPrompt = `You are KanoonSathi AI responding to an urgent legal situation. Provide critical legal information ONLY from the provided references. Be clear and direct. Include relevant helplines and immediate steps. Do not use markdown. End with a strong recommendation to contact a lawyer.`;
       const emergencyResponse = await generateWithGroq(emergencyPrompt, userMessage, context);
       if (emergencyResponse) legalInfo = '\n\n' + emergencyResponse;
     }
@@ -310,111 +279,46 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     const disclaimer = language === 'nepali' ? intentClassifier.HIGH_RISK_DISCLAIMER.nepali : intentClassifier.HIGH_RISK_DISCLAIMER.english;
     const response = baseResponse + legalInfo + disclaimer;
     addPreviousResponse(userId, response);
-    return { response, caseType: 'Emergency', source: `intent_emergency${searchResults ? '_rag' : ''}` };
+    return { response, caseType: 'Emergency', source: 'intent_emergency' };
   }
 
-  const skipIntake = true;
+  // For out_of_scope: reject non-legal questions
+  if (intent === 'out_of_scope') {
+    const hasLegalTopic = intentClassifier.LEGAL_TOPIC_KEYWORDS.some(kw => userMessage.toLowerCase().includes(kw));
+    if (!hasLegalTopic) {
+      const response = language === 'nepali'
+        ? 'म KanoonSathi AI हुँ र नेपाली कानून, कानुनी अधिकार, कानुनी प्रक्रिया र सरकारी नियमहरूसँग सम्बन्धित प्रश्नहरूमा मात्र सहायता गर्न सक्छु। कृपया नेपाल कानून सम्बन्धी प्रश्न सोध्नुहोस्।'
+        : 'I am KanoonSathi AI and can only assist with questions related to Nepali laws, legal rights, legal procedures, and government regulations. Please ask a Nepal law-related question.';
+      addPreviousResponse(userId, response);
+      return { response, caseType: 'General', source: 'intent_out_of_scope' };
+    }
+  }
 
+  // From here on, treat as a legal question about Nepal
+  setCountryConfirmed(userId, true);
+
+  // Search the legal knowledge base
   const { results: searchResults, source: searchSource } = await hybridSearch(userMessage, 8);
   const reranked = rerankResults(searchResults, userMessage);
-  const highConfResults = reranked.filter(r => r.score >= CONFIDENCE_THRESHOLD);
-  const topResults = highConfResults.length > 0 ? highConfResults : reranked.slice(0, 3);
+  const topResults = reranked.filter(r => r.score >= 2.0);
 
-  if (!topResults || topResults.length === 0 || topResults[0].score < 1.0) {
-    const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
-    const searchContext = searchResults && searchResults.length > 0 ? buildContext(searchResults.slice(0, 3)) : '';
-    const fallbackPrompt = `You are a Nepali legal research assistant. Answer the user's question directly based on your knowledge of Nepal law. Be specific and practical.
-
-CRITICAL RULES:
-- If the user mentions killing, murder, death, assault, or violence: provide Nepal criminal law context (Muluki Criminal Code 2074 sections on homicide, police reporting, bail, court process, lawyer necessity)
-- If the user mentions cheating, fraud, scam: provide Nepal fraud laws, cyber bureau contacts, complaint process
-- If the user mentions firing, termination, salary: provide Nepal Labour Act 2017 provisions
-- If the user mentions property, land, rent: provide Nepal property laws, land revenue office process
-- If the user mentions divorce, marriage, family: provide Nepal family laws, district court process
-- For any topic: cite specific Nepal acts and sections, name the relevant government office, list required documents
-
-Structure answer with bold headings for each step or section. Be empathetic for personal situations.
-
-${langPrompt}
-
-${searchContext ? 'RELEVANT LEGAL REFERENCES (use if helpful):\n' + searchContext : ''}`;
-    let response = await generateWithGroq(fallbackPrompt, userMessage, null, { temperature: 0.3, maxTokens: 800 });
-    if (!response) {
-      const lower = userMessage.toLowerCase();
-      let fallbackContent = '';
-      if (/\b(kill|murder|death|die|died|homicide)\b/i.test(lower)) {
-        fallbackContent = `**Report to Police Immediately**: If someone has been killed, this is a serious criminal matter under the Muluki Criminal Code 2074. Go to the nearest police station immediately to report the incident. Call 100 for police emergency.
-
-**Legal Representation**: You MUST consult a criminal defense lawyer immediately. Do not make any statements to police without a lawyer present. A lawyer will guide you on your rights under the Criminal Procedure Code 2074.
-
-**Bail and Court Process**: Depending on the nature of the case, the court will determine bail and further proceedings under the Muluki Criminal Code 2074. The case will be heard in the District Court.
-
-**Preserve Evidence**: Do not disturb the scene. Preserve any evidence, photographs, or documents related to the incident.
-
-This is an extremely serious legal matter. Please consult a qualified Nepal criminal lawyer immediately.`;
-      } else if (/\b(cheat|fraud|scam)\b/i.test(lower)) {
-        fallbackContent = `**File a Complaint**: Visit your nearest police station or the Nepal Police Cyber Bureau (01-4779900) to file a complaint. Carry all evidence including messages, transaction records, and documents.
-
-**Legal Basis**: Fraud and cheating are punishable under the Muluki Criminal Code 2074 (Chapter on Fraud) and the Electronic Transaction Act 2063 if digital.
-
-**Documents Needed**: Screenshots, bank transfers, agreements, chat history, and any written communications.
-
-**Lawyer Consultation**: A lawyer can help draft the complaint and guide you through the court process if needed.`;
-      } else if (/\b(fire|fired|terminat|salary|wage|employ|boss|labour|labor)\b/i.test(lower)) {
-        fallbackContent = `**Labour Act 2017**: Nepal's Labour Act 2017 governs employment termination. An employer must provide valid grounds and notice period as per the Act.
-
-**Severance**: If terminated without valid reason, you may be entitled to compensation. File a complaint at the Department of Labour and Occupational Safety.
-
-**Documents to Collect**: Employment contract, salary slips, termination letter (if any), attendance records, and any communication with your employer.
-
-**File a Complaint**: Visit the nearest Office of Labour and Occupational Safety or call 1149 for labour rights information.`;
-      } else if (/\b(property|land|rent|tenant|landlord|evict)\b/i.test(lower)) {
-        fallbackContent = `**Property Laws**: Nepal's property matters are governed by the Muluki Civil Code 2074 and Land Revenue Act 2034.
-
-**File a Case**: Property disputes can be filed at the District Court or the Land Revenue Office (Malpot) depending on the nature.
-
-**Documents**: Lalpurja (land ownership certificate), rental agreement, tax receipts, and survey documents.
-
-**Mediation**: Many property disputes are first sent to mediation before court proceedings under the Civil Procedure Code 2074.`;
-      } else if (/\b(divorce|marriage|wife|husband|family|custody|maintenance|alimony)\b/i.test(lower)) {
-        fallbackContent = `**Marriage and Divorce**: Nepal's family laws are governed by the Muluki Civil Code 2074. Divorce can be filed at the District Court.
-
-**Grounds for Divorce**: Mutual consent, cruelty, adultery, desertion (3+ years), or separation (3+ years).
-
-**Child Custody**: The court decides based on the child's best interest. Mothers typically get custody of young children.
-
-**Documents**: Marriage certificate, citizenship, evidence of grounds for divorce, income details.`;
-      } else {
-        fallbackContent = `Based on Nepal law, here are the general steps for addressing this legal matter:
-
-**Consult a Lawyer**: A qualified Nepal lawyer can provide specific guidance based on the details of your case.
-
-**File at Relevant Office**: Depending on the nature - police station for criminal matters, District Court for civil cases, Department of Labour for employment issues, Land Revenue Office for property matters.
-
-**Preserve Evidence**: Keep all documents, photographs, messages, receipts, and any other evidence.
-
-The specific legal process depends on the nature of your case. Please consult a Nepal lawyer for personalized advice.`;
-      }
-      response = `${fallbackContent}\n\nThis information is educational and should not be considered formal legal advice.`;
-    }
+  // If no sufficient legal info found in knowledge base
+  if (!topResults || topResults.length === 0) {
+    const noInfoMsg = language === 'nepali'
+      ? 'मैले मेरो ज्ञान भण्डारमा यस प्रश्नको सटीक उत्तर दिन पर्याप्त कानुनी जानकारी फेला पार्न सकिन।'
+      : 'I could not find sufficient legal information in my knowledge base to answer this accurately.';
+    const addMsg = language === 'nepali'
+      ? '\n\nकृपया थप विवरणहरू प्रदान गर्नुहोस् वा योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
+      : '\n\nPlease provide more details or consult a qualified Nepal lawyer for personalized legal advice.\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
+    const response = noInfoMsg + addMsg;
     addPreviousResponse(userId, response);
-    return { response, caseType: 'General', source: 'rag_groq_fallback' };
+    return { response, caseType: 'General', source: 'rag_no_info' };
   }
 
   const context = buildContext(topResults);
-  const confidenceLevel = topResults[0].score >= HIGH_CONFIDENCE ? 'high' : topResults[0].score >= CONFIDENCE_THRESHOLD ? 'medium' : 'low';
 
-  const classificationPrompt = `You are a Nepali legal case classification expert. Analyze the user's legal problem and determine the single most relevant case type. Respond with ONLY ONE word from this list: Criminal, Property, Civil, Business, Family, Labor, Immigration, Consumer, Constitutional, Traffic, Tax, General.`;
-  let caseType = 'General';
-  try {
-    const classification = await generateWithGroq(classificationPrompt, userMessage, null);
-    if (classification) {
-      const cleaned = classification.trim().replace(/[^a-zA-Z]/g, '');
-      if (CASE_TYPE_MAP[cleaned.toLowerCase()]) caseType = CASE_TYPE_MAP[cleaned.toLowerCase()];
-      else if (SPECIALIZATION_CASE_TYPE_MAP[cleaned]) caseType = cleaned;
-    }
-  } catch (e) { console.error('Classification error:', e); }
-
+  // Classify case type from top result
+  const caseType = topResults[0].chunk.caseType || 'General';
   setLegalIssueType(userId, caseType);
 
   const previousResponses = getPreviousResponses(userId);
@@ -422,150 +326,57 @@ The specific legal process depends on the nature of your case. Please consult a 
     ? '\n\nPrevious answers you gave (DO NOT repeat these):\n' + previousResponses.slice(-3).map((r, i) => `Previous Answer ${i+1}: ${r.substring(0, 200)}`).join('\n')
     : '';
 
-  const langInstruction = language === 'nepali'
-    ? 'IMPORTANT: The user has selected Nepali language. You MUST respond in Nepali ONLY, even if the user typed in English. Use clear Nepali with proper Nepali full stops (।). Never use English.'
-    : 'IMPORTANT: Respond in the SAME language the user wrote in. If the user message contains Devanagari script (Nepali), respond in Nepali only. If the user message is in English, respond in English only. Never mix both languages in one response. For English responses, include key Nepali legal terms in parentheses when first mentioned.';
+  const responsePrompt = `You are KanoonSathi AI, an AI legal assistant specialized exclusively in the laws of Nepal.
 
-  let modeInstruction = 'Be clear and simple for non-lawyers. Explain legal terms when you use them.';
-  if (dynamicMode === 'simple') {
-    modeInstruction = 'Use very simple, plain language. Avoid legal jargon. Explain as if speaking to someone with no legal background.';
-  } else if (dynamicMode === 'detailed') {
-    modeInstruction = 'Provide thorough legal analysis. Cite specific act names, section numbers, and legal principles. Include procedural steps.';
-  } else if (dynamicMode === 'summary') {
-    modeInstruction = 'Provide a concise summary. Keep it brief and to the point. Focus on the most important information only.';
-  }
+MISSION: Your sole purpose is to provide information, guidance, and explanations related to Nepali laws, legal procedures, legal rights, government regulations, court processes, and legal documents.
 
-  let questionTypeInstruction = '';
-  if (questionType.type === 'informational') {
-    questionTypeInstruction = 'The user is asking a general informational question about Nepal law. Give a clear, direct explanation of the law, its key provisions, and any relevant penalties or requirements. Do NOT ask for personal details or treat this as a personal case. Keep it educational.';
-  } else if (questionType.type === 'procedural') {
-    questionTypeInstruction = 'The user is asking about a procedure or process in Nepal law. Give step-by-step guidance on what to do, which office to visit, what documents are needed, approximate timeline, and any applicable fees. Be practical and actionable.';
-  } else if (questionType.type === 'personal_case') {
-    questionTypeInstruction = 'The user is describing a personal legal situation. Be empathetic and supportive. Provide actionable advice on next steps. Recommend consulting a Nepal lawyer for personalized representation. Include relevant helpline numbers if applicable.';
-  } else if (questionType.type === 'comparative') {
-    questionTypeInstruction = 'The user is asking for a comparison between two legal concepts, procedures, or areas. Clearly explain what each one is, then highlight the key differences. Use a side-by-side mental comparison.';
-  } else if (questionType.type === 'definition') {
-    questionTypeInstruction = 'The user is asking for a definition of a legal term or concept. Provide a clear, simple definition first, then explain its significance in Nepal law with relevant act/section references.';
-  }
+CRITICAL RULES:
+1. Use ONLY the retrieved legal context from the knowledge base provided below as your source of truth.
+2. Never invent legal provisions, sections, punishments, or procedures.
+3. Never cite laws that are not present in the retrieved legal context.
+4. Never roleplay or switch topics outside Nepali law.
+5. Keep responses clear, concise, and understandable to ordinary citizens.
 
-  const safetyInstruction = 'NEVER claim to be a lawyer. Always recommend consulting a licensed Nepali lawyer for serious matters. End with: "This information is educational and should not be considered formal legal advice."';
+${langPrompt}
 
-  const refUrlText = legalReferences.map(r => `${r.act}: ${r.url} (${r.source})`).join('\n');
-
-const sourceInstruction = `Always cite the specific Act name and Section/Article number from the provided references. ONLY use references that were actually provided above. Do not fabricate section numbers. If the user asks about acts and sections only, give the relevant acts/sections with brief explanations and do not recommend a lawyer or any suggestions.\n\nOFFICIAL REFERENCE SOURCES:\n${refUrlText}\n\nWhen citing an Act, include its official reference URL from the list above when relevant.`;
-
-  const responsePrompt = `I am a legal research assistant and can only provide guidance on legal issues.
-
-LEGAL REFERENCES YOU MUST USE:
-1. Constitution of Nepal 2072 (2015) - Fundamental Rights: Articles 16-46, Right to equality (Art 18), right to justice (Art 20), right to property (Art 25), right to employment (Art 33)
-2. Muluki Civil Code 2074 (2017) - Contracts, property, inheritance, family law, succession
-3. Muluki Criminal Code 2074 (2017) - Criminal offenses, punishments, procedures, sexual offenses
-4. Criminal Procedure Code 2074 (2017) - FIR, bail, trial, appeals, limitation periods
-5. Civil Procedure Code 2074 (2017) - Civil litigation, summons, evidence, judgments
-6. Labour Act 2074 (2017) - Worker rights, minimum wage, termination, overtime, leave
-7. Social Security Act 2075 (2017) - SSF contributions, employee benefits, pension
-8. Company Act 2063 (2006) - Business registration, corporate governance, shareholders
-9. Consumer Protection Act 2075 (2018) - Consumer rights, complaints, defective products
-10. Electronic Transaction Act 2063 (2006) - Cyber law, digital signatures, online fraud, hacking, data protection, cyber stalking, deepfakes, copyright infringement, child online protection
-11. Human Trafficking and Transportation (Control) Act 2064 (2007) - Trafficking, forced labor, prostitution
-12. Money Laundering Prevention Act 2064 (2007) - Financial crime, KYC, suspicious transactions
-13. Evidence Act 2031 (1974) - Admissibility of evidence, witnesses, confessions, documents
-14. Arbitration Act 2055 (1999) - Alternative dispute resolution, arbitral awards
-15. Insolvency Act 2063 (2006) - Bankruptcy, liquidation, debt restructuring
-16. Limitation Act 2049 (1992) - Time limits for filing cases
-17. Domestic Violence (Offense and Punishment) Act 2066 (2009) - Domestic abuse, protection orders
-18. Children's Act 2075 (2018) - Child rights, juvenile justice, child labor
-19. Senior Citizens Act 2063 (2006) - Elderly rights, social security allowance
-20. Persons with Disabilities Rights Act 2074 (2017) - Disability rights, accessibility
-21. Caste-based Discrimination and Untouchability Act 2068 (2011) - Dalit rights, anti-discrimination
-22. Foreign Investment and Technology Transfer Act 2075 (2018) - FDI, repatriation, incentives
-23. Industrial Enterprises Act 2020 (2019) - Industry registration, incentives, classifications
-24. Cooperative Act 2048 (1992) - Savings and credit cooperatives, member rights
-25. Securities Act 2063 (2006) - Stock market, NEPSE, SEBON, insider trading
-26. Public Procurement Act 2063 (2006) - Government tenders, bidding, blacklisting
-27. Advocates Act 2055 (1999) - Legal profession, Bar Council, lawyer licensing
-28. Notary Public Act 2063 (2006) - Document certification, attestation
-29. Water Resources Act 2049 (1992) - Water rights, hydropower, irrigation
-30. Telecommunications Act 2053 (1996) - Telecom, internet, ISP regulation
-31. Social Welfare Act 2049 (1992) - Social security allowances, welfare programs
-32. Food Act 2033 (1976) - Food safety, adulteration, hygiene
-33. Extradition Act 2071 (2014) - International fugitive surrender
-34. Nepal Rastra Bank Act 2058 (2001) - Central banking, monetary policy
-35. Bank and Financial Institution Act 2073 (2016) - Banking regulation, NRB supervision
-36. Banking Offenses Act 2064 (2007) - Bank fraud, loan fraud, unauthorized transactions
-37. Nepal Citizenship Act 2063 (2006) - Citizenship by birth, descent, naturalization, NRN
-38. Foreign Employment Act 2076 (2019) - Work abroad, recruitment agency, labor permit
-39. Rights to Information Act 2064 (2007) - Public information access, Information Commission
-40. Environment Protection Act 2076 (2019) - Environmental impact assessment, pollution
-41. Land Revenue Act 2034 (1977) - Land registration, malpot, lalpurja
-42. Land Acquisition Act 2034 (1977) - Government land acquisition, compensation
-43. Local Government Operation Act 2074 (2017) - Municipality, ward, local services
-44. Election Commission Act 2073 (2016) - Voting rights, election process, EVM
-45. Insurance Act 2079 (2022) - Insurance claims, Beema Samiti, policyholder rights
-
-${langInstruction}
-
-${modeInstruction}
-
-${questionTypeInstruction}
-
-${safetyInstruction}
-
-${sourceInstruction}
-
-KNOWN FACTS ABOUT THIS CASE:
-${factsText || 'No specific facts gathered yet.'}
-
-CONVERSATION HISTORY:
-${historyText || 'This is a new conversation.'}
+RETRIEVED LEGAL KNOWLEDGE (your only source):
+${context}
 
 ${prevRepText}
 
-RESPONSE RULES - FOLLOW THIS EXACT TEMPLATE:
+RESPONSE FORMAT - Follow this EXACT structure:
 
-FIRST SENTENCE: "I am a legal research assistant and can only provide guidance on legal issues. If [describe user's situation in third person like "your friend is missing" or "your employer has not paid you"] and you are seeking legal steps under Nepali law, here are the appropriate actions:"
+Relevant Law:
+[Name of the specific Nepal Act or Law from the retrieved knowledge]
 
-Then write each step as a PARAGRAPH with a bold heading, like this:
+Section:
+[Section/Article number if available in the retrieved knowledge - do NOT fabricate]
 
-"[Step Name]: [description of the action. Full paragraph explaining what to do, where to go, what documents to provide, what information to share. Be specific about government offices, forms, and contacts.]"
+Explanation:
+[Simple, clear explanation based ONLY on the retrieved knowledge above]
 
-DO NOT use numbered lists (1., 2., 3.) or bullet points. Use bold heading format with colon.
+Next Steps:
+[Practical guidance based on the retrieved knowledge - what the user should do, which office to visit, what documents to prepare]
 
-For personal case situations, typical steps include:
-- Filing a formal complaint/report at the appropriate government office
-- Police investigation or government action
-- Further legal procedures (court orders, lawyer consultation)
+Disclaimer:
+This information is provided for educational purposes and should not be considered professional legal advice.
 
-For general informational queries: explain the law, its key provisions, and relevant procedures in paragraph format with bold section headings.
-
-After the steps, add this paragraph:
-"If you need details on the specific legal provisions relating to [topic], please let me know, and I can provide references to relevant laws or procedures if they are included in the available reference documents."
-
-Then close with:
-"If you have questions about emergency steps or safety measures outside the legal process, I recommend contacting local authorities or emergency services, as I am specialized in legal matters only."
-
-Cite the specific Act name and Section/Article number for every legal claim
-If the user reports fraud/scam/crime: include specific steps (report to Cyber Bureau at 01-4779900, file FIR, preserve evidence)
-For procedural questions (how to register, apply, file): include which government office to visit, documents needed, approximate timeline
-Use plain text only, no asterisks, no bullet points, no markdown
-Every answer must end with: "This information is educational and should not be considered formal legal advice."
-NEVER mix languages
-If the language setting is Nepali: respond in Nepali ONLY, use clear Nepali with proper Nepali full stops (।)
-If the language setting is English: respond in the SAME language as the user's message
-For English responses: include key Nepali legal terms in English
-If information is not in the provided references, say so clearly
-Do not fabricate section numbers or legal provisions
-
-Confidence level: ${confidenceLevel}
-Case type detected: ${caseType}
-If confidence is low, acknowledge limitations rather than providing uncertain information.
-
-Use plain text only. Do NOT use any markdown formatting.`;
+IMPORTANT:
+- If a section number is not in the retrieved knowledge, write "Not specified in available references" instead of making one up.
+- If the retrieved knowledge does not contain enough information for a section, write "Not specified in available references."
+- Never add information that is not present in the RETRIEVED LEGAL KNOWLEDGE section above.
+- Do not use markdown or asterisks. Use plain text only.`;
 
   let response = await generateWithGroq(responsePrompt, userMessage, context);
 
   if (!response) {
-    response = buildFallbackResponse(userMessage, topResults, language);
+    const noInfoMsg = language === 'nepali'
+      ? 'मैले मेरो ज्ञान भण्डारमा यस प्रश्नको सटीक उत्तर दिन पर्याप्त कानुनी जानकारी फेला पार्न सकिन।'
+      : 'I could not find sufficient legal information in my knowledge base to answer this accurately.';
+    const addMsg = language === 'nepali'
+      ? '\n\nकृपया थप विवरणहरू प्रदान गर्नुहोस् वा योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
+      : '\n\nPlease provide more details or consult a qualified Nepal lawyer.';
+    response = noInfoMsg + '\n\n' + addMsg + '\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
   }
 
   if (checkRepetition(previousResponses, response)) {
@@ -575,20 +386,7 @@ Use plain text only. Do NOT use any markdown formatting.`;
     response = altResponse + '\n\n---\n\n' + response;
   }
 
-  const standardDisclaimer = language === 'nepali' ? intentClassifier.STANDARD_DISCLAIMER.nepali : intentClassifier.STANDARD_DISCLAIMER.english;
-  if (!response.includes(standardDisclaimer.substring(0, 20))) {
-    response += standardDisclaimer;
-  }
-
   addPreviousResponse(userId, response);
-
-  const highRiskKeywords = ['arrest', 'domestic violence', 'custody', 'police', 'court deadline', 'bail', 'criminal charge', 'imprisonment'];
-  const lowerMessage = userMessage.toLowerCase();
-  if (highRiskKeywords.some(k => lowerMessage.includes(k.toLowerCase())) && !response.includes('consult a qualified')) {
-    response += language === 'nepali'
-      ? '\n\n⚠️ यो एक गम्भीर कानुनी मामिला हुन सक्छ। कृपया सकेसम्म चाँडो एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
-      : '\n\n⚠️ This may be a serious legal matter. Please consult a qualified Nepal lawyer as soon as possible.';
-  }
 
   if (lawyers && lawyers.length > 0) {
     const matchingLawyers = lawyers.filter(l =>
@@ -601,48 +399,33 @@ Use plain text only. Do NOT use any markdown formatting.`;
         response += `\n${i + 1}. ${lawyer.name}`;
         response += `   Specialization: ${lawyer.specialization} | ${lawyer.experience} years experience`;
       });
-      response += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+      response += '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
     } else {
       const anyLawyers = lawyers.filter(l => l.status === 'approved').slice(0, 3);
       if (anyLawyers.length > 0) {
-        response += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nRECOMMENDED LAWYERS ON KANOONSATHI\n\n`;
+        response += '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nRECOMMENDED LAWYERS ON KANOONSATHI\n\n';
         anyLawyers.forEach((lawyer, i) => {
           response += `${i + 1}. ${lawyer.name} - ${lawyer.specialization} (${lawyer.experience} yrs)\n`;
         });
-        response += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+        response += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
       }
     }
   }
 
-  return { response, caseType, source: `rag_${searchSource}_confidence_${confidenceLevel}` };
+  return { response, caseType, source: `rag_${searchSource}` };
 }
 
 function buildFallbackResponse(message, searchResults, language = 'english') {
-  if (searchResults && searchResults.length > 0 && searchResults[0].score >= CONFIDENCE_THRESHOLD) {
+  if (searchResults && searchResults.length > 0) {
     const top = searchResults[0];
     const disclaimer = language === 'nepali'
-      ? '\n\n---\n\nयो सामान्य जानकारी हो। विशेष कानुनी सल्लाहको लागि कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
-      : '\n\n---\n\nThis is general information. For specific legal advice about your situation, please consult a qualified lawyer on KanoonSathi.';
+      ? '\n\n---\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
+      : '\n\n---\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
     return top.chunk.content + disclaimer;
   }
   const msg = language === 'nepali'
-    ? `तपाईंको प्रश्नको लागि धन्यवाद।
-मैले तपाईंको प्रश्न: "${message}" को लागि पर्याप्त जानकारी फेला पार्न सकिन।
-कृपया थप विवरणहरू प्रदान गर्नुहोस् ताकि म सही मार्गदर्शन दिन सकूँ।`
-    : `I understand you're looking for legal guidance regarding: "${message}"
-
-This appears to be a legal matter. For the most accurate assistance:
-1. Please provide more details about your situation so I can give specific guidance
-2. Visit our lawyers page to connect with verified Nepali lawyers
-3. Book a consultation for personalized legal advice
-
-Alternatively, try describing:
-- What happened and when
-- Who is involved
-- What outcome you are seeking
-- Any documents you have
-
-Note: I'm an AI assistant and this response is for informational purposes only.`;
+    ? 'मैले मेरो ज्ञान भण्डारमा यस प्रश्नको सटीक उत्तर दिन पर्याप्त कानुनी जानकारी फेला पार्न सकिन। कृपया थप विवरणहरू प्रदान गर्नुहोस् वा योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
+    : 'I could not find sufficient legal information in my knowledge base to answer this accurately. Please provide more details or consult a qualified Nepal lawyer.\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
   return msg;
 }
 
