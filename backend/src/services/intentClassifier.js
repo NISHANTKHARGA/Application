@@ -63,7 +63,7 @@ Examples:
 Respond with ONLY the category name. Do NOT include any other text.`;
 
 const GREETING_PATTERNS = [
-  /^(hello|hi|hey|good\s*(morning|afternoon|evening|day)|namaste|नमस्ते|नमस्कार)\b/i,
+  /^(hel+o+|hi+|he+y+|good\s*(morning|afternoon|evening|day)|namaste|नमस्ते|नमस्कार)\b/i,
   /^(what's up|sup|howdy|hola)\b/i,
 ];
 const THANKS_PATTERNS = [
@@ -220,6 +220,7 @@ const HIGH_RISK_DISCLAIMER = {
 
 const LEGAL_TOPIC_KEYWORDS = [
   'law', 'act', 'legal', 'court', 'case', 'rights', 'petition', 'appeal',
+  'kanoon', 'kanun', 'कानून', 'कानुन', 'portal', 'website', 'platform',
   'passport', 'visa', 'citizenship', 'passport',
   'cyber', 'hacking', 'online fraud', 'phishing', 'ransomware', 'deepfake', 'stalking', 'ott', 'ecommerce', 'gambling', 'piracy', 'digital wallet', 'crypto', 'cryptocurrency', 'blockchain', 'mining',
   'divorce', 'marriage', 'custody', 'alimony', 'adoption', 'maintenance',
