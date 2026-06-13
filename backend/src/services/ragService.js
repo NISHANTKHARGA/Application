@@ -302,17 +302,48 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   const reranked = rerankResults(searchResults, userMessage);
   const topResults = reranked.filter(r => r.score >= 2.0);
 
-  // If no sufficient legal info found in knowledge base
+  // If no sufficient legal info found in knowledge base, use Groq with Nepal law context
   if (!topResults || topResults.length === 0) {
-    const noInfoMsg = language === 'nepali'
-      ? 'मैले मेरो ज्ञान भण्डारमा यस प्रश्नको सटीक उत्तर दिन पर्याप्त कानुनी जानकारी फेला पार्न सकिन।'
-      : 'I could not find sufficient legal information in my knowledge base to answer this accurately.';
-    const addMsg = language === 'nepali'
-      ? '\n\nकृपया थप विवरणहरू प्रदान गर्नुहोस् वा योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
-      : '\n\nPlease provide more details or consult a qualified Nepal lawyer for personalized legal advice.\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
-    const response = noInfoMsg + addMsg;
+    const groqPrompt = `You are KanoonSathi AI, an AI legal assistant specialized exclusively in the laws of Nepal.
+
+MISSION: Answer the user's Nepal law question based on your knowledge of Nepali legal principles.
+
+CRITICAL RULES:
+- Answer ONLY about Nepal law. If the question is not about Nepal law, say: "I can only assist with questions related to Nepali laws."
+- Provide practical, actionable guidance based on general Nepal legal principles.
+- Cite specific Nepal act names and section numbers if you are confident about them. If unsure about a section number, say "the relevant provision" instead of fabricating.
+- Keep responses clear, concise, and understandable to ordinary citizens.
+- Never roleplay or switch topics outside Nepali law.
+- If you do not know the answer, say so honestly rather than fabricating.
+
+${langPrompt}
+
+RESPONSE FORMAT - Follow this structure:
+
+Relevant Law:
+[Name of Nepal Act(s) that apply]
+
+Section:
+[Section number if known, otherwise "Refer to the relevant provision of the above Act"]
+
+Explanation:
+[Clear explanation of the law and how it applies to the user's situation]
+
+Next Steps:
+[Practical guidance - what the user should do, which office to visit, what documents to prepare]
+
+Disclaimer:
+This information is provided for educational purposes and should not be considered professional legal advice.`;
+
+    let response = await generateWithGroq(groqPrompt, userMessage, null, { temperature: 0.3, maxTokens: 800 });
+    if (!response) {
+      const fallback = language === 'nepali'
+        ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
+        : 'I could not retrieve sufficient information to answer this accurately. Please consult a qualified Nepal lawyer for personalized legal advice.';
+      response = fallback + '\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
+    }
     addPreviousResponse(userId, response);
-    return { response, caseType: 'General', source: 'rag_no_info' };
+    return { response, caseType: 'General', source: 'rag_groq_fallback' };
   }
 
   const context = buildContext(topResults);
@@ -370,13 +401,37 @@ IMPORTANT:
   let response = await generateWithGroq(responsePrompt, userMessage, context);
 
   if (!response) {
-    const noInfoMsg = language === 'nepali'
-      ? 'मैले मेरो ज्ञान भण्डारमा यस प्रश्नको सटीक उत्तर दिन पर्याप्त कानुनी जानकारी फेला पार्न सकिन।'
-      : 'I could not find sufficient legal information in my knowledge base to answer this accurately.';
-    const addMsg = language === 'nepali'
-      ? '\n\nकृपया थप विवरणहरू प्रदान गर्नुहोस् वा योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
-      : '\n\nPlease provide more details or consult a qualified Nepal lawyer.';
-    response = noInfoMsg + '\n\n' + addMsg + '\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
+    const fallbackPrompt = `You are KanoonSathi AI, a Nepal legal assistant. Answer based on your knowledge of Nepal law.
+
+${langPrompt}
+
+RETRIEVED LEGAL KNOWLEDGE (use if helpful):
+${context}
+
+Use this structure:
+Relevant Law:
+[Name of Nepal Act]
+
+Section:
+[Section if known]
+
+Explanation:
+[Clear explanation]
+
+Next Steps:
+[Practical guidance]
+
+Disclaimer:
+This information is provided for educational purposes and should not be considered professional legal advice.
+
+IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the relevant provision."`;
+    response = await generateWithGroq(fallbackPrompt, userMessage, context, { temperature: 0.3, maxTokens: 600 });
+    if (!response) {
+      const noInfoMsg = language === 'nepali'
+        ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
+        : 'I could not retrieve sufficient information to answer this accurately. Please consult a qualified Nepal lawyer.';
+      response = noInfoMsg + '\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
+    }
   }
 
   if (checkRepetition(previousResponses, response)) {
@@ -415,18 +470,35 @@ IMPORTANT:
   return { response, caseType, source: `rag_${searchSource}` };
 }
 
-function buildFallbackResponse(message, searchResults, language = 'english') {
-  if (searchResults && searchResults.length > 0) {
-    const top = searchResults[0];
-    const disclaimer = language === 'nepali'
-      ? '\n\n---\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
-      : '\n\n---\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
-    return top.chunk.content + disclaimer;
-  }
-  const msg = language === 'nepali'
-    ? 'मैले मेरो ज्ञान भण्डारमा यस प्रश्नको सटीक उत्तर दिन पर्याप्त कानुनी जानकारी फेला पार्न सकिन। कृपया थप विवरणहरू प्रदान गर्नुहोस् वा योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
-    : 'I could not find sufficient legal information in my knowledge base to answer this accurately. Please provide more details or consult a qualified Nepal lawyer.\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
-  return msg;
+async function buildFallbackResponse(message, searchResults, language = 'english') {
+  const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
+  const groqPrompt = `You are KanoonSathi AI, a Nepal legal assistant. Answer the user's Nepal law question based on your knowledge.
+
+${langPrompt}
+
+Use this structure:
+Relevant Law:
+[Name of Nepal Act]
+
+Section:
+[Section if known, otherwise "Refer to the relevant provision"]
+
+Explanation:
+[Clear explanation]
+
+Next Steps:
+[Practical guidance]
+
+Disclaimer:
+This information is provided for educational purposes and should not be considered professional legal advice.
+
+IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the relevant provision."`;
+  const response = await generateWithGroq(groqPrompt, message, null, { temperature: 0.3, maxTokens: 600 });
+  if (response) return response;
+  const fallback = language === 'nepali'
+    ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
+    : 'I could not retrieve sufficient information to answer this accurately. Please consult a qualified Nepal lawyer.\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
+  return fallback;
 }
 
 async function processMessage(message, userId = null, lawyers = [], language = 'english', conversationHistory = []) {
