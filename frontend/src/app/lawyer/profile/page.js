@@ -123,6 +123,7 @@ export default function LawyerProfilePage() {
     { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard' },
     { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
     { icon: Calendar, label: 'Appointments', href: '/lawyer/appointments' },
+    { icon: User, label: 'Profile', href: '/lawyer/profile' },
   ];
 
   return (

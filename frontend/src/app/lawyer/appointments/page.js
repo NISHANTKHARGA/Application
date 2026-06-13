@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Calendar, Clock, Video, Check, X, Home, MessageSquare, LogOut } from 'lucide-react';
+import { Scale, Calendar, Clock, Video, Check, X, Home, MessageSquare, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -102,6 +102,8 @@ export default function LawyerAppointmentsPage() {
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/lawyer/dashboard' },
     { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+    { icon: Calendar, label: 'Appointments', href: '/lawyer/appointments' },
+    { icon: User, label: 'Profile', href: '/lawyer/profile' },
   ];
 
   return (

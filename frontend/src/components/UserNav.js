@@ -15,6 +15,8 @@ const userNavItems = [
 const lawyerNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/lawyer/dashboard' },
   { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+  { icon: Calendar, label: 'Appointments', href: '/lawyer/appointments' },
+  { icon: User, label: 'Profile', href: '/lawyer/profile' },
 ];
 
 export default function UserNav({ children }) {
