@@ -387,19 +387,22 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   const topResults = highConfResults.length > 0 ? highConfResults : reranked.slice(0, 3);
 
   if (!topResults || topResults.length === 0 || topResults[0].score < 1.0) {
-    const suggestTerms = (() => {
-      const commonTopics = ['divorce', 'property', 'land', 'crime', 'cyber', 'traffic', 'tax', 'company', 'passport', 'visa', 'citizenship', 'consumer', 'labor', 'insurance', 'contract'];
-      const matched = commonTopics.filter(t => userMessage.toLowerCase().includes(t));
-      if (matched.length > 0) return matched.slice(0, 3);
-      const qWords = userMessage.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-      const topicHints = qWords.filter(w => commonTopics.some(t => t.includes(w) || w.includes(t)));
-      return topicHints.length > 0 ? topicHints.slice(0, 3) : commonTopics.slice(0, 4);
-    })();
-    const lowConfMsg = language === 'nepali'
-      ? `माफ गर्नुहोस्, मैले "${userMessage.substring(0, 60)}" को लागि सान्दर्भिक नेपाली कानूनी जानकारी फेला पार्न सकिन। कृपया थप विवरणहरू प्रदान गर्नुहोस् वा आफ्नो प्रश्न पुन: लेख्नुहोस्।\n\nतपाईं यी विषयहरूमा सोध्न सक्नुहुन्छ: ${suggestTerms.join(', ')}।`
-      : `I could not find specific Nepal legal information matching "${userMessage.substring(0, 60)}". Could you rephrase or try asking about one of these topics?\n\nYou can ask about: ${suggestTerms.join(', ')}.`;
-    addPreviousResponse(userId, lowConfMsg);
-    return { response: lowConfMsg, caseType: 'General', source: 'rag_low_confidence' };
+    const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
+    const fallbackPrompt = `You are a Nepali legal research assistant specializing in Nepal law. Answer the user's question based on your knowledge of Nepali legal principles. 
+
+Give clear, practical guidance relevant to Nepal's legal system. Cite specific Nepal acts and sections if you know them. If you are not certain about exact section numbers, provide general legal principles and recommend consulting a Nepal lawyer for specific details.
+
+Structure your answer in clear paragraphs with bold headings for each step or section.
+
+End with: "This information is educational and should not be considered formal legal advice."
+
+${langPrompt}`;
+    let response = await generateWithGroq(fallbackPrompt, userMessage, null, { temperature: 0.3, maxTokens: 800 });
+    if (!response) {
+      response = `I understand you're asking about: "${userMessage.substring(0, 100)}". Based on general Nepal legal principles, I recommend consulting a qualified Nepal lawyer who can provide specific guidance on your situation.`;
+    }
+    addPreviousResponse(userId, response);
+    return { response, caseType: 'General', source: 'rag_groq_fallback' };
   }
 
   const context = buildContext(topResults);
