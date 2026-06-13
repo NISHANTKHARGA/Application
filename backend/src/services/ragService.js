@@ -260,42 +260,21 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   const isConfirmationResponse = /^(yes|yeah|sure|ok|okay|alright|fine|of course|definitely|absolutely|right|that's right|correct|हो|हुन्छ|ठिक|ठीक छ|पक्कै|अवश्य)\b/i.test(userMessage.trim());
   const mentionsOtherCountry = /\b(india|china|usa|uk|australia|canada|bangladesh|pakistan|sri lanka|bhutan|maldives|myanmar|uk|europe|america|france|germany|japan|korea|russia)\b/i.test(userMessage) && !hasNepalMention;
 
-  if (!hasNepalMention && hasLegalTopic && !countryConfirmed && !isConfirmationResponse && !['greeting', 'small_talk', 'thanks_farewell', 'emergency_legal'].includes(intent)) {
-    if (mentionsOtherCountry) {
-      const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
-      const prompt = `I am a legal research assistant providing guidance on legal issues. The user is asking about legal matters in another country (not Nepal). Answer their question accurately and informatively about that country's law. Give clear numbered steps if applicable. End with a note that this information is for educational purposes. ${langPrompt}`;
-      let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
-      if (!response) response = userMessage;
-      addPreviousResponse(userId, response);
-      return { response, caseType: 'General', source: 'intent_general_groq' };
-    }
-    const topicMatch = intentClassifier.LEGAL_TOPIC_KEYWORDS.find(kw => userMessage.toLowerCase().includes(kw)) || 'this';
-    const askMsg = language === 'nepali'
-      ? `के तपाईं नेपालको ${topicMatch} बारेमा सोध्न चाहनुहुन्छ?`
-      : `Are you asking about Nepal ${topicMatch}?`;
-    addPreviousResponse(userId, askMsg);
-    return { response: askMsg, caseType: 'General', source: 'intent_country_confirm' };
+  if (!countryConfirmed) {
+    setCountryConfirmed(userId, true);
   }
 
-  if (isConfirmationResponse && !hasNepalMention && !countryConfirmed) {
-    setCountryConfirmed(userId, true);
-    const prevUserMsgs = conversationHistory.filter(m => m.role === 'user');
-    const lastUserMsg = prevUserMsgs.length > 0 ? prevUserMsgs[prevUserMsgs.length - 1].content : null;
-    if (lastUserMsg && !/\b(nepal|nepali)\b/i.test(lastUserMsg)) {
-      userMessage = lastUserMsg + ' in Nepal';
-    } else if (lastUserMsg) {
-      userMessage = lastUserMsg;
-    }
-    const { intent: newIntent } = await intentClassifier.classifyIntent(userMessage, conversationHistory);
-    intent = newIntent;
-    questionType = detectQuestionType(userMessage);
-  }
-
-  if (hasNepalMention && !countryConfirmed) {
-    setCountryConfirmed(userId, true);
+  if (mentionsOtherCountry) {
+    const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
+    const prompt = `I am a legal research assistant providing guidance on legal issues. The user is asking about legal matters in another country (not Nepal). Answer their question accurately and informatively about that country's law. Give clear numbered steps if applicable. End with a note that this information is for educational purposes. ${langPrompt}`;
+    let response = await generateWithGroq(prompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
+    if (!response) response = userMessage;
+    addPreviousResponse(userId, response);
+    return { response, caseType: 'General', source: 'intent_general_groq' };
   }
 
   if (['greeting', 'small_talk', 'thanks_farewell', 'out_of_scope'].includes(intent)) {
+    setCountryConfirmed(userId, true);
     const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
     const prompts = {
       greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Identify yourself as a legal research assistant specializing in Nepali law. ${langPrompt}`,
@@ -331,55 +310,7 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     return { response, caseType: 'Emergency', source: `intent_emergency${searchResults ? '_rag' : ''}` };
   }
 
-  if (intent === 'incomplete_legal_question') {
-    const missingFields = getMissingFields(userId);
-
-    if (missingFields.length === 0) {
-      const allFields = ['location', 'timeline', 'parties', 'documents', 'actionsTaken'];
-      const questions = generateFollowUpQuestions(userId, allFields, language);
-      const intro = language === 'nepali' ? intentClassifier.INCOMPLETE_QUESTION_INTRO.nepali : intentClassifier.INCOMPLETE_QUESTION_INTRO.english;
-      const response = `${intro}\n\n${questions.join('\n')}`;
-      setIntakeState(userId, 'gathering_info');
-      addPreviousResponse(userId, response);
-      return { response, caseType: 'General', source: 'intent_incomplete_intake' };
-    }
-
-    const questions = generateFollowUpQuestions(userId, missingFields.map(f => f.field), language);
-    const intro = language === 'nepali' ? intentClassifier.INCOMPLETE_QUESTION_INTRO.nepali : intentClassifier.INCOMPLETE_QUESTION_INTRO.english;
-    const response = `${intro}\n\n${questions.join('\n')}`;
-    setIntakeState(userId, 'gathering_info');
-    addPreviousResponse(userId, response);
-    return { response, caseType: 'General', source: 'intent_incomplete_intake' };
-  }
-
-  const isInfoQuery = ['informational', 'procedural', 'comparative', 'definition'].includes(questionType.type) ||
-    /^(what|how|tell|explain|describe|define|list|give)\s+(is|are|can|do|does|to|me|about)\b/i.test(userMessage.trim()) || 
-    /(?:process|procedure|steps|how\s+to|apply\s+for|renew|requirements?|eligibility|overview|guide)\b/i.test(userMessage) ||
-    /^\w+\s+(?:law|act|rule|process|passport|visa|tax|license)\s*$/i.test(userMessage.trim()) ||
-    /^\w+\s+in\s+nepal$/i.test(userMessage.trim()) ||
-    !/\b(my|i\s+(am|was|have|had|got|need|want|filed|received|did|hired|lost|bought|sold|paid|signed|agreed|called|went|visited|own|live))\b/i.test(userMessage);
-  const hasSpecificScenario = (
-    /\b(my\s+(friend|boss|employer|husband|wife|father|mother|brother|sister|son|daughter|partner|client|customer|colleague|neighbor|tenant|landlord|loyer|employee|worker|staff|account|coworker|manager|supervisor|relative))\b/i.test(userMessage) ||
-    /\b(friend|boss|employer|husband|wife|partner|colleague|neighbor|tenant|landlord|employee|coworker|manager|relative)\b/i.test(userMessage)
-  ) && /(lost|missing|unpaid|paid|not\s*paid|stolen|cheated|scammed|harassed|fired|terminated|accident|injured|hurt|died|death|arrest|arrested|beat|assault|threat|kidnap|fraud|abuse|discriminat|cheat|scam)/i.test(userMessage);
-  const skipIntake = isInfoQuery || hasSpecificScenario || (questionType.type === 'personal_case' && /\b(my\s+\w+)/i.test(userMessage) && /\b(lost|missing|pay|paid|unpaid|wage|salary|stolen|cheat|scam|accident|arrest|assault|hurt|injured|died|death|fired|terminated|harass|fraud|abuse|threat|kidnap|discriminat)\b/i.test(userMessage));
-
-  const completeness = await checkQuestionCompleteness(userMessage, userId, conversationHistory);
-
-  if (!completeness.isComplete && intent !== 'follow_up_legal_question' && !skipIntake) {
-    const missingFields = completeness.missingFields.length > 0
-      ? completeness.missingFields
-      : getMissingFields(userId).map(f => f.field);
-
-    if (missingFields.length > 0 && !hasMinimumFacts(userId)) {
-      const questions = generateFollowUpQuestions(userId, missingFields, language);
-      const intro = language === 'nepali' ? intentClassifier.INCOMPLETE_QUESTION_INTRO.nepali : intentClassifier.INCOMPLETE_QUESTION_INTRO.english;
-      const response = `${intro}\n\n${questions.join('\n')}`;
-      setIntakeState(userId, 'gathering_info');
-      addPreviousResponse(userId, response);
-      return { response, caseType: 'General', source: 'intent_completeness_check' };
-    }
-  }
+  const skipIntake = true;
 
   const { results: searchResults, source: searchSource } = await hybridSearch(userMessage, 8);
   const reranked = rerankResults(searchResults, userMessage);
