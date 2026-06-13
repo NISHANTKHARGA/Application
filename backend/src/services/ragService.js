@@ -322,45 +322,80 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
 
   if (!topResults || topResults.length === 0 || topResults[0].score < 1.0) {
     const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
-    const isPersonal = /\b(i\s+(got|was|have|had|am|did|need|want|filed|received|hired|lost|bought|sold|paid|signed|agreed|called|went|visited|own|live)|my\s+\w+)\b/i.test(userMessage);
-    const fallbackPrompt = isPersonal
-      ? `You are a Nepali legal research assistant. The user is describing a personal legal situation in Nepal. 
+    const searchContext = searchResults && searchResults.length > 0 ? buildContext(searchResults.slice(0, 3)) : '';
+    const fallbackPrompt = `You are a Nepali legal research assistant. Answer the user's question directly based on your knowledge of Nepal law. Be specific and practical.
 
-Based on your knowledge of Nepali law, provide PRACTICAL STEP-BY-STEP legal guidance. Cover:
-1. What laws apply (cite specific Nepal acts and sections if known)
-2. What the user should do step by step
-3. Which government office to visit (police, court, department, etc.)
-4. What documents to prepare
-5. Any time limits or deadlines
+CRITICAL RULES:
+- If the user mentions killing, murder, death, assault, or violence: provide Nepal criminal law context (Muluki Criminal Code 2074 sections on homicide, police reporting, bail, court process, lawyer necessity)
+- If the user mentions cheating, fraud, scam: provide Nepal fraud laws, cyber bureau contacts, complaint process
+- If the user mentions firing, termination, salary: provide Nepal Labour Act 2017 provisions
+- If the user mentions property, land, rent: provide Nepal property laws, land revenue office process
+- If the user mentions divorce, marriage, family: provide Nepal family laws, district court process
+- For any topic: cite specific Nepal acts and sections, name the relevant government office, list required documents
 
-Be specific and actionable. Structure with bold headings for each step. If a lawyer is needed, recommend consulting one.
+Structure answer with bold headings for each step or section. Be empathetic for personal situations.
 
-${langPrompt}`
-      : `You are a Nepali legal research assistant specializing in Nepal law. Answer the user's question based on your knowledge of Nepali legal principles. Cite specific Nepal acts and sections if you know them. Give clear, practical guidance relevant to Nepal's legal system.
+${langPrompt}
 
-Structure your answer in clear paragraphs with bold headings.
-
-End with: "This information is educational and should not be considered formal legal advice."
-
-${langPrompt}`;
+${searchContext ? 'RELEVANT LEGAL REFERENCES (use if helpful):\n' + searchContext : ''}`;
     let response = await generateWithGroq(fallbackPrompt, userMessage, null, { temperature: 0.3, maxTokens: 800 });
     if (!response) {
-      const fallbackContent = searchResults && searchResults.length > 0 ? searchResults[0].chunk.content : null;
-      if (fallbackContent) {
-        response = `${fallbackContent}\n\n---\n\nThis is general information. For specific legal advice about your situation, please consult a qualified lawyer on KanoonSathi.`;
+      const lower = userMessage.toLowerCase();
+      let fallbackContent = '';
+      if (/\b(kill|murder|death|die|died|homicide)\b/i.test(lower)) {
+        fallbackContent = `**Report to Police Immediately**: If someone has been killed, this is a serious criminal matter under the Muluki Criminal Code 2074. Go to the nearest police station immediately to report the incident. Call 100 for police emergency.
+
+**Legal Representation**: You MUST consult a criminal defense lawyer immediately. Do not make any statements to police without a lawyer present. A lawyer will guide you on your rights under the Criminal Procedure Code 2074.
+
+**Bail and Court Process**: Depending on the nature of the case, the court will determine bail and further proceedings under the Muluki Criminal Code 2074. The case will be heard in the District Court.
+
+**Preserve Evidence**: Do not disturb the scene. Preserve any evidence, photographs, or documents related to the incident.
+
+This is an extremely serious legal matter. Please consult a qualified Nepal criminal lawyer immediately.`;
+      } else if (/\b(cheat|fraud|scam)\b/i.test(lower)) {
+        fallbackContent = `**File a Complaint**: Visit your nearest police station or the Nepal Police Cyber Bureau (01-4779900) to file a complaint. Carry all evidence including messages, transaction records, and documents.
+
+**Legal Basis**: Fraud and cheating are punishable under the Muluki Criminal Code 2074 (Chapter on Fraud) and the Electronic Transaction Act 2063 if digital.
+
+**Documents Needed**: Screenshots, bank transfers, agreements, chat history, and any written communications.
+
+**Lawyer Consultation**: A lawyer can help draft the complaint and guide you through the court process if needed.`;
+      } else if (/\b(fire|fired|terminat|salary|wage|employ|boss|labour|labor)\b/i.test(lower)) {
+        fallbackContent = `**Labour Act 2017**: Nepal's Labour Act 2017 governs employment termination. An employer must provide valid grounds and notice period as per the Act.
+
+**Severance**: If terminated without valid reason, you may be entitled to compensation. File a complaint at the Department of Labour and Occupational Safety.
+
+**Documents to Collect**: Employment contract, salary slips, termination letter (if any), attendance records, and any communication with your employer.
+
+**File a Complaint**: Visit the nearest Office of Labour and Occupational Safety or call 1149 for labour rights information.`;
+      } else if (/\b(property|land|rent|tenant|landlord|evict)\b/i.test(lower)) {
+        fallbackContent = `**Property Laws**: Nepal's property matters are governed by the Muluki Civil Code 2074 and Land Revenue Act 2034.
+
+**File a Case**: Property disputes can be filed at the District Court or the Land Revenue Office (Malpot) depending on the nature.
+
+**Documents**: Lalpurja (land ownership certificate), rental agreement, tax receipts, and survey documents.
+
+**Mediation**: Many property disputes are first sent to mediation before court proceedings under the Civil Procedure Code 2074.`;
+      } else if (/\b(divorce|marriage|wife|husband|family|custody|maintenance|alimony)\b/i.test(lower)) {
+        fallbackContent = `**Marriage and Divorce**: Nepal's family laws are governed by the Muluki Civil Code 2074. Divorce can be filed at the District Court.
+
+**Grounds for Divorce**: Mutual consent, cruelty, adultery, desertion (3+ years), or separation (3+ years).
+
+**Child Custody**: The court decides based on the child's best interest. Mothers typically get custody of young children.
+
+**Documents**: Marriage certificate, citizenship, evidence of grounds for divorce, income details.`;
       } else {
-        response = `I understand you're facing a legal issue in Nepal. Based on Nepali law, here are the general steps you should consider:
+        fallbackContent = `Based on Nepal law, here are the general steps for addressing this legal matter:
 
-**File a Complaint**: Visit your nearest police station or the relevant government office to file a formal complaint. Carry any documents or evidence related to your case.
+**Consult a Lawyer**: A qualified Nepal lawyer can provide specific guidance based on the details of your case.
 
-**Consult a Lawyer**: For personalized guidance specific to your situation, consult a qualified Nepal lawyer who can advise on the best course of action.
+**File at Relevant Office**: Depending on the nature - police station for criminal matters, District Court for civil cases, Department of Labour for employment issues, Land Revenue Office for property matters.
 
-**Preserve Evidence**: Keep all documents, messages, receipts, photographs, or any other evidence related to your case.
+**Preserve Evidence**: Keep all documents, photographs, messages, receipts, and any other evidence.
 
-The specific legal process depends on the nature of your case. A Nepal lawyer can provide detailed advice after reviewing your documents and situation.
-
-This information is educational and should not be considered formal legal advice.`;
+The specific legal process depends on the nature of your case. Please consult a Nepal lawyer for personalized advice.`;
       }
+      response = `${fallbackContent}\n\nThis information is educational and should not be considered formal legal advice.`;
     }
     addPreviousResponse(userId, response);
     return { response, caseType: 'General', source: 'rag_groq_fallback' };
