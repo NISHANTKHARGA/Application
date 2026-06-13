@@ -358,8 +358,10 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     /^\w+\s+(?:law|act|rule|process|passport|visa|tax|license)\s*$/i.test(userMessage.trim()) ||
     /^\w+\s+in\s+nepal$/i.test(userMessage.trim()) ||
     !/\b(my|i\s+(am|was|have|had|got|need|want|filed|received|did|hired|lost|bought|sold|paid|signed|agreed|called|went|visited|own|live))\b/i.test(userMessage);
-  const hasSpecificScenario = /\b(my\s+(friend|boss|employer|husband|wife|father|mother|brother|sister|son|daughter|partner|client|customer|colleague|neighbor|tenant|landlord|loyer|employee|worker|staff|account|coworker|manager|supervisor|relative))\b/i.test(userMessage) &&
-    /(lost|missing|unpaid|paid|not\s*paid|stolen|cheated|scammed|harassed|fired|terminated|accident|injured|hurt|died|death|arrest|arrested|beat|assault|threat|kidnap|fraud|abuse|discriminat)/i.test(userMessage);
+  const hasSpecificScenario = (
+    /\b(my\s+(friend|boss|employer|husband|wife|father|mother|brother|sister|son|daughter|partner|client|customer|colleague|neighbor|tenant|landlord|loyer|employee|worker|staff|account|coworker|manager|supervisor|relative))\b/i.test(userMessage) ||
+    /\b(friend|boss|employer|husband|wife|partner|colleague|neighbor|tenant|landlord|employee|coworker|manager|relative)\b/i.test(userMessage)
+  ) && /(lost|missing|unpaid|paid|not\s*paid|stolen|cheated|scammed|harassed|fired|terminated|accident|injured|hurt|died|death|arrest|arrested|beat|assault|threat|kidnap|fraud|abuse|discriminat|cheat|scam)/i.test(userMessage);
   const skipIntake = isInfoQuery || hasSpecificScenario || (questionType.type === 'personal_case' && /\b(my\s+\w+)/i.test(userMessage) && /\b(lost|missing|pay|paid|unpaid|wage|salary|stolen|cheat|scam|accident|arrest|assault|hurt|injured|died|death|fired|terminated|harass|fraud|abuse|threat|kidnap|discriminat)\b/i.test(userMessage));
 
   const completeness = await checkQuestionCompleteness(userMessage, userId, conversationHistory);
