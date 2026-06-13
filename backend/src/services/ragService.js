@@ -302,21 +302,31 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   const reranked = rerankResults(searchResults, userMessage);
   const topResults = reranked.filter(r => r.score >= 2.0);
 
-  // If no sufficient legal info found in knowledge base, use Groq with Nepal law context
+  // If no sufficient legal info found in knowledge base, search the web and use Groq
   if (!topResults || topResults.length === 0) {
+    const { searchWeb, buildWebContext } = require('./webSearchService');
+    const webResults = await searchWeb(userMessage);
+    const webContext = buildWebContext(webResults);
+    const hasWebInfo = webResults && webResults.length > 0;
+
+    const sourceInfo = hasWebInfo
+      ? '\n\nWEB SEARCH RESULTS (use these as your primary source for Nepal law information):\n' + webContext
+      : '';
+
     const groqPrompt = `You are KanoonSathi AI, an AI legal assistant specialized exclusively in the laws of Nepal.
 
-MISSION: Answer the user's Nepal law question based on your knowledge of Nepali legal principles.
+MISSION: Answer the user's Nepal law question using the web search results below and your knowledge of Nepali legal principles.
 
 CRITICAL RULES:
-- Answer ONLY about Nepal law. If the question is not about Nepal law, say: "I can only assist with questions related to Nepali laws."
-- Provide practical, actionable guidance based on general Nepal legal principles.
+- Answer ONLY about Nepal law.
+- Use the web search results as your PRIMARY source. If they contain relevant information, cite it.
+- Provide practical, actionable guidance based on Nepal legal principles.
 - Cite specific Nepal act names and section numbers if you are confident about them. If unsure about a section number, say "the relevant provision" instead of fabricating.
 - Keep responses clear, concise, and understandable to ordinary citizens.
 - Never roleplay or switch topics outside Nepali law.
-- If you do not know the answer, say so honestly rather than fabricating.
+- If neither web search nor your knowledge has relevant information, say so honestly.
 
-${langPrompt}
+${langPrompt}${sourceInfo}
 
 RESPONSE FORMAT - Follow this structure:
 
@@ -335,7 +345,7 @@ Next Steps:
 Disclaimer:
 This information is provided for educational purposes and should not be considered professional legal advice.`;
 
-    let response = await generateWithGroq(groqPrompt, userMessage, null, { temperature: 0.3, maxTokens: 800 });
+    let response = await generateWithGroq(groqPrompt, userMessage, hasWebInfo ? webContext : null, { temperature: 0.3, maxTokens: 800 });
     if (!response) {
       const fallback = language === 'nepali'
         ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
@@ -343,7 +353,7 @@ This information is provided for educational purposes and should not be consider
       response = fallback + '\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
     }
     addPreviousResponse(userId, response);
-    return { response, caseType: 'General', source: 'rag_groq_fallback' };
+    return { response, caseType: 'General', source: hasWebInfo ? 'rag_web_fallback' : 'rag_groq_fallback' };
   }
 
   const context = buildContext(topResults);
@@ -401,12 +411,20 @@ IMPORTANT:
   let response = await generateWithGroq(responsePrompt, userMessage, context);
 
   if (!response) {
-    const fallbackPrompt = `You are KanoonSathi AI, a Nepal legal assistant. Answer based on your knowledge of Nepal law.
+    const { searchWeb, buildWebContext } = require('./webSearchService');
+    const webResults = await searchWeb(userMessage);
+    const webContext = buildWebContext(webResults);
+    const hasWebInfo = webResults && webResults.length > 0;
+    const sourceInfo = hasWebInfo
+      ? '\n\nWEB SEARCH RESULTS (use as primary source):\n' + webContext + '\n\n' + context
+      : context;
+
+    const fallbackPrompt = `You are KanoonSathi AI, a Nepal legal assistant. Answer based on the provided information and your knowledge of Nepal law.
 
 ${langPrompt}
 
-RETRIEVED LEGAL KNOWLEDGE (use if helpful):
-${context}
+INFORMATION AVAILABLE:
+${sourceInfo}
 
 Use this structure:
 Relevant Law:
@@ -425,7 +443,7 @@ Disclaimer:
 This information is provided for educational purposes and should not be considered professional legal advice.
 
 IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the relevant provision."`;
-    response = await generateWithGroq(fallbackPrompt, userMessage, context, { temperature: 0.3, maxTokens: 600 });
+    response = await generateWithGroq(fallbackPrompt, userMessage, sourceInfo, { temperature: 0.3, maxTokens: 600 });
     if (!response) {
       const noInfoMsg = language === 'nepali'
         ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
@@ -472,9 +490,16 @@ IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the rele
 
 async function buildFallbackResponse(message, searchResults, language = 'english') {
   const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
-  const groqPrompt = `You are KanoonSathi AI, a Nepal legal assistant. Answer the user's Nepal law question based on your knowledge.
+  const { searchWeb, buildWebContext } = require('./webSearchService');
+  const webResults = await searchWeb(message);
+  const webContext = buildWebContext(webResults);
+  const sourceInfo = webResults && webResults.length > 0
+    ? '\n\nWEB SEARCH RESULTS:\n' + webContext
+    : '';
 
-${langPrompt}
+  const groqPrompt = `You are KanoonSathi AI, a Nepal legal assistant. Answer the user's Nepal law question using the web search results and your knowledge.
+
+${langPrompt}${sourceInfo}
 
 Use this structure:
 Relevant Law:
@@ -493,7 +518,7 @@ Disclaimer:
 This information is provided for educational purposes and should not be considered professional legal advice.
 
 IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the relevant provision."`;
-  const response = await generateWithGroq(groqPrompt, message, null, { temperature: 0.3, maxTokens: 600 });
+  const response = await generateWithGroq(groqPrompt, message, webContext, { temperature: 0.3, maxTokens: 600 });
   if (response) return response;
   const fallback = language === 'nepali'
     ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
