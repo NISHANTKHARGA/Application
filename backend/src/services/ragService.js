@@ -250,8 +250,8 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
   if (['greeting', 'small_talk', 'thanks_farewell'].includes(intent)) {
     setCountryConfirmed(userId, true);
     const prompts = {
-      greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Identify yourself as KanoonSathi AI, a legal assistant specialized exclusively in the laws of Nepal. ${langPrompt}`,
-      small_talk: `The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm but professional. ${langPrompt}`,
+      greeting: `The user is greeting you. Respond naturally and warmly in 1-2 sentences. Identify yourself as KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws. ${langPrompt}`,
+      small_talk: `The user is making casual conversation. Respond naturally and conversationally in 1-2 sentences. Be warm and helpful. ${langPrompt}`,
       thanks_farewell: `The user is thanking you or saying goodbye. Respond naturally and gracefully in 1-2 sentences. Invite them to return if they need legal guidance. ${langPrompt}`
     };
     const prompt = `You are KanoonSathi AI. ${prompts[intent] || 'Respond naturally and helpfully.'} Do not use markdown.`;
@@ -283,16 +283,20 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     return { response, caseType: 'Emergency', source: 'intent_emergency' };
   }
 
-  // For out_of_scope: reject non-legal questions
+  // For out_of_scope: answer with Nepal context
   if (intent === 'out_of_scope') {
-    const hasLegalTopic = intentClassifier.LEGAL_TOPIC_KEYWORDS.some(kw => userMessage.toLowerCase().includes(kw));
-    if (!hasLegalTopic) {
-      const response = language === 'nepali'
-        ? 'म KanoonSathi AI हुँ र नेपाली कानून, कानुनी अधिकार, कानुनी प्रक्रिया र सरकारी नियमहरूसँग सम्बन्धित प्रश्नहरूमा मात्र सहायता गर्न सक्छु। कृपया नेपाल कानून सम्बन्धी प्रश्न सोध्नुहोस्।'
-        : 'I am KanoonSathi AI and can only assist with questions related to Nepali laws, legal rights, legal procedures, and government regulations. Please ask a Nepal law-related question.';
-      addPreviousResponse(userId, response);
-      return { response, caseType: 'General', source: 'intent_out_of_scope' };
+    const contextPrompt = `You are KanoonSathi AI. Answer the user's question helpfully and informatively. Where possible, relate your answer to Nepal's laws, regulations, legal framework, or official procedures. If the topic has no direct legal connection, provide a general informative answer and mention any relevant Nepal laws or regulations that tangentially apply. ${langPrompt}`;
+    let response = await generateWithGroq(contextPrompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
+    if (!response) {
+      response = await generateWithGemini(contextPrompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
     }
+    if (!response) {
+      response = language === 'nepali'
+        ? 'म कानूनी सहायक हुँ। कृपया आफ्नो प्रश्न सोध्नुहोस्।'
+        : 'I am a legal assistant. Please ask your question.';
+    }
+    addPreviousResponse(userId, response);
+    return { response, caseType: 'General', source: 'intent_out_of_scope' };
   }
 
   // From here on, treat as a legal question about Nepal
@@ -314,17 +318,15 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
       ? '\n\nWEB SEARCH RESULTS (use these as your primary source for Nepal law information):\n' + webContext
       : '';
 
-    const groqPrompt = `You are KanoonSathi AI, an AI legal assistant specialized exclusively in the laws of Nepal.
+    const groqPrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.
 
-MISSION: Answer the user's Nepal law question using the web search results below and your knowledge of Nepali legal principles.
+MISSION: Answer the user's question with practical information. If the topic relates to Nepal's laws, regulations, or legal procedures, provide specific guidance citing relevant Nepal acts. If the topic is not directly legal, answer helpfully and mention any applicable Nepal laws or context.
 
 CRITICAL RULES:
-- Answer ONLY about Nepal law.
-- Use the web search results as your PRIMARY source. If they contain relevant information, cite it.
-- Provide practical, actionable guidance based on Nepal legal principles.
+- Use the web search results as your PRIMARY source if provided. If they contain relevant information, cite it.
+- Provide practical, actionable guidance based on Nepal legal principles when applicable.
 - Cite specific Nepal act names and section numbers if you are confident about them. If unsure about a section number, say "the relevant provision" instead of fabricating.
-- Keep responses clear, concise, and understandable to ordinary citizens.
-- Never roleplay or switch topics outside Nepali law.
+- Keep responses clear, concise, and understandable.
 - If neither web search nor your knowledge has relevant information, say so honestly.
 
 ${langPrompt}${sourceInfo}
@@ -371,16 +373,15 @@ This information is provided for educational purposes and should not be consider
     ? '\n\nPrevious answers you gave (DO NOT repeat these):\n' + previousResponses.slice(-3).map((r, i) => `Previous Answer ${i+1}: ${r.substring(0, 200)}`).join('\n')
     : '';
 
-  const responsePrompt = `You are KanoonSathi AI, an AI legal assistant specialized exclusively in the laws of Nepal.
+  const responsePrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.
 
-MISSION: Your sole purpose is to provide information, guidance, and explanations related to Nepali laws, legal procedures, legal rights, government regulations, court processes, and legal documents.
+MISSION: Answer the user's question using the provided legal knowledge from Nepal's laws. If the topic relates to Nepal's legal framework, cite the relevant acts and sections from the knowledge below. If the topic is not directly legal, answer helpfully and mention any applicable Nepal laws or context where relevant. Keep responses understandable to ordinary citizens.
 
 CRITICAL RULES:
-1. Use ONLY the retrieved legal context from the knowledge base provided below as your source of truth.
+1. Use the retrieved legal context from the knowledge base provided below as your primary source of truth.
 2. Never invent legal provisions, sections, punishments, or procedures.
 3. Never cite laws that are not present in the retrieved legal context.
-4. Never roleplay or switch topics outside Nepali law.
-5. Keep responses clear, concise, and understandable to ordinary citizens.
+4. Keep responses clear, concise, and understandable.
 
 ${langPrompt}
 
@@ -427,7 +428,7 @@ IMPORTANT:
       ? '\n\nWEB SEARCH RESULTS (use as primary source):\n' + webContext + '\n\n' + context
       : context;
 
-    const fallbackPrompt = `You are KanoonSathi AI, a Nepal legal assistant. Answer based on the provided information and your knowledge of Nepal law.
+    const fallbackPrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws. Answer the user's question using the provided information. If the topic is legal, cite Nepal acts and sections. If not directly legal, answer helpfully with any relevant Nepal context.
 
 ${langPrompt}
 
@@ -508,7 +509,7 @@ async function buildFallbackResponse(message, searchResults, language = 'english
     ? '\n\nWEB SEARCH RESULTS:\n' + webContext
     : '';
 
-  const groqPrompt = `You are KanoonSathi AI, a Nepal legal assistant. Answer the user's Nepal law question using the web search results and your knowledge.
+  const groqPrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws. Answer the user's question using the web search results and your knowledge. Where relevant, reference Nepal's laws, regulations, and legal procedures. If the topic is not legal, answer helpfully with any applicable Nepal context.
 
 ${langPrompt}${sourceInfo}
 
