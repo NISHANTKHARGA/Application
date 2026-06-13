@@ -118,10 +118,9 @@ function searchKnowledgeBase(query, topK = 5) {
 
 async function hybridSearch(query, topK = 5) {
   const vectorResults = await vectorSearch(query, topK);
-  if (vectorResults && vectorResults.length >= topK) return { results: vectorResults, source: 'vector' };
+  const keywordResults = searchKnowledgeBase(query, topK * 2);
 
-  const keywordResults = searchKnowledgeBase(query, topK);
-  if (!vectorResults || vectorResults.length === 0) return { results: keywordResults, source: 'keyword' };
+  if (!vectorResults || vectorResults.length === 0) return { results: keywordResults.slice(0, topK), source: 'keyword' };
 
   const combined = [...vectorResults];
   const usedTitles = new Set(combined.map(r => r.chunk.title));
@@ -161,14 +160,16 @@ function determinePrimaryCaseType(results, llmClassification) {
 function rerankResults(results, query) {
   if (!results || results.length === 0) return [];
   const q = query.toLowerCase();
+  const qWords = q.split(/\s+/).filter(w => w.length > 2);
   return results.map(r => {
     const contentLower = r.chunk.content.toLowerCase();
     const titleLower = r.chunk.title.toLowerCase();
     let boost = 0;
-    const qWords = q.split(/\s+/).filter(w => w.length > 2);
     for (const w of qWords) {
-      if (titleLower.includes(w)) boost += 0.5;
-      if (contentLower.includes(w)) boost += 0.2;
+      const titleWords = titleLower.split(/\s+/);
+      if (titleWords.some(tw => tw.startsWith(w) || tw.includes(w))) boost += 3.0;
+      if (titleLower.includes(w)) boost += 2.0;
+      if (contentLower.includes(w)) boost += 0.5;
     }
     r.score = (r.score || 0) + boost;
     return r;
