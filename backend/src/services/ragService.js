@@ -235,7 +235,10 @@ function detectQuestionType(userMessage) {
 }
 
 async function processWithRAG(rawUserMessage, userId, lawyers = [], language = 'english', conversationHistory = []) {
-  let userMessage = rawUserMessage;
+  let userMessage = rawUserMessage
+    .replace(/\bfried\b/gi, 'fired')
+    .replace(/\bcheated\b/gi, 'cheated')
+    .replace(/\bscamed\b/gi, 'scammed');
   const historyText = conversationHistory.length > 0
     ? '\n\nRecent conversation:\n' + conversationHistory.slice(-6).map(m =>
         m.role === 'user' ? `User: ${m.content.substring(0, 300)}` : `Assistant: ${m.content.substring(0, 300)}`
@@ -319,18 +322,45 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
 
   if (!topResults || topResults.length === 0 || topResults[0].score < 1.0) {
     const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
-    const fallbackPrompt = `You are a Nepali legal research assistant specializing in Nepal law. Answer the user's question based on your knowledge of Nepali legal principles. 
+    const isPersonal = /\b(i\s+(got|was|have|had|am|did|need|want|filed|received|hired|lost|bought|sold|paid|signed|agreed|called|went|visited|own|live)|my\s+\w+)\b/i.test(userMessage);
+    const fallbackPrompt = isPersonal
+      ? `You are a Nepali legal research assistant. The user is describing a personal legal situation in Nepal. 
 
-Give clear, practical guidance relevant to Nepal's legal system. Cite specific Nepal acts and sections if you know them. If you are not certain about exact section numbers, provide general legal principles and recommend consulting a Nepal lawyer for specific details.
+Based on your knowledge of Nepali law, provide PRACTICAL STEP-BY-STEP legal guidance. Cover:
+1. What laws apply (cite specific Nepal acts and sections if known)
+2. What the user should do step by step
+3. Which government office to visit (police, court, department, etc.)
+4. What documents to prepare
+5. Any time limits or deadlines
 
-Structure your answer in clear paragraphs with bold headings for each step or section.
+Be specific and actionable. Structure with bold headings for each step. If a lawyer is needed, recommend consulting one.
+
+${langPrompt}`
+      : `You are a Nepali legal research assistant specializing in Nepal law. Answer the user's question based on your knowledge of Nepali legal principles. Cite specific Nepal acts and sections if you know them. Give clear, practical guidance relevant to Nepal's legal system.
+
+Structure your answer in clear paragraphs with bold headings.
 
 End with: "This information is educational and should not be considered formal legal advice."
 
 ${langPrompt}`;
     let response = await generateWithGroq(fallbackPrompt, userMessage, null, { temperature: 0.3, maxTokens: 800 });
     if (!response) {
-      response = `I understand you're asking about: "${userMessage.substring(0, 100)}". Based on general Nepal legal principles, I recommend consulting a qualified Nepal lawyer who can provide specific guidance on your situation.`;
+      const fallbackContent = searchResults && searchResults.length > 0 ? searchResults[0].chunk.content : null;
+      if (fallbackContent) {
+        response = `${fallbackContent}\n\n---\n\nThis is general information. For specific legal advice about your situation, please consult a qualified lawyer on KanoonSathi.`;
+      } else {
+        response = `I understand you're facing a legal issue in Nepal. Based on Nepali law, here are the general steps you should consider:
+
+**File a Complaint**: Visit your nearest police station or the relevant government office to file a formal complaint. Carry any documents or evidence related to your case.
+
+**Consult a Lawyer**: For personalized guidance specific to your situation, consult a qualified Nepal lawyer who can advise on the best course of action.
+
+**Preserve Evidence**: Keep all documents, messages, receipts, photographs, or any other evidence related to your case.
+
+The specific legal process depends on the nature of your case. A Nepal lawyer can provide detailed advice after reviewing your documents and situation.
+
+This information is educational and should not be considered formal legal advice.`;
+      }
     }
     addPreviousResponse(userId, response);
     return { response, caseType: 'General', source: 'rag_groq_fallback' };
