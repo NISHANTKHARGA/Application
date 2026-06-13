@@ -3,6 +3,7 @@ const legalReferences = require('../data/legal-references.json');
 const { getEmbedding, cosineSimilarity } = require('./embeddingService');
 const { Pool } = require('pg');
 const { generateWithGroq } = require('./groqClient');
+const { generateWithGemini } = require('./geminiClient');
 const intentClassifier = require('./intentClassifier');
 const { extractFacts, checkQuestionCompleteness, hasMinimumFacts, getNextQuestion, generateFollowUpQuestions, getMissingFields } = require('./legalIntake');
 const { getFacts, setLastIntent, getLastIntent, addPreviousResponse, getPreviousResponses, setLegalIssueType, getLegalIssueType, setIntakeState, getIntakeState, setCountryConfirmed, getCountryConfirmed } = require('./conversationMemory');
@@ -347,6 +348,9 @@ This information is provided for educational purposes and should not be consider
 
     let response = await generateWithGroq(groqPrompt, userMessage, hasWebInfo ? webContext : null, { temperature: 0.3, maxTokens: 800 });
     if (!response) {
+      response = await generateWithGemini(groqPrompt, userMessage, hasWebInfo ? webContext : null, { temperature: 0.3, maxTokens: 800 });
+    }
+    if (!response) {
       const fallback = language === 'nepali'
         ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
         : 'I could not retrieve sufficient information to answer this accurately. Please consult a qualified Nepal lawyer for personalized legal advice.';
@@ -411,6 +415,10 @@ IMPORTANT:
   let response = await generateWithGroq(responsePrompt, userMessage, context);
 
   if (!response) {
+    response = await generateWithGemini(responsePrompt, userMessage, context, { temperature: 0.3, maxTokens: 800 });
+  }
+
+  if (!response) {
     const { searchWeb, buildWebContext } = require('./webSearchService');
     const webResults = await searchWeb(userMessage);
     const webContext = buildWebContext(webResults);
@@ -444,6 +452,9 @@ This information is provided for educational purposes and should not be consider
 
 IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the relevant provision."`;
     response = await generateWithGroq(fallbackPrompt, userMessage, sourceInfo, { temperature: 0.3, maxTokens: 600 });
+    if (!response) {
+      response = await generateWithGemini(fallbackPrompt, userMessage, sourceInfo, { temperature: 0.3, maxTokens: 600 });
+    }
     if (!response) {
       const noInfoMsg = language === 'nepali'
         ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
@@ -518,7 +529,10 @@ Disclaimer:
 This information is provided for educational purposes and should not be considered professional legal advice.
 
 IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the relevant provision."`;
-  const response = await generateWithGroq(groqPrompt, message, webContext, { temperature: 0.3, maxTokens: 600 });
+  let response = await generateWithGroq(groqPrompt, message, webContext, { temperature: 0.3, maxTokens: 600 });
+  if (!response) {
+    response = await generateWithGemini(groqPrompt, message, webContext, { temperature: 0.3, maxTokens: 600 });
+  }
   if (response) return response;
   const fallback = language === 'nepali'
     ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।\n\nयो जानकारी शैक्षिक उद्देश्यको लागि हो र यसलाई औपचारिक कानुनी सल्लाहको रूपमा लिनु हुँदैन।'
