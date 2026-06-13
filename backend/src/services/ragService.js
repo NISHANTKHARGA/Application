@@ -3,7 +3,6 @@ const legalReferences = require('../data/legal-references.json');
 const { getEmbedding, cosineSimilarity } = require('./embeddingService');
 const { Pool } = require('pg');
 const { generateWithGroq } = require('./groqClient');
-const { generateWithGemini } = require('./geminiClient');
 const intentClassifier = require('./intentClassifier');
 const { extractFacts, checkQuestionCompleteness, hasMinimumFacts, getNextQuestion, generateFollowUpQuestions, getMissingFields } = require('./legalIntake');
 const { getFacts, setLastIntent, getLastIntent, addPreviousResponse, getPreviousResponses, setLegalIssueType, getLegalIssueType, setIntakeState, getIntakeState, setCountryConfirmed, getCountryConfirmed } = require('./conversationMemory');
@@ -288,9 +287,6 @@ async function processWithRAG(rawUserMessage, userId, lawyers = [], language = '
     const contextPrompt = `You are KanoonSathi AI. Answer the user's question helpfully and informatively. Where possible, relate your answer to Nepal's laws, regulations, legal framework, or official procedures. If the topic has no direct legal connection, provide a general informative answer and mention any relevant Nepal laws or regulations that tangentially apply. ${langPrompt}`;
     let response = await generateWithGroq(contextPrompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
     if (!response) {
-      response = await generateWithGemini(contextPrompt, userMessage, null, { temperature: 0.7, maxTokens: 500 });
-    }
-    if (!response) {
       response = language === 'nepali'
         ? 'म कानूनी सहायक हुँ। कृपया आफ्नो प्रश्न सोध्नुहोस्।'
         : 'I am a legal assistant. Please ask your question.';
@@ -350,38 +346,7 @@ This information is provided for educational purposes and should not be consider
 
     let response = await generateWithGroq(groqPrompt, userMessage, hasWebInfo ? webContext : null, { temperature: 0.3, maxTokens: 800 });
     if (!response) {
-      response = await generateWithGemini(groqPrompt, userMessage, hasWebInfo ? webContext : null, { temperature: 0.3, maxTokens: 800 });
-    }
-    if (!response) {
       response = buildLocalFallback(userMessage, language);
-    }
-
-RESPONSE FORMAT - Follow this structure:
-
-Relevant Law:
-[Name of Nepal Act(s) that apply]
-
-Section:
-[Section number if known, otherwise "Refer to the relevant provision of the above Act"]
-
-Explanation:
-[Clear explanation of the law and how it applies to the user's situation]
-
-Next Steps:
-[Practical guidance - what the user should do, which office to visit, what documents to prepare]
-
-Disclaimer:
-This information is provided for educational purposes and should not be considered professional legal advice.`;
-
-    let response = await generateWithGroq(groqPrompt, userMessage, hasWebInfo ? webContext : null, { temperature: 0.3, maxTokens: 800 });
-    if (!response) {
-      response = await generateWithGemini(groqPrompt, userMessage, hasWebInfo ? webContext : null, { temperature: 0.3, maxTokens: 800 });
-    }
-    if (!response) {
-      const fallback = language === 'nepali'
-        ? 'मैले यस प्रश्नको जवाफ दिन पर्याप्त जानकारी प्राप्त गर्न सकिन। कृपया एक योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्।'
-        : 'I could not retrieve sufficient information to answer this accurately. Please consult a qualified Nepal lawyer for personalized legal advice.';
-      response = fallback + '\n\nThis information is provided for educational purposes and should not be considered professional legal advice.';
     }
     addPreviousResponse(userId, response);
     return { response, caseType: 'General', source: hasWebInfo ? 'rag_web_fallback' : 'rag_groq_fallback' };
@@ -441,10 +406,6 @@ IMPORTANT:
   let response = await generateWithGroq(responsePrompt, userMessage, context);
 
   if (!response) {
-    response = await generateWithGemini(responsePrompt, userMessage, context, { temperature: 0.3, maxTokens: 800 });
-  }
-
-  if (!response) {
     const { searchWeb, buildWebContext } = require('./webSearchService');
     const webResults = await searchWeb(userMessage);
     const webContext = buildWebContext(webResults);
@@ -478,9 +439,6 @@ This information is provided for educational purposes and should not be consider
 
 IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the relevant provision."`;
     response = await generateWithGroq(fallbackPrompt, userMessage, sourceInfo, { temperature: 0.3, maxTokens: 600 });
-    if (!response) {
-      response = await generateWithGemini(fallbackPrompt, userMessage, sourceInfo, { temperature: 0.3, maxTokens: 600 });
-    }
     if (!response) {
       response = buildLocalFallback(userMessage, language);
     }
@@ -703,9 +661,6 @@ This information is provided for educational purposes and should not be consider
 
 IMPORTANT: Do not fabricate section numbers. If unsure, write "Refer to the relevant provision."`;
   let response = await generateWithGroq(groqPrompt, message, webContext, { temperature: 0.3, maxTokens: 600 });
-  if (!response) {
-    response = await generateWithGemini(groqPrompt, message, webContext, { temperature: 0.3, maxTokens: 600 });
-  }
   if (response) return response;
   return buildLocalFallback(message, language);
 }
