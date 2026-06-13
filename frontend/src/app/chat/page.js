@@ -81,17 +81,22 @@ export default function ChatPage() {
     setCurrentIssue(null);
 
     try {
-      const response = await api.post('/chat', { message: userMessage, language });
-      const botText = stripMarkdown(response.data.response);
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage, language }),
+      });
+      const data = await response.json();
+      const botText = stripMarkdown(data.response);
 
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(), role: 'bot', message: botText, timestamp: new Date(),
-        identifiedIssue: response.data.identifiedIssue
+        identifiedIssue: data.identifiedIssue
       }]);
 
-      if (response.data.identifiedIssue?.specialization) {
-        setCurrentIssue(response.data.identifiedIssue);
-        fetchRecommendedLawyers(response.data.identifiedIssue.specialization);
+      if (data.identifiedIssue?.specialization) {
+        setCurrentIssue(data.identifiedIssue);
+        fetchRecommendedLawyers(data.identifiedIssue.specialization);
       }
     } catch (error) {
       console.error('Chat error:', error);
