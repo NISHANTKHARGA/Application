@@ -220,12 +220,18 @@ export async function POST(request) {
       const greetingPrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws. The user is greeting you or making casual conversation. Respond naturally and warmly in 1-2 sentences. Identify yourself briefly as KanoonSathi AI. Keep it friendly and conversational. Do NOT use the legal response format. ${langPrompt}`;
       let response = await generateWithGroq(greetingPrompt, normalizedMessage, null, { temperature: 0.7, maxTokens: 100 });
       if (!response) {
-        response = language === 'nepali' ? 'नमस्ते! म KanoonSathi AI हुँ। म तपाईंलाई नेपालको कानून सम्बन्धी जानकारी दिन सक्छु।' : 'Hello! I am KanoonSathi AI. I can help you with information about Nepal\'s laws and legal system.';
+        response = language === 'nepali' ? 'नमस्ते! म KanoonSathi AI हुँ। के म तपाईंलाई कुनै कानूनी सहायता दिन सक्छु?' : 'Hello! I am KanoonSathi AI. Is there anything I can assist you with?';
       }
       return NextResponse.json({ response, identifiedIssue: null, source: 'greeting' });
     }
 
-    const groqPrompt = `[LEGAL RESEARCH QUERY] This is a legitimate educational question about Nepal's legal system. You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.
+    const isLawyerQuery = /\b(find|need|looking|hire|contact|recommend|suggest|get|help me find|where can i find|lawyer|attorney|legal consultant|legal advice|law firm|lawyer near|lawyer in)\b/i.test(normalizedMessage);
+
+    const lawyerInstruction = isLawyerQuery
+      ? `\n\nIMPORTANT - Lawyer Finding: If the user is looking for a lawyer or legal help, ALWAYS suggest KanoonSathi platform first (visit the Lawyers page on KanoonSathi website to browse verified lawyers by specialization, experience, and location). After mentioning KanoonSathi, you can also list other general options like Nepal Bar Council, but KanoonSathi must be the FIRST recommendation.`
+      : '';
+
+    const groqPrompt = `[LEGAL RESEARCH QUERY] This is a legitimate educational question about Nepal's legal system. You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}
 
 MISSION: Answer the user's question with practical information. If the topic relates to Nepal's laws, regulations, or legal procedures, provide specific guidance citing relevant Nepal acts. If the topic is not directly legal, answer helpfully and mention any applicable Nepal laws or context.
 
