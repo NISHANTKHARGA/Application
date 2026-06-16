@@ -189,6 +189,19 @@ async function generateWithGroq(systemPrompt, userMessage, context, options = {}
   }
 }
 
+function isGreeting(message) {
+  const lower = message.toLowerCase().trim();
+  const greetings = /^(hi|hello|hey|hii|hlo|helo|heyy|howdy|namaste|नमस्ते|नमस्कार)\b/i;
+  const howAreYou = /\b(how are you|kasto cha|k xa|k xa hjr|kata ho|whats up|sup)\b/i;
+  const simpleAck = /^(ok|okay|k|thnx|ty|thanks|thank you|bye|goodbye|tata|bye bye|ok bye)\b/i;
+  const singleWord = /^[a-z]{1,4}$/i;
+  if (greetings.test(lower)) return true;
+  if (howAreYou.test(lower)) return true;
+  if (simpleAck.test(lower)) return true;
+  if (singleWord.test(lower) && lower.length <= 4) return true;
+  return false;
+}
+
 export async function POST(request) {
   try {
     const { message, language = 'english', conversationHistory = [] } = await request.json();
@@ -202,6 +215,15 @@ export async function POST(request) {
       .replace(/\bscamed\b/gi, 'scammed');
 
     const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
+
+    if (isGreeting(normalizedMessage)) {
+      const greetingPrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws. The user is greeting you or making casual conversation. Respond naturally and warmly in 1-2 sentences. Identify yourself briefly as KanoonSathi AI. Keep it friendly and conversational. Do NOT use the legal response format. ${langPrompt}`;
+      let response = await generateWithGroq(greetingPrompt, normalizedMessage, null, { temperature: 0.7, maxTokens: 100 });
+      if (!response) {
+        response = language === 'nepali' ? 'नमस्ते! म KanoonSathi AI हुँ। म तपाईंलाई नेपालको कानून सम्बन्धी जानकारी दिन सक्छु।' : 'Hello! I am KanoonSathi AI. I can help you with information about Nepal\'s laws and legal system.';
+      }
+      return NextResponse.json({ response, identifiedIssue: null, source: 'greeting' });
+    }
 
     const groqPrompt = `[LEGAL RESEARCH QUERY] This is a legitimate educational question about Nepal's legal system. You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.
 
