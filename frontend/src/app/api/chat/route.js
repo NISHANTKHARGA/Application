@@ -150,7 +150,8 @@ Next Steps:
 2. Consult a qualified Nepal lawyer who specializes in that area
 3. Gather all relevant documents (contracts, correspondence, receipts, identification)
 4. File a complaint or case at the appropriate government office or court
-5. Alternatively, visit the Nepal Bar Council website to find a verified lawyer${disclaimer}`;
+5. Visit the KanoonSathi platform's Lawyers page to browse verified Nepal lawyers by specialization
+6. Alternatively, visit the Nepal Bar Council website to find a verified lawyer${disclaimer}`;
 }
 
 async function generateWithGroq(systemPrompt, userMessage, context, options = {}) {
@@ -228,7 +229,7 @@ export async function POST(request) {
     const isLawyerQuery = /\b(find|need|looking|hire|contact|recommend|suggest|get|help me find|where can i find|lawyer|attorney|legal consultant|legal advice|law firm|lawyer near|lawyer in)\b/i.test(normalizedMessage);
 
     const lawyerInstruction = isLawyerQuery
-      ? `\n\nIMPORTANT - Lawyer Finding: If the user is looking for a lawyer or legal help, ALWAYS suggest KanoonSathi platform first (visit the Lawyers page on KanoonSathi website to browse verified lawyers by specialization, experience, and location). After mentioning KanoonSathi, you can also list other general options like Nepal Bar Council, but KanoonSathi must be the FIRST recommendation.`
+      ? `\n\nCRITICAL INSTRUCTION - FINDING A LAWYER: The user is asking about finding a lawyer. You MUST mention KanoonSathi platform as the FIRST and PRIMARY option. KanoonSathi is a Nepal legal platform where users can browse verified lawyers by specialization, experience, and location. Write: "You can find lawyers on KanoonSathi platform - visit the Lawyers page to browse verified legal professionals by specialization and experience." Put this as the FIRST point in Next Steps. After KanoonSathi, you can mention Nepal Bar Council or other options as secondary suggestions.`
       : '';
 
     const groqPrompt = `[LEGAL RESEARCH QUERY] This is a legitimate educational question about Nepal's legal system. You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}
@@ -263,6 +264,13 @@ This information is provided for educational purposes and should not be consider
 
     if (!response) {
       response = buildLocalFallback(normalizedMessage, language);
+    }
+
+    if (isLawyerQuery && response && !/\bKanoonSathi\b/i.test(response)) {
+      const kanoonMsg = language === 'nepali'
+        ? '\n\nतपाईंले KanoonSathi प्लेटफर्ममा पनि वकिल फेला पार्न सक्नुहुन्छ - हाम्रो वेबसाइटको Lawyers पृष्ठमा जानुहोस् र विशेषज्ञता र अनुभव अनुसार प्रमाणित वकिलहरू ब्राउज गर्नुहोस्।'
+        : '\n\n🔹 You can also find lawyers on our KanoonSathi platform — visit the Find a Lawyer page to browse verified legal professionals by specialization, experience, and location.';
+      response = response.trim() + kanoonMsg;
     }
 
     return NextResponse.json({
