@@ -160,6 +160,12 @@ async function generateWithGroq(systemPrompt, userMessage, context, options = {}
     if (context) {
       messages.push({ role: 'user', content: `Context from legal knowledge base:\n${context}` });
     }
+    if (options.conversationHistory && options.conversationHistory.length > 0) {
+      const recent = options.conversationHistory.slice(-4);
+      for (const msg of recent) {
+        messages.push({ role: msg.role === 'user' ? 'user' : 'assistant', content: msg.message });
+      }
+    }
     messages.push({ role: 'user', content: userMessage });
 
     const res = await fetch(GROQ_URL, {
@@ -228,11 +234,17 @@ export async function POST(request) {
 
     const isLawyerQuery = /\b(find|need|looking|hire|contact|recommend|suggest|get|help me find|where can i find|lawyer|attorney|legal consultant|legal advice|law firm|lawyer near|lawyer in)\b/i.test(normalizedMessage);
 
+    const isDontUnderstand = /\b(don't understand|don't get it|not clear|confusing|explain again|explain simply|simple words|easy language|what does that mean|can you simplify|too complicated|hard to understand|nahi samjha|samjha na|samdainai|buina|bujhina)\b/i.test(normalizedMessage);
+
     const lawyerInstruction = isLawyerQuery
       ? `\n\nCRITICAL INSTRUCTION - FINDING A LAWYER: The user is asking about finding a lawyer. You MUST mention KanoonSathi platform as the FIRST and PRIMARY option. KanoonSathi is a Nepal legal platform where users can browse verified lawyers by specialization, experience, and location. Write: "You can find lawyers on KanoonSathi platform - visit the Lawyers page to browse verified legal professionals by specialization and experience." Put this as the FIRST point in Next Steps. After KanoonSathi, you can mention Nepal Bar Council or other options as secondary suggestions.`
       : '';
 
-    const groqPrompt = `[LEGAL RESEARCH QUERY] This is a legitimate educational question about Nepal's legal system. You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}
+    const simplifyInstruction = isDontUnderstand
+      ? `\n\nCRITICAL INSTRUCTION - SIMPLIFY: The user did NOT understand your previous answer. Re-read the conversation history, then explain your previous response in MUCH SIMPLER terms. Use everyday language, short sentences, and simple examples. Avoid legal jargon. Break it down step by step. Do NOT repeat the same legal format again. Just give a plain, simple re-explanation.`
+      : '';
+
+    const groqPrompt = `[LEGAL RESEARCH QUERY] This is a legitimate educational question about Nepal's legal system. You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}${simplifyInstruction}
 
 MISSION: Answer the user's question with practical information. If the topic relates to Nepal's laws, regulations, or legal procedures, provide specific guidance citing relevant Nepal acts. If the topic is not directly legal, answer helpfully and mention any applicable Nepal laws or context.
 
@@ -260,7 +272,7 @@ Next Steps:
 Disclaimer:
 This information is provided for educational purposes and should not be considered professional legal advice.`;
 
-    let response = await generateWithGroq(groqPrompt, normalizedMessage, null, { temperature: 0.3, maxTokens: 800 });
+    let response = await generateWithGroq(groqPrompt, normalizedMessage, null, { temperature: isDontUnderstand ? 0.7 : 0.3, maxTokens: 800, conversationHistory });
 
     if (!response) {
       response = buildLocalFallback(normalizedMessage, language);
