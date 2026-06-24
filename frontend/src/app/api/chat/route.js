@@ -359,10 +359,19 @@ export async function POST(request) {
     const langPrompt = language === 'nepali' ? 'CRITICAL RESPONSE LANGUAGE: Your entire response must be written in the Nepali language (Devanagari script). Do not include any English words, phrases, law names, headers, or section numbers. Every word must be in Nepali.' : 'Respond in English only.';
 
     if (isGreeting(normalizedMessage)) {
-      const greetingPrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws. The user is greeting you or making casual conversation. Respond naturally and warmly in 1-2 sentences. Identify yourself briefly as KanoonSathi AI. Keep it friendly and conversational. Do NOT use the legal response format. ${langPrompt}`;
-      let response = await generateWithGroq(greetingPrompt, normalizedMessage, null, { temperature: 0.7, maxTokens: 100 });
+      const greetingPrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws. The user is greeting you or making casual conversation. Respond naturally and warmly in 1-2 sentences, directly addressing what the user said. If they ask how you are, respond naturally. Identify yourself briefly as KanoonSathi AI. Keep it friendly and conversational. Do NOT use the legal response format. ${langPrompt}`;
+      let response = await generateWithGroq(greetingPrompt, normalizedMessage, null, { temperature: 0.7, maxTokens: 200 });
       if (!response) {
-        response = language === 'nepali' ? 'नमस्ते! म KanoonSathi AI हुँ। के म तपाईंलाई कुनै कानूनी सहायता दिन सक्छु?' : 'Hello! I am KanoonSathi AI. Is there anything I can assist you with?';
+        const isHowAreYou = /\b(how are you|kasto cha|k xa|k xa hjr|kata ho|kasto)\b/i.test(normalizedMessage);
+        if (isHowAreYou) {
+          response = language === 'nepali'
+            ? 'म ठिक छु, धन्यवाद! म KanoonSathi AI हुँ। तपाईंलाई कस्तो छ? के म तपाईंलाई कुनै कानूनी सहायता दिन सक्छु?'
+            : 'I am doing well, thank you! I am KanoonSathi AI. How are you doing? Is there anything I can assist you with?';
+        } else {
+          response = language === 'nepali'
+            ? 'नमस्ते! म KanoonSathi AI हुँ। के म तपाईंलाई कुनै कानूनी सहायता दिन सक्छु?'
+            : 'Hello! I am KanoonSathi AI. How can I help you today?';
+        }
       }
       return NextResponse.json({ response, identifiedIssue: null, source: 'greeting' });
     }
