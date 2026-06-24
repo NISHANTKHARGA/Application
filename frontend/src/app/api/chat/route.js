@@ -6,9 +6,29 @@ const MODEL = 'llama-3.3-70b-versatile';
 
 function buildLocalFallback(message, language = 'english') {
   const lower = message.toLowerCase();
-  const disclaimer = '\n\nDisclaimer: This information is provided for educational purposes and should not be considered professional legal advice.';
+  const isNepali = language === 'nepali';
+  const disclaimer = isNepali
+    ? '\n\nअस्वीकरण: यो जानकारी शैक्षिक उद्देश्यका लागि मात्र हो र यसलाई पेशेवर कानूनी सल्लाहको रूपमा लिनु हुँदैन।'
+    : '\n\nDisclaimer: This information is provided for educational purposes and should not be considered professional legal advice.';
 
   if (/\b(kill|murder|death|die|died|homicide|stab|shoot|poison|suffocat|strangle|assault|beat)\b/i.test(lower)) {
+    if (isNepali) {
+      return `सान्दर्भिक कानून (Relevant Law):
+मुलुकी फौजदारी संहिता २०७४ (राष्ट्रिय फौजदारी संहिता) - हत्याकांड र व्यक्ति विरुद्धको अपराध
+
+धारा (Section):
+हत्याकांड सम्बन्धी सान्दर्भिक धाराहरू हेर्नुहोस् (धारा १७०-१८० हत्या, मानव वध, र दोषी मानव वध)
+
+व्याख्या (Explanation):
+नेपालको मुलुकी फौजदारी संहिता २०७४ अनुसार अर्को व्यक्तिको मृत्यु निम्त्याउनु गम्भीर फौजदारी अपराध हो। कानूनले हत्या (जानाजानी मार्ने), दोषी मानव वध (मृत्यु हुन सक्छ भन्ने थाहा हुँदै काम गर्ने), र सामान्य मानव वध (लापरवाही वा उक्साहटमा मृत्यु निम्त्याउने) बीच भिन्नता राख्दछ। सजाय आजीवन कारावास देखि वर्षौंको कैदसम्म हुन सक्छ। यस्तो घटना तुरुन्त प्रहरीलाई जानकारी गराउनुपर्छ र अभियुक्तलाई कानूनी प्रतिनिधित्वको अधिकार छ।
+
+अर्को कदम (Next Steps):
+१. तुरुन्त नजिकको प्रहरी कार्यालयमा घटना रिपोर्ट गर्नुहोस् वा १०० मा फोन गर्नुहोस्
+२. ढिला नगरी फौजदारी कानूनको वकिलसँग परामर्श गर्नुहोस्
+३. प्रहरीले अनुसन्धान गरी जिल्ला अदालतमा मुद्दा दायर गर्नेछ
+४. अदालतले धरौटी (लागू भएमा) निर्धारण गरी फौजदारी कार्यविधि संहिता २०७४ अनुसार थुनुवा कारबाही अघि बढाउनेछ
+५. सबै प्रमाण संरक्षण गर्नुहोस् र कानूनी प्रक्रियामा सहयोग गर्नुहोस्${disclaimer}`;
+    }
     return `Relevant Law:
 Muluki Criminal Code 2074 (National Penal Code) - Chapter on Homicide and Offenses against the Person
 
@@ -27,6 +47,23 @@ Next Steps:
   }
 
   if (/\b(cheat|fraud|scam|deceive|dishonest|embezzle|misappropriat)\b/i.test(lower)) {
+    if (isNepali) {
+      return `सान्दर्भिक कानून (Relevant Law):
+मुलुकी फौजदारी संहिता २०७४ (ठगी र धोका सम्बन्धी अध्याय) र विद्युतीय कारोबार ऐन २०६३ (डिजिटल ठगीको लागि)
+
+धारा (Section):
+ठगी र धोका सम्बन्धी सान्दर्भिक प्रावधान हेर्नुहोस्
+
+व्याख्या (Explanation):
+नेपालको कानून अनुसार ठगी र धोका दण्डनीय अपराध हुन्। मुलुकी फौजदारी संहिता २०७४ ले धोका दिई सम्पत्ति प्राप्त गर्ने वा नोक्सानी पुर्याउने कार्यलाई फौजदारी अपराध ठहर्याउँदछ। यदि ठगी विद्युतीय माध्यमबाट भएको छ भने विद्युतीय कारोबार ऐन २०६३ पनि लागू हुन्छ।
+
+अर्को कदम (Next Steps):
+१. नजिकको प्रहरी कार्यालय वा साइबर ब्यूरो (०१-४७७९९००) मा उजुरी दिनुहोस्
+२. सबै प्रमाण जम्मा गर्नुहोस्: स्क्रिनसट, कारोबार रेकर्ड, सन्देश, इमेल
+३. घटना, संलग्न पक्ष र आर्थिक नोक्सानीको विवरण सहित लिखित उजुरी दिनुहोस्
+४. बैंकबाट रकम पठाइएको भए तुरुन्त बैंकलाई जानकारी गराउनुहोस्
+५. फौजदारी/ठगी मुद्दामा विशेषज्ञ वकिलसँग परामर्श गर्नुहोस्${disclaimer}`;
+    }
     return `Relevant Law:
 Muluki Criminal Code 2074 (Chapter on Fraud and Deception) and Electronic Transaction Act 2063 (for digital fraud)
 
@@ -45,6 +82,23 @@ Next Steps:
   }
 
   if (/\b(fire|fired|terminat|salary|wage|employ|boss|labour|labor|layoff|notice period)\b/i.test(lower)) {
+    if (isNepali) {
+      return `सान्दर्भिक कानून (Relevant Law):
+श्रम ऐन २०७४, सामाजिक सुरक्षा ऐन २०७५
+
+धारा (Section):
+श्रम ऐन २०७४ अन्तर्गत रोजगार समाप्ति, सूचना अवधि, र अलग्याउने भुक्तानी सम्बन्धी प्रावधान
+
+व्याख्या (Explanation):
+नेपालको श्रम ऐन २०७४ ले रोजगार सम्बन्धलाई नियमन गर्दछ। रोजगारदाताले वैध कारण र उचित सूचना बिना कर्मचारीलाई हटाउन सक्दैन। सूचना अवधि रोजगार सम्झौता र ऐनको प्रावधानमा निर्भर गर्दछ। वैध कारण बिना हटाइएका कर्मचारी क्षतिपूर्ति (अलग्याउने भुक्तानी) को हकदार हुन सक्छन्।
+
+अर्को कदम (Next Steps):
+१. रोजगार सम्झौतामा समाप्ति सम्बन्धी खण्ड हेर्नुहोस्
+२. कागजात जम्मा गर्नुहोस्: रोजगार सम्झौता, तलब पर्ची, समाप्ति पत्र, उपस्थिति रेकर्ड
+३. नजिकको श्रम तथा व्यावसायिक सुरक्षा कार्यालयमा उजुरी दिनुहोस्
+४. श्रम अधिकार जानकारीको लागि ११४९ मा फोन गर्नुहोस्
+५. श्रम वकिलसँग परामर्श गर्नुहोस्${disclaimer}`;
+    }
     return `Relevant Law:
 Labour Act 2074 (2017), Social Security Act 2075 (2017)
 
@@ -63,6 +117,22 @@ Next Steps:
   }
 
   if (/\b(property|land|rent|tenant|landlord|evict|lalpurja|malpot|boundary|survey)\b/i.test(lower)) {
+    if (isNepali) {
+      return `सान्दर्भिक कानून (Relevant Law):
+मुलुकी देवानी संहिता २०७४ (सम्पत्ति सम्बन्धी अध्याय), भूमि राजस्व ऐन २०३४, भूमि अधिग्रहण ऐन २०३४
+
+धारा (Section):
+सम्पत्ति अधिकार र भूमि दर्ता सम्बन्धी सान्दर्भिक प्रावधान
+
+व्याख्या (Explanation):
+नेपालमा सम्पत्ति सम्बन्धी मामिला मुलुकी देवानी संहिता २०७४ र भूमि राजस्व ऐन २०३४ द्वारा नियमन गरिन्छ। जग्गा स्वामित्व लालपुर्जा (जग्गा स्वामित्व प्रमाणपत्र) मार्फत दस्तावेज गरिन्छ। सम्पत्ति विवाद स्वामित्व, सीमाना, भाडा, बेदखली, उत्तराधिकार, र बाँडफाँटमा उत्पन्न हुन सक्छ।
+
+अर्को कदम (Next Steps):
+१. भूमि राजस्व कार्यालयबाट लालपुर्जा र सम्बन्धित सम्पत्ति कागजात प्राप्त गर्नुहोस्
+२. सीमाना विवादको लागि सर्वेक्षण विभागबाट सरकारी सर्वेक्षण गराउनुहोस्
+३. स्वामित्व वा बाँडफाँट विवादको लागि जिल्ला अदालतमा देवानी मुद्दा दायर गर्नुहोस्
+४. सम्पत्ति वकिलसँग परामर्श गर्नुहोस्${disclaimer}`;
+    }
     return `Relevant Law:
 Muluki Civil Code 2074 (Chapter on Property), Land Revenue Act 2034, Land Acquisition Act 2034
 
@@ -81,6 +151,22 @@ Next Steps:
   }
 
   if (/\b(divorce|marriage|wife|husband|family|custody|maintenance|alimony|separat)\b/i.test(lower)) {
+    if (isNepali) {
+      return `सान्दर्भिक कानून (Relevant Law):
+मुलुकी देवानी संहिता २०७४ (विवाह र परिवार सम्बन्धी अध्याय), बालबालिका ऐन २०७५
+
+धारा (Section):
+विवाह, सम्बन्धविच्छेद, र परिवार सम्बन्धी सान्दर्भिक प्रावधान
+
+व्याख्या (Explanation):
+नेपालको पारिवारिक कानून मुलुकी देवानी संहिता २०७४ मा संहिताबद्ध गरिएको छ। सम्बन्धविच्छेद आपसी सहमति, क्रूरता, व्यभिचार, परित्याग (३+ वर्ष), वा अलगाव (३+ वर्ष) को आधारमा दायर गर्न सकिन्छ। बाल संरक्षण बालकको सर्वोत्तम हितमा निर्णय गरिन्छ। पत्नी/पतिलाई भरणपोषण प्रदान गर्न सकिन्छ।
+
+अर्को कदम (Next Steps):
+१. सम्बन्धविच्छेदको लागि आफ्नो क्षेत्रको जिल्ला अदालतमा निवेदन दिनुहोस्
+२. कागजात जम्मा गर्नुहोस्: विवाह दर्ता प्रमाणपत्र, नागरिकता प्रतिलिपि, आधारको प्रमाण
+३. बाल संरक्षणको लागि अदालतले बालकको हितलाई सर्वोपरि ठान्दछ
+४. पारिवारिक वकिलसँग परामर्श गर्नुहोस्${disclaimer}`;
+    }
     return `Relevant Law:
 Muluki Civil Code 2074 (Chapter on Marriage and Family), Children's Act 2075
 
@@ -99,6 +185,22 @@ Next Steps:
   }
 
   if (/\b(accident|insurance|claim|compensation|vehicle|traffic|driving license|challan)\b/i.test(lower)) {
+    if (isNepali) {
+      return `सान्दर्भिक कानून (Relevant Law):
+बीमा ऐन २०७९, सवारी तथा यातायात व्यवस्थापन ऐन २०४९, श्रम ऐन २०७४ (कार्यस्थल दुर्घटनाको लागि)
+
+धारा (Section):
+दुर्घटना क्षतिपूर्ति र बीमा दाबी सम्बन्धी सान्दर्भिक प्रावधान
+
+व्याख्या (Explanation):
+नेपालको कानूनले सवारी दुर्घटना, कार्यस्थल घटना, वा अन्य दुर्घटनामा क्षतिपूर्तिको प्रावधान गरेको छ। बीमा ऐन २०७९ ले बीमा दाबी नियमन गर्दछ। सडक दुर्घटनाको लागि सवारी तथा यातायात व्यवस्थापन ऐन २०४९ ले तेस्रो पक्ष बीमा आवश्यक ठहर्याउँदछ।
+
+अर्को कदम (Next Steps):
+१. तुरुन्त नजिकको प्रहरी कार्यालयमा दुर्घटना रिपोर्ट गर्नुहोस्
+२. चिकित्सा उपचार लिनुहोस् र सबै मेडिकल रेकर्ड, बिल, रिपोर्ट प्राप्त गर्नुहोस्
+३. बीमा कम्पनीलाई पोलिसीको समय सीमा भित्र सूचित गर्नुहोस्
+४. गम्भीर दुर्घटनाको लागि वकिलसँग परामर्श गर्नुहोस्${disclaimer}`;
+    }
     return `Relevant Law:
 Insurance Act 2079, Motor Vehicles and Transport Management Act 2049, Labour Act 2074 (for workplace accidents)
 
@@ -117,6 +219,22 @@ Next Steps:
   }
 
   if (/\b(arrest|bail|police|detain|custody|jail|prison|criminal|fir)\b/i.test(lower)) {
+    if (isNepali) {
+      return `सान्दर्भिक कानून (Relevant Law):
+मुलुकी फौजदारी संहिता २०७४, फौजदारी कार्यविधि संहिता २०७४
+
+धारा (Section):
+पक्राउ, धरौटी, र फौजदारी कार्यविधि सम्बन्धी सान्दर्भिक प्रावधान
+
+व्याख्या (Explanation):
+नेपालको फौजदारी कार्यविधि संहिता २०७४ अनुसार पक्राउ परेको व्यक्तिलाई २४ घण्टा भित्र न्यायिक अधिकारी समक्ष पेश गर्नुपर्छ। धरौटीयोग्य अपराधमा धरौटी पाउनु अधिकार हो; गैर-धरौटीयोग्य अपराधमा अदालतको विवेकाधिकार हुन्छ। प्रहरीले पक्राउको आधार र अधिकार बारे जानकारी दिनुपर्छ।
+
+अर्को कदम (Next Steps):
+१. पक्राउ परेमा तुरुन्त वकिल र परिवारलाई सम्पर्क गर्न अनुरोध गर्नुहोस्
+२. वकिल बिना कुनै कागजातमा हस्ताक्षर नगर्नुहोस्
+३. सम्बन्धित अदालतमा धरौटी निवेदन दिनुहोस्
+४. उच्च अदालतमा धरौटी निवेदन दिन सकिन्छ${disclaimer}`;
+    }
     return `Relevant Law:
 Muluki Criminal Code 2074, Criminal Procedure Code 2074
 
@@ -134,6 +252,23 @@ Next Steps:
 5. The police must file a charge sheet within the statutory time limit or release the accused${disclaimer}`;
   }
 
+  if (isNepali) {
+    return `सान्दर्भिक कानून (Relevant Law):
+नेपालको कानून मुलुकी देवानी संहिता २०७४, मुलुकी फौजदारी संहिता २०७४, र विभिन्न क्षेत्रगत ऐनहरूमा संहिताबद्ध गरिएको छ।
+
+धारा (Section):
+कृपया तपाईंको अवस्था सम्बन्धित विशिष्ट ऐन हेर्नुहोस्
+
+व्याख्या (Explanation):
+नेपालको कानूनी प्रणालीले फौजदारी, देवानी, सम्पत्ति, परिवार, श्रम, व्यवसाय, र संवैधानिक कानून सहित विभिन्न मामिलाहरू समेट्दछ। थप विवरण बिना, म सामान्य मार्गदर्शन प्रदान गर्न सक्छु।
+
+अर्को कदम (Next Steps):
+१. तपाईंको अवस्थामा लागू हुने कानूनको विशिष्ट क्षेत्र पहिचान गर्नुहोस्
+२. सो क्षेत्रमा विशेषज्ञता भएको योग्य नेपाली वकिलसँग परामर्श गर्नुहोस्
+३. सबै सान्दर्भिक कागजात जम्मा गर्नुहोस्
+४. उपयुक्त सरकारी कार्यालय वा अदालतमा उजुरी दिनुहोस्
+५. KanoonSathi प्लेटफर्मको Lawyers पृष्ठमा जानुहोस्${disclaimer}`;
+  }
   return `I understand you're asking about a matter that may be covered under Nepal's legal framework. Based on general Nepal legal principles:
 
 Relevant Law:
@@ -198,7 +333,7 @@ async function generateWithGroq(systemPrompt, userMessage, context, options = {}
 
 function isGreeting(message) {
   const lower = message.toLowerCase().trim();
-  const greetings = /^(hi|hello|hey|hii|hlo|helo|heyy|howdy|namaste|नमस्ते|नमस्कार)\b/i;
+  const greetings = /^(hi|hello|hey|hii|hlo|helo|heyy|howdy|namaste|नमस्ते|नमस्कार)\b|^नमस्ते|^नमस्कार/i;
   const howAreYou = /\b(how are you|kasto cha|k xa|k xa hjr|kata ho|whats up|sup)\b/i;
   const simpleAck = /^(ok|okay|k|thnx|ty|thanks|thank you|bye|goodbye|tata|bye bye|ok bye)\b/i;
   const singleWord = /^[a-z]{1,4}$/i;
@@ -221,7 +356,7 @@ export async function POST(request) {
       .replace(/\bcheated\b/gi, 'cheated')
       .replace(/\bscamed\b/gi, 'scammed');
 
-    const langPrompt = language === 'nepali' ? 'Respond in Nepali only.' : 'Respond in English only.';
+    const langPrompt = language === 'nepali' ? 'CRITICAL RESPONSE LANGUAGE: Your entire response must be written in the Nepali language (Devanagari script). Do not include any English words, phrases, law names, headers, or section numbers. Every word must be in Nepali.' : 'Respond in English only.';
 
     if (isGreeting(normalizedMessage)) {
       const greetingPrompt = `You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws. The user is greeting you or making casual conversation. Respond naturally and warmly in 1-2 sentences. Identify yourself briefly as KanoonSathi AI. Keep it friendly and conversational. Do NOT use the legal response format. ${langPrompt}`;
@@ -241,23 +376,31 @@ export async function POST(request) {
       : '';
 
     const simplifyInstruction = isDontUnderstand
-      ? `\n\nCRITICAL INSTRUCTION - SIMPLIFY: The user did NOT understand your previous answer. Re-read the conversation history, then explain your previous response in MUCH SIMPLER terms. Use everyday language, short sentences, and simple examples. Avoid legal jargon. Break it down step by step. Do NOT repeat the same legal format again. Just give a plain, simple re-explanation.`
+      ? `\n\nCRITICAL INSTRUCTION - SIMPLIFY: The user did NOT understand your previous answer. Re-read the conversation history, then explain your previous response in MUCH SIMPLER terms. Use everyday language, short sentences, and simple examples. Avoid legal jargon. Break it down step by step. Do NOT repeat the same legal format again. Just give a plain, simple re-explanation. ${langPrompt}`
       : '';
 
-    const groqPrompt = `[LEGAL RESEARCH QUERY] This is a legitimate educational question about Nepal's legal system. You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}${simplifyInstruction}
+    const groqPrompt = `This is an educational question about Nepal's legal system. You are KanoonSathi AI, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}${simplifyInstruction}
 
-MISSION: Answer the user's question with practical information. If the topic relates to Nepal's laws, regulations, or legal procedures, provide specific guidance citing relevant Nepal acts. If the topic is not directly legal, answer helpfully and mention any applicable Nepal laws or context.
-
-CRITICAL RULES:
-- Provide practical, actionable guidance based on Nepal legal principles when applicable.
-- Cite specific Nepal act names and section numbers if you are confident about them. If unsure about a section number, say "the relevant provision" instead of fabricating.
-- Keep responses clear, concise, and understandable.
+MISSION: Answer the user's question with practical information about Nepal's laws. Provide specific Nepal act names and section numbers when confident. Keep responses clear and helpful.
 
 ${langPrompt}
 
 RESPONSE FORMAT - Follow this structure:
 
-Relevant Law:
+${language === 'nepali' ? `सान्दर्भिक कानून:
+[Use Nepal's law name(s) in Nepali]
+
+धारा:
+[धारा नम्बर थाहा भए उल्लेख गर्नुहोस्, नभए "माथिको कानूनको सान्दर्भिक प्रावधान हेर्नुहोस्" भन्नुहोस्]
+
+व्याख्या:
+[Clear explanation in Nepali]
+
+अर्को कदम:
+[Practical guidance in Nepali - what to do next]
+
+अस्वीकरण:
+यो जानकारी शैक्षिक उद्देश्यका लागि मात्र हो र यसलाई पेशेवर कानूनी सल्लाहको रूपमा लिनु हुँदैन।` : `Relevant Law:
 [Name of Nepal Act(s) that apply]
 
 Section:
@@ -270,9 +413,10 @@ Next Steps:
 [Practical guidance - what the user should do, which office to visit, what documents to prepare]
 
 Disclaimer:
-This information is provided for educational purposes and should not be considered professional legal advice.`;
+This information is provided for educational purposes and should not be considered professional legal advice.`}`;
 
     let response = await generateWithGroq(groqPrompt, normalizedMessage, null, { temperature: isDontUnderstand ? 0.7 : 0.3, maxTokens: 800, conversationHistory });
+    let source = response ? 'groq_ai' : 'local_fallback';
 
     if (!response) {
       response = buildLocalFallback(normalizedMessage, language);
@@ -280,7 +424,7 @@ This information is provided for educational purposes and should not be consider
 
     if (isLawyerQuery && response && !/\bKanoonSathi\b/i.test(response)) {
       const kanoonMsg = language === 'nepali'
-        ? '\n\nतपाईंले KanoonSathi प्लेटफर्ममा पनि वकिल फेला पार्न सक्नुहुन्छ - हाम्रो वेबसाइटको Lawyers पृष्ठमा जानुहोस् र विशेषज्ञता र अनुभव अनुसार प्रमाणित वकिलहरू ब्राउज गर्नुहोस्।'
+        ? '\n\nतपाईं KanoonSathi प्लेटफर्ममा पनि वकिलहरू फेला पार्न सक्नुहुन्छ — हाम्रो वेबसाइटको वकिलहरू पृष्ठमा जानुहोस् र विशेषज्ञता र अनुभव अनुसार प्रमाणित वकिलहरू हेर्नुहोस्।'
         : '\n\n🔹 You can also find lawyers on our KanoonSathi platform — visit the Find a Lawyer page to browse verified legal professionals by specialization, experience, and location.';
       response = response.trim() + kanoonMsg;
     }
@@ -288,7 +432,7 @@ This information is provided for educational purposes and should not be consider
     return NextResponse.json({
       response,
       identifiedIssue: null,
-      source: response.includes('Disclaimer') ? 'groq_ai' : 'local_fallback',
+      source,
     });
 
   } catch (error) {
