@@ -240,13 +240,15 @@ export default function LawyerDashboardPage() {
                           </>
                         )}
                         {apt.meetingLink && (
-                          <Link
+                          <a
                             href={`/video/${apt.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="btn-primary !py-2 !px-4 flex items-center gap-1"
                           >
                             <Video className="w-4 h-4" />
                             Join Meeting
-                          </Link>
+                          </a>
                         )}
                       </div>
                     </div>

@@ -174,13 +174,15 @@ export default function AppointmentsPage() {
                           </div>
                           <div className="flex gap-2">
                             {apt.meetingLink && apt.status !== 'cancelled' && (
-                              <Link
+                              <a
                                 href={`/video/${apt.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="btn-primary !py-2 !px-4 flex items-center gap-1"
                               >
                                 <Video className="w-4 h-4" />
                                 Join Meeting
-                              </Link>
+                              </a>
                             )}
                             {apt.status === 'pending' && (
                               <button
