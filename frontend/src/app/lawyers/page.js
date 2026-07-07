@@ -196,8 +196,8 @@ export default function LawyersPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {lawyers.map((lawyer) => (
-            <div key={lawyer.id} className="bg-white rounded-xl border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-200 overflow-hidden">
-              <div className="p-5">
+            <div key={lawyer.id} className="bg-white rounded-xl border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-200 overflow-hidden flex flex-col">
+              <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-start gap-3.5 mb-3">
                   {lawyer.profilePicture ? (
                     <img src={lawyer.profilePicture} alt={lawyer.name} className="w-14 h-14 rounded-full object-cover border-2 border-primary/20 shrink-0" />
@@ -217,7 +217,7 @@ export default function LawyersPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-gray-500 mb-3">
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-gray-500 mb-3 min-h-[1.25rem]">
                   <span className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
                     {lawyer.experience} yr{lawyer.experience !== 1 ? 's' : ''} exp
@@ -230,11 +230,15 @@ export default function LawyersPage() {
                   )}
                 </div>
 
-                {lawyer.bio && (
-                  <p className="text-sm text-gray-500 line-clamp-2 mb-4 leading-relaxed">{lawyer.bio}</p>
-                )}
+                <div className="min-h-[2.5rem] mb-4">
+                  {lawyer.bio ? (
+                    <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{lawyer.bio}</p>
+                  ) : (
+                    <p className="text-sm text-gray-300">&nbsp;</p>
+                  )}
+                </div>
 
-                <div className="flex gap-2 pt-1">
+                <div className="flex gap-2 pt-1 mt-auto">
                   <button
                     onClick={() => setSelectedLawyer(lawyer)}
                     className="flex-1 py-2 px-3 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
@@ -248,6 +252,9 @@ export default function LawyersPage() {
                     >
                       Book Now
                     </Link>
+                  )}
+                  {(!isAuthenticated || role !== 'user') && (
+                    <div className="flex-1" />
                   )}
                 </div>
               </div>
