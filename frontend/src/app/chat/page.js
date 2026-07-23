@@ -153,9 +153,14 @@ export default function ChatPage() {
     setLoadingLawyers(true);
     setRecommendedLawyers([]);
     try {
-      const response = await api.get(`/lawyer/specialization/${encodeURIComponent(specialization)}`);
-      if (response.data.lawyers?.length > 0) {
-        setRecommendedLawyers(response.data.lawyers.slice(0, 4));
+      const response = await api.get('/lawyer/all');
+      const lawyers = response.data.lawyers || [];
+      const matched = lawyers.filter(l =>
+        l.specialization?.toLowerCase().includes(specialization.toLowerCase()) ||
+        specialization.toLowerCase().includes(l.specialization?.toLowerCase())
+      );
+      if (matched.length > 0) {
+        setRecommendedLawyers(matched.slice(0, 4));
       }
     } catch (error) {
       console.error('Failed to fetch lawyers:', error);
