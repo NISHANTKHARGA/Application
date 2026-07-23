@@ -18,7 +18,10 @@ try {
       status: { type: DataTypes.STRING, defaultValue: 'pending' },
       notes: { type: DataTypes.TEXT, allowNull: true },
       caseSummary: { type: DataTypes.TEXT, allowNull: true },
-      duration: { type: DataTypes.INTEGER, defaultValue: 30 }
+      duration: { type: DataTypes.INTEGER, defaultValue: 30 },
+      userRating: { type: DataTypes.INTEGER, allowNull: true, validate: { min: 1, max: 5 } },
+      userReview: { type: DataTypes.TEXT, allowNull: true },
+      ratedAt: { type: DataTypes.DATE, allowNull: true }
     }, {
       tableName: 'appointments',
       timestamps: true

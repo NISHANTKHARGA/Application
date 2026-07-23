@@ -417,6 +417,80 @@ const getBookedSlots = async (req, res) => {
   }
 };
 
+const rateAppointment = async (req, res) => {
+  try {
+    const { rating, review } = req.body;
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        { model: Lawyer, as: 'lawyer' }
+      ]
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    if (appointment.userId !== req.user?.id) {
+      return res.status(403).json({ message: 'Unauthorized access' });
+    }
+
+    if (appointment.status !== 'completed') {
+      return res.status(400).json({ message: 'You can only rate completed appointments' });
+    }
+
+    if (appointment.userRating) {
+      return res.status(400).json({ message: 'You have already rated this appointment' });
+    }
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+
+    appointment.userRating = rating;
+    appointment.userReview = review || null;
+    appointment.ratedAt = new Date();
+    await appointment.save();
+
+    const lawyer = await Lawyer.findByPk(appointment.lawyerId);
+    if (lawyer) {
+      const allRatedAppointments = await Appointment.findAll({
+        where: {
+          lawyerId: lawyer.id,
+          userRating: { [require('sequelize').Op.not]: null }
+        },
+        attributes: ['userRating']
+      });
+
+      const totalRatings = allRatedAppointments.length;
+      const avgRating = totalRatings > 0
+        ? allRatedAppointments.reduce((sum, a) => sum + a.userRating, 0) / totalRatings
+        : 0;
+
+      lawyer.rating = Math.round(avgRating * 100) / 100;
+      lawyer.totalRatings = totalRatings;
+      await lawyer.save();
+    }
+
+    res.json({
+      success: true,
+      message: 'Thank you for your rating!',
+      appointment: {
+        id: appointment.id,
+        userRating: appointment.userRating,
+        userReview: appointment.userReview,
+        ratedAt: appointment.ratedAt
+      },
+      lawyer: lawyer ? {
+        rating: lawyer.rating,
+        totalRatings: lawyer.totalRatings
+      } : null
+    });
+  } catch (error) {
+    console.error('Rate appointment error:', error);
+    res.status(500).json({ message: 'Failed to rate appointment', error: error.message });
+  }
+};
+
 module.exports = {
   bookAppointment,
   getUserAppointments,
@@ -428,5 +502,6 @@ module.exports = {
   requestReschedule,
   respondReschedule,
   checkExistingBooking,
-  getBookedSlots
+  getBookedSlots,
+  rateAppointment
 };

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Calendar, Clock, Video, ChevronRight, X, Check, XCircle } from 'lucide-react';
+import { Calendar, Clock, Video, ChevronRight, X, Check, XCircle, Star } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -17,6 +17,11 @@ export default function AppointmentsPage() {
   const [rescheduleRespondModal, setRescheduleRespondModal] = useState(null);
   const [rescheduleNewDate, setRescheduleNewDate] = useState('');
   const [rescheduleNewTime, setRescheduleNewTime] = useState('');
+  const [rateModal, setRateModal] = useState(null);
+  const [rateValue, setRateValue] = useState(0);
+  const [rateHover, setRateHover] = useState(0);
+  const [rateReview, setRateReview] = useState('');
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -65,6 +70,27 @@ export default function AppointmentsPage() {
       fetchAppointments();
     } catch (error) {
       toast.error('Failed to respond to reschedule');
+    }
+  };
+
+  const handleRate = async () => {
+    if (!rateModal || !rateValue) return;
+    setRatingSubmitting(true);
+    try {
+      await api.put(`/appointment/${rateModal.id}/rate`, {
+        rating: rateValue,
+        review: rateReview.trim() || undefined
+      });
+      toast.success('Rating submitted!');
+      setRateModal(null);
+      setRateValue(0);
+      setRateHover(0);
+      setRateReview('');
+      fetchAppointments();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to submit rating');
+    } finally {
+      setRatingSubmitting(false);
     }
   };
 
@@ -243,6 +269,24 @@ export default function AppointmentsPage() {
                                 })}
                               </div>
                             </div>
+                            {apt.userRating ? (
+                              <div className="flex items-center gap-2 mt-3">
+                                <div className="flex">
+                                  {[1,2,3,4,5].map(s => (
+                                    <Star key={s} className={`w-4 h-4 ${s <= apt.userRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
+                                  ))}
+                                </div>
+                                <span className="text-sm text-gray-500">Your rating</span>
+                              </div>
+                            ) : apt.status === 'completed' ? (
+                              <button
+                                onClick={() => { setRateModal(apt); setRateValue(0); setRateHover(0); setRateReview(''); }}
+                                className="flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-lg hover:bg-primary/20 transition-colors"
+                              >
+                                <Star className="w-4 h-4" />
+                                Rate Lawyer
+                              </button>
+                            ) : null}
                           </div>
                         </div>
                       </div>
@@ -326,6 +370,72 @@ export default function AppointmentsPage() {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rateModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">Rate Your Consultation</h3>
+              <button onClick={() => setRateModal(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-gray-600 mb-5">
+              How was your experience with <span className="font-semibold">{rateModal.lawyer?.name}</span>?
+            </p>
+            <div className="flex justify-center gap-1 mb-2">
+              {[1,2,3,4,5].map(star => (
+                <button
+                  key={star}
+                  onMouseEnter={() => setRateHover(star)}
+                  onMouseLeave={() => setRateHover(0)}
+                  onClick={() => setRateValue(star)}
+                  className="p-0.5 transition-transform hover:scale-110"
+                >
+                  <Star className={`w-9 h-9 transition-colors ${
+                    star <= (rateHover || rateValue)
+                      ? 'text-yellow-400 fill-yellow-400'
+                      : 'text-gray-200'
+                  }`} />
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-sm text-gray-500 mb-4 h-5">
+              {rateValue === 1 ? 'Poor' : rateValue === 2 ? 'Fair' : rateValue === 3 ? 'Good' : rateValue === 4 ? 'Very Good' : rateValue === 5 ? 'Excellent' : ''}
+            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Review (optional)</label>
+              <textarea
+                value={rateReview}
+                onChange={(e) => setRateReview(e.target.value)}
+                placeholder="Share your experience..."
+                rows={3}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none text-sm"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setRateModal(null)}
+                className="flex-1 btn-outline"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRate}
+                disabled={!rateValue || ratingSubmitting}
+                className="flex-1 btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {ratingSubmitting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Star className="w-4 h-4" />
+                )}
+                Submit Rating
+              </button>
             </div>
           </div>
         </div>
