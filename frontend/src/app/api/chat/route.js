@@ -1,8 +1,30 @@
 import { NextResponse } from 'next/server';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const BACKEND_URL = 'https://application-nu-ochre-beryl.vercel.app/_/backend/api';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'llama-3.3-70b-versatile';
+
+async function fetchLawyers() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/lawyer/all`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.lawyers || [];
+  } catch {
+    return [];
+  }
+}
+
+function filterLawyers(lawyers, specialization) {
+  if (!specialization || lawyers.length === 0) return lawyers.slice(0, 4);
+  const target = specialization.toLowerCase();
+  const matched = lawyers.filter(l => {
+    const spec = (l.specialization || '').toLowerCase();
+    return spec.includes(target) || target.includes(spec);
+  });
+  return (matched.length > 0 ? matched : lawyers).slice(0, 4);
+}
 
 function buildLocalFallback(message, language = 'english') {
   const lower = message.toLowerCase();
@@ -473,9 +495,16 @@ This information is provided for educational purposes and should not be consider
       ? { specialization: detectedSpecialization }
       : null;
 
+    let recommendedLawyers = [];
+    if (detectedSpecialization) {
+      const allLawyers = await fetchLawyers();
+      recommendedLawyers = filterLawyers(allLawyers, detectedSpecialization);
+    }
+
     return NextResponse.json({
       response,
       identifiedIssue,
+      recommendedLawyers,
       source,
     });
 

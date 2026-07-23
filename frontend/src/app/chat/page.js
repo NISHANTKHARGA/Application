@@ -135,7 +135,11 @@ export default function ChatPage() {
 
       if (data.identifiedIssue?.specialization) {
         setCurrentIssue(data.identifiedIssue);
-        fetchRecommendedLawyers(data.identifiedIssue.specialization);
+        if (data.recommendedLawyers && data.recommendedLawyers.length > 0) {
+          setRecommendedLawyers(data.recommendedLawyers);
+        } else {
+          fetchRecommendedLawyers(data.identifiedIssue.specialization);
+        }
       }
     } catch (error) {
       console.error('Chat error:', error);
