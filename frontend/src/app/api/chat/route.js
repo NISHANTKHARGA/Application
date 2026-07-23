@@ -344,6 +344,35 @@ function isGreeting(message) {
   return false;
 }
 
+function detectLegalIssue(message) {
+  const lower = message.toLowerCase();
+  if (/\b(murder|kill|homicide|death|stab|shoot|assault|beat|stab|poison|criminal|crime|steal|theft|rob|robbery|murder|fir|arrest|bail|jail|prison|detain|accused)\b/i.test(lower)) {
+    return 'Criminal Law';
+  }
+  if (/\b(divorce|marriage|wife|husband|family|custody|maintenance|alimony|separat|domestic|violence|affair|cheat.*spouse)\b/i.test(lower)) {
+    return 'Family Law';
+  }
+  if (/\b(property|land|rent|tenant|landlord|evict|lalpurja|malpot|boundary|survey|house|flat|apartment|real estate|lease)\b/i.test(lower)) {
+    return 'Property Law';
+  }
+  if (/\b(fire|fired|terminat|salary|wage|employ|boss|labour|labor|layoff|notice period|workplace|worker|job|dismiss|resign|compensation|overtime)\b/i.test(lower)) {
+    return 'Labour Law';
+  }
+  if (/\b(cheat|fraud|scam|deceive|embezzle|cyber|online.*fraud|phish|hack|digital|internet.*crime)\b/i.test(lower)) {
+    return 'Cyber Law';
+  }
+  if (/\b(company|business|register.*company|incorporat|startup|trademark|copyright|intellectual property|patent|tax|gst|vat)\b/i.test(lower)) {
+    return 'Corporate Law';
+  }
+  if (/\b(accident|insurance|claim|compensation|vehicle|traffic|driving|challan|road|car|bike|motor)\b/i.test(lower)) {
+    return 'Accident & Insurance';
+  }
+  if ((/\b(free|right|rights|constitution|constitutional|fundamental|human rights|discrimin|equality|freedom|court|sue|case|file.*case|sue)\b/i.test(lower))) {
+    return 'Constitutional Law';
+  }
+  return null;
+}
+
 export async function POST(request) {
   try {
     const { message, language = 'english', conversationHistory = [] } = await request.json();
@@ -375,6 +404,8 @@ export async function POST(request) {
       }
       return NextResponse.json({ response, identifiedIssue: null, source: 'greeting' });
     }
+
+    const detectedSpecialization = detectLegalIssue(normalizedMessage);
 
     const isLawyerQuery = /\b(find|need|looking|hire|contact|recommend|suggest|get|help me find|where can i find|lawyer|attorney|legal consultant|legal advice|law firm|lawyer near|lawyer in)\b/i.test(normalizedMessage);
 
@@ -438,9 +469,13 @@ This information is provided for educational purposes and should not be consider
       response = response.trim() + kanoonMsg;
     }
 
+    const identifiedIssue = detectedSpecialization
+      ? { specialization: detectedSpecialization }
+      : null;
+
     return NextResponse.json({
       response,
-      identifiedIssue: null,
+      identifiedIssue,
       source,
     });
 
