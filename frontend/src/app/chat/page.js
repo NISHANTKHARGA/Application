@@ -151,12 +151,15 @@ export default function ChatPage() {
 
   const fetchRecommendedLawyers = async (specialization) => {
     setLoadingLawyers(true);
+    setRecommendedLawyers([]);
     try {
       const response = await api.get(`/lawyer/specialization/${encodeURIComponent(specialization)}`);
       if (response.data.lawyers?.length > 0) {
         setRecommendedLawyers(response.data.lawyers.slice(0, 4));
       }
-    } catch (error) { /* no lawyers found */ }
+    } catch (error) {
+      console.error('Failed to fetch lawyers:', error);
+    }
     setLoadingLawyers(false);
   };
 
@@ -395,40 +398,61 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {recommendedLawyers.length > 0 && (
+      {currentIssue?.specialization && (
         <div className="bg-gradient-to-r from-secondary to-secondary-800 px-6 py-4 shrink-0">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-5 h-5 text-white" />
               <h3 className="text-white font-semibold text-sm">
-                {language === 'nepali' ? 'सिफारिस गरिएका वकिलहरू' : `Recommended ${currentIssue?.specialization || ''} Lawyers`}
+                {language === 'nepali' ? 'सिफारिस गरिएका वकिलहरू' : `Recommended ${currentIssue.specialization} Lawyers`}
               </h3>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {recommendedLawyers.map((lawyer) => (
-                <Link key={lawyer.id} href={`/lawyers/${lawyer.id}`}
-                  className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-3 transition-all group">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="w-8 h-8 bg-primary/30 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                      {lawyer.name?.charAt(0)?.toUpperCase()}
+            {loadingLawyers ? (
+              <div className="flex items-center gap-2 py-3">
+                <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                <span className="text-white/70 text-sm">
+                  {language === 'nepali' ? 'वकिलहरू खोज्दै...' : 'Finding lawyers...'}
+                </span>
+              </div>
+            ) : recommendedLawyers.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {recommendedLawyers.map((lawyer) => (
+                  <Link key={lawyer.id} href={`/lawyers/${lawyer.id}`}
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-3 transition-all group">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-8 h-8 bg-primary/30 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        {lawyer.name?.charAt(0)?.toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{lawyer.name}</p>
+                        <p className="text-white/60 text-xs">{lawyer.specialization}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-white text-sm font-medium truncate">{lawyer.name}</p>
-                      <p className="text-white/60 text-xs">{lawyer.specialization}</p>
+                    <div className="flex items-center justify-between text-xs text-white/70">
+                      <span>{lawyer.experience} yrs</span>
+                      <span className="flex items-center gap-0.5">
+                        <span className="text-yellow-400">★</span>{lawyer.rating || '4.5'}
+                      </span>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-white/70">
-                    <span>{lawyer.experience} yrs</span>
-                    <span className="flex items-center gap-0.5">
-                      <span className="text-yellow-400">★</span>{lawyer.rating || '4.5'}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-center text-xs text-white/80 bg-primary/20 group-hover:bg-primary/40 rounded py-1.5 transition-colors">
-                    {language === 'nepali' ? 'परामर्श बुक गर्नुहोस्' : 'Book Consultation'}
-                  </div>
+                    <div className="mt-2 text-center text-xs text-white/80 bg-primary/20 group-hover:bg-primary/40 rounded py-1.5 transition-colors">
+                      {language === 'nepali' ? 'परामर्श बुक गर्नुहोस्' : 'Book Consultation'}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-3">
+                <p className="text-white/70 text-sm mb-2">
+                  {language === 'nepali'
+                    ? `अहिले "${currentIssue.specialization}" क्षेत्रमा वकिल उपलब्ध छैनन्।`
+                    : `No lawyers currently available for ${currentIssue.specialization}.`}
+                </p>
+                <Link href="/lawyers" className="inline-flex items-center gap-1 text-white text-sm font-medium hover:underline">
+                  <Users className="w-4 h-4" />
+                  {language === 'nepali' ? 'सबै वकिलहरू ब्राउज गर्नुहोस् →' : 'Browse all lawyers →'}
                 </Link>
-              ))}
-            </div>
+              </div>
+            )}
             <div className="mt-2.5 text-center">
               <Link href="/lawyers" className="text-white/70 hover:text-white text-xs underline">
                 {language === 'nepali' ? 'सबै वकिलहरू हेर्नुहोस् →' : 'View all lawyers →'}
