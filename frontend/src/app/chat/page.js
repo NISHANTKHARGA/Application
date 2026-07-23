@@ -155,13 +155,12 @@ export default function ChatPage() {
     try {
       const response = await api.get('/lawyer/all');
       const lawyers = response.data.lawyers || [];
-      const matched = lawyers.filter(l =>
-        l.specialization?.toLowerCase().includes(specialization.toLowerCase()) ||
-        specialization.toLowerCase().includes(l.specialization?.toLowerCase())
-      );
-      if (matched.length > 0) {
-        setRecommendedLawyers(matched.slice(0, 4));
-      }
+      const matched = lawyers.filter(l => {
+        const spec = (l.specialization || '').toLowerCase();
+        const target = specialization.toLowerCase();
+        return spec.includes(target) || target.includes(spec);
+      });
+      setRecommendedLawyers((matched.length > 0 ? matched : lawyers).slice(0, 4));
     } catch (error) {
       console.error('Failed to fetch lawyers:', error);
     }
@@ -403,6 +402,53 @@ export default function ChatPage() {
         </div>
       </div>
 
+      <div className="bg-white border-t border-gray-200 px-4 py-3 shrink-0">
+        <div className="max-w-4xl mx-auto">
+          {isLimitReached && (
+            <div className="mb-2 p-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+              <span className="text-xs text-amber-700">
+                {language === 'nepali'
+                  ? 'तपाईंको नि:शुल्क प्रश्न सकियो। थप सोध्न लगइन गर्नुहोस्।'
+                  : 'Free questions used up. Log in to ask more.'}
+              </span>
+              <div className="flex gap-2">
+                <Link href="/login" className="text-xs font-medium text-primary hover:underline">
+                  {language === 'nepali' ? 'लगइन' : 'Login'}
+                </Link>
+                <Link href="/register" className="text-xs font-medium text-secondary hover:underline">
+                  {language === 'nepali' ? 'साइनअप' : 'Sign Up'}
+                </Link>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 relative">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={isLimitReached
+                  ? (language === 'nepali' ? 'लगइन गर्नुहोस् वा साइनअप गर्नुहोस्...' : 'Login or sign up to continue...')
+                  : (language === 'nepali' ? 'आफ्नो कानुनी प्रश्न लेख्नुहोस्...' : "Ask a legal question...")}
+                disabled={isLimitReached}
+                className="w-full px-4 py-2.5 pr-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none text-sm bg-gray-50 hover:bg-white focus:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                rows={1}
+              />
+            </div>
+            <button onClick={() => handleSend()} disabled={!input.trim() || isTyping || isLimitReached}
+              className="btn-primary !p-2.5 rounded-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+              {isLimitReached ? <Lock className="w-5 h-5" /> : <Send className="w-5 h-5" />}
+            </button>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-[11px] text-gray-400">{language === 'nepali' ? 'AI जानकारी मात्र हो, कानुनी सल्लाह होइन।' : 'AI responses are for informational purposes only.'}</p>
+            <Link href="/lawyers" className="text-[11px] text-primary hover:underline flex items-center gap-1">
+              <MessageSquare className="w-3 h-3" />{language === 'nepali' ? 'वकिल खोज्नुहोस्' : 'Find a Lawyer'}
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {currentIssue?.specialization && (
         <div className="bg-gradient-to-r from-secondary to-secondary-800 px-6 py-4 shrink-0">
           <div className="max-w-4xl mx-auto">
@@ -458,61 +504,9 @@ export default function ChatPage() {
                 </Link>
               </div>
             )}
-            <div className="mt-2.5 text-center">
-              <Link href="/lawyers" className="text-white/70 hover:text-white text-xs underline">
-                {language === 'nepali' ? 'सबै वकिलहरू हेर्नुहोस् →' : 'View all lawyers →'}
-              </Link>
-            </div>
           </div>
         </div>
       )}
-
-      <div className="bg-white border-t border-gray-200 px-4 py-3 shrink-0">
-        <div className="max-w-4xl mx-auto">
-          {isLimitReached && (
-            <div className="mb-2 p-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
-              <span className="text-xs text-amber-700">
-                {language === 'nepali'
-                  ? 'तपाईंको नि:शुल्क प्रश्न सकियो। थप सोध्न लगइन गर्नुहोस्।'
-                  : 'Free questions used up. Log in to ask more.'}
-              </span>
-              <div className="flex gap-2">
-                <Link href="/login" className="text-xs font-medium text-primary hover:underline">
-                  {language === 'nepali' ? 'लगइन' : 'Login'}
-                </Link>
-                <Link href="/register" className="text-xs font-medium text-secondary hover:underline">
-                  {language === 'nepali' ? 'साइनअप' : 'Sign Up'}
-                </Link>
-              </div>
-            </div>
-          )}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 relative">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={isLimitReached
-                  ? (language === 'nepali' ? 'लगइन गर्नुहोस् वा साइनअप गर्नुहोस्...' : 'Login or sign up to continue...')
-                  : (language === 'nepali' ? 'आफ्नो कानुनी प्रश्न लेख्नुहोस्...' : "Ask a legal question...")}
-                disabled={isLimitReached}
-                className="w-full px-4 py-2.5 pr-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none text-sm bg-gray-50 hover:bg-white focus:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                rows={1}
-              />
-            </div>
-            <button onClick={() => handleSend()} disabled={!input.trim() || isTyping || isLimitReached}
-              className="btn-primary !p-2.5 rounded-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-              {isLimitReached ? <Lock className="w-5 h-5" /> : <Send className="w-5 h-5" />}
-            </button>
-          </div>
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-[11px] text-gray-400">{language === 'nepali' ? 'AI जानकारी मात्र हो, कानुनी सल्लाह होइन।' : 'AI responses are for informational purposes only.'}</p>
-            <Link href="/lawyers" className="text-[11px] text-primary hover:underline flex items-center gap-1">
-              <MessageSquare className="w-3 h-3" />{language === 'nepali' ? 'वकिल खोज्नुहोस्' : 'Find a Lawyer'}
-            </Link>
-          </div>
-        </div>
-      </div>
     </div>
   );
 
