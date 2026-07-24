@@ -186,12 +186,21 @@ const updateAppointmentStatus = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized access' });
     }
 
-    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled', 'reschedule_requested', 'reschedule_pending'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: 'Invalid status' });
+    if (status === 'completed') {
+      appointment.lawyerConfirmedComplete = true;
+      if (appointment.userConfirmedComplete) {
+        appointment.status = 'completed';
+      } else {
+        appointment.status = 'completion_pending';
+      }
+    } else {
+      const validStatuses = ['pending', 'confirmed', 'cancelled', 'reschedule_requested', 'reschedule_pending'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status' });
+      }
+      appointment.status = status;
     }
 
-    appointment.status = status;
     if (caseSummary) {
       appointment.caseSummary = caseSummary;
     }
@@ -209,7 +218,7 @@ const updateAppointmentStatus = async (req, res) => {
 
 const requestReschedule = async (req, res) => {
   try {
-    const { dateTime } = req.body;
+    const { dateTime, notes } = req.body;
     const appointment = await Appointment.findByPk(req.params.id, {
       include: [
         { model: User, as: 'user' },
@@ -225,7 +234,7 @@ const requestReschedule = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized access' });
     }
 
-    if (!['pending', 'confirmed'].includes(appointment.status)) {
+    if (!['pending', 'confirmed', 'reschedule_requested'].includes(appointment.status)) {
       return res.status(400).json({ message: 'Cannot reschedule this appointment' });
     }
 
@@ -234,6 +243,9 @@ const requestReschedule = async (req, res) => {
       appointment.status = 'pending';
     } else {
       appointment.status = 'reschedule_requested';
+    }
+    if (notes !== undefined) {
+      appointment.rescheduleNotes = notes || null;
     }
     await appointment.save();
 
@@ -417,6 +429,53 @@ const getBookedSlots = async (req, res) => {
   }
 };
 
+const confirmMeetingComplete = async (req, res) => {
+  try {
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        { model: Lawyer, as: 'lawyer' }
+      ]
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    if (appointment.userId !== req.user?.id) {
+      return res.status(403).json({ message: 'Unauthorized access' });
+    }
+
+    if (!['confirmed', 'completion_pending'].includes(appointment.status)) {
+      return res.status(400).json({ message: 'This appointment cannot be marked as completed' });
+    }
+
+    if (appointment.userConfirmedComplete) {
+      return res.status(400).json({ message: 'You have already confirmed completion' });
+    }
+
+    appointment.userConfirmedComplete = true;
+
+    if (appointment.lawyerConfirmedComplete) {
+      appointment.status = 'completed';
+    } else {
+      appointment.status = 'completion_pending';
+    }
+
+    await appointment.save();
+
+    res.json({
+      success: true,
+      message: appointment.status === 'completed'
+        ? 'Meeting marked as completed by both parties'
+        : 'Your confirmation sent. Waiting for lawyer to confirm.',
+      appointment
+    });
+  } catch (error) {
+    console.error('Confirm complete error:', error);
+    res.status(500).json({ message: 'Failed to confirm completion', error: error.message });
+  }
+};
+
 const rateAppointment = async (req, res) => {
   try {
     const { rating, review } = req.body;
@@ -503,5 +562,6 @@ module.exports = {
   respondReschedule,
   checkExistingBooking,
   getBookedSlots,
+  confirmMeetingComplete,
   rateAppointment
 };

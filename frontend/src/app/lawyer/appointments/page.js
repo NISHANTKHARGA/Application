@@ -17,6 +17,7 @@ export default function LawyerAppointmentsPage() {
   const [rescheduleModal, setRescheduleModal] = useState(null);
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
+  const [rescheduleNotes, setRescheduleNotes] = useState('');
 
   useEffect(() => {
     if (!isLoading) {
@@ -61,9 +62,10 @@ export default function LawyerAppointmentsPage() {
     if (!rescheduleModal) return;
     setActionLoading(rescheduleModal.id);
     try {
-      await api.put(`/appointment/${rescheduleModal.id}/reschedule`, {});
+      await api.put(`/appointment/${rescheduleModal.id}/reschedule`, { notes: rescheduleNotes.trim() || undefined });
       toast.success('Reschedule request sent to user');
       setRescheduleModal(null);
+      setRescheduleNotes('');
       fetchAppointments();
     } catch (error) {
       toast.error('Failed to request reschedule');
@@ -87,6 +89,7 @@ export default function LawyerAppointmentsPage() {
       case 'cancelled': return 'badge-rejected';
       case 'reschedule_requested': return 'bg-amber-100 text-amber-800';
       case 'reschedule_pending': return 'bg-purple-100 text-purple-800';
+      case 'completion_pending': return 'bg-blue-50 text-blue-700 border border-blue-200';
       default: return 'badge-pending';
     }
   };
@@ -153,7 +156,7 @@ export default function LawyerAppointmentsPage() {
             </div>
 
             <div className="flex gap-2 mb-6 flex-wrap">
-              {['all', 'upcoming', 'pending', 'confirmed', 'completed', 'cancelled', 'reschedule_requested', 'reschedule_pending'].map((f) => (
+              {['all', 'upcoming', 'pending', 'confirmed', 'completion_pending', 'completed', 'cancelled', 'reschedule_requested', 'reschedule_pending'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -302,12 +305,25 @@ export default function LawyerAppointmentsPage() {
                               Join Meeting
                             </a>
                           )}
-                          {apt.status === 'confirmed' && (
+                           {apt.status === 'confirmed' && (
                             <button
                               onClick={() => updateStatus(apt.id, 'completed')}
                               className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center gap-1"
                             >
                               Mark Complete
+                            </button>
+                          )}
+                          {apt.status === 'completion_pending' && apt.lawyerConfirmedComplete && !apt.userConfirmedComplete && (
+                            <div className="bg-blue-50 p-3 rounded-lg text-center">
+                              <p className="text-sm text-blue-700 font-medium">Waiting for user to confirm</p>
+                            </div>
+                          )}
+                          {apt.status === 'completion_pending' && !apt.lawyerConfirmedComplete && (
+                            <button
+                              onClick={() => updateStatus(apt.id, 'completed')}
+                              className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center gap-1"
+                            >
+                              Confirm Complete
                             </button>
                           )}
                       </div>
@@ -320,14 +336,26 @@ export default function LawyerAppointmentsPage() {
 
       {rescheduleModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 text-center">
-            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-8 h-8 text-amber-600" />
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Request Reschedule</h3>
+              <p className="text-gray-600">
+                Ask {rescheduleModal.user?.name} to pick a new date and time.
+              </p>
             </div>
-            <h3 className="text-xl font-bold mb-2">Request Reschedule</h3>
-            <p className="text-gray-600 mb-6">
-              Ask {rescheduleModal.user?.name} to pick a new date and time for this appointment.
-            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Suggested Times (optional)</label>
+              <textarea
+                value={rescheduleNotes}
+                onChange={(e) => setRescheduleNotes(e.target.value)}
+                placeholder="e.g. I'm available on Monday 10 AM, Tuesday 2 PM, or Wednesday 11 AM"
+                rows={3}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none text-sm"
+              />
+            </div>
             <div className="flex gap-3">
               <button
                 onClick={handleReschedule}
@@ -337,7 +365,7 @@ export default function LawyerAppointmentsPage() {
                 {actionLoading === rescheduleModal.id ? 'Sending...' : 'Send Request'}
               </button>
               <button
-                onClick={() => setRescheduleModal(null)}
+                onClick={() => { setRescheduleModal(null); setRescheduleNotes(''); }}
                 className="flex-1 btn-outline"
               >
                 Cancel

@@ -21,7 +21,10 @@ try {
       duration: { type: DataTypes.INTEGER, defaultValue: 30 },
       userRating: { type: DataTypes.INTEGER, allowNull: true, validate: { min: 1, max: 5 } },
       userReview: { type: DataTypes.TEXT, allowNull: true },
-      ratedAt: { type: DataTypes.DATE, allowNull: true }
+      ratedAt: { type: DataTypes.DATE, allowNull: true },
+      rescheduleNotes: { type: DataTypes.TEXT, allowNull: true },
+      lawyerConfirmedComplete: { type: DataTypes.BOOLEAN, defaultValue: false },
+      userConfirmedComplete: { type: DataTypes.BOOLEAN, defaultValue: false }
     }, {
       tableName: 'appointments',
       timestamps: true

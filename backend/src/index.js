@@ -66,6 +66,9 @@ const fixSchema = async () => {
   try { await sequelize.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS "userRating" INTEGER;`); } catch (e) {}
   try { await sequelize.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS "userReview" TEXT;`); } catch (e) {}
   try { await sequelize.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS "ratedAt" TIMESTAMP;`); } catch (e) {}
+  try { await sequelize.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS "rescheduleNotes" TEXT;`); } catch (e) {}
+  try { await sequelize.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS "lawyerConfirmedComplete" BOOLEAN DEFAULT false;`); } catch (e) {}
+  try { await sequelize.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS "userConfirmedComplete" BOOLEAN DEFAULT false;`); } catch (e) {}
 };
 
 app.use(async (req, res, next) => {

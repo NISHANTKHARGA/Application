@@ -14,6 +14,7 @@ const {
   respondReschedule,
   checkExistingBooking,
   getBookedSlots,
+  confirmMeetingComplete,
   rateAppointment
 } = require('../controllers/appointmentController');
 
@@ -58,6 +59,7 @@ router.get('/lawyer/:lawyerId', protect, lawyerOnly, getLawyerAppointments);
 router.get('/all', protect, adminOnly, getAllAppointments);
 router.get('/booked-slots/:lawyerId/:date', getBookedSlots);
 router.put('/:id/rate', protect, userOnly, rateAppointment);
+router.put('/:id/confirm-complete', protect, userOnly, confirmMeetingComplete);
 router.get('/:id', protect, getAppointmentById);
 router.put('/:id/status', protect, lawyerOnly, updateAppointmentStatus);
 router.put('/:id/cancel', protect, userOnly, cancelAppointment);

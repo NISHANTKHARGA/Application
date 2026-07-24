@@ -94,6 +94,16 @@ export default function AppointmentsPage() {
     }
   };
 
+  const handleConfirmComplete = async (appointmentId) => {
+    try {
+      const resp = await api.put(`/appointment/${appointmentId}/confirm-complete`);
+      toast.success(resp.data.message);
+      fetchAppointments();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to confirm');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed': return 'badge-approved';
@@ -102,6 +112,7 @@ export default function AppointmentsPage() {
       case 'cancelled': return 'badge-rejected';
       case 'reschedule_requested': return 'bg-amber-100 text-amber-800';
       case 'reschedule_pending': return 'bg-purple-100 text-purple-800';
+      case 'completion_pending': return 'bg-blue-50 text-blue-700 border border-blue-200';
       default: return 'badge-pending';
     }
   };
@@ -115,10 +126,10 @@ export default function AppointmentsPage() {
   }
 
   const upcomingAppointments = appointments.filter(a => 
-    new Date(a.dateTime) >= new Date() && !['cancelled', 'completed'].includes(a.status)
+    (new Date(a.dateTime) >= new Date() || ['completion_pending'].includes(a.status)) && !['cancelled', 'completed'].includes(a.status)
   );
   const pastAppointments = appointments.filter(a => 
-    new Date(a.dateTime) < new Date() || ['cancelled', 'completed'].includes(a.status)
+    (new Date(a.dateTime) < new Date() && !['completion_pending'].includes(a.status)) || ['cancelled', 'completed'].includes(a.status)
   );
 
   return (
@@ -219,12 +230,48 @@ export default function AppointmentsPage() {
                               </button>
                             )}
                             {apt.status === 'reschedule_requested' && (
+                              <div className="mt-2">
+                                {apt.rescheduleNotes && (
+                                  <div className="bg-amber-50 p-3 rounded-lg mb-2">
+                                    <p className="text-sm text-amber-800 font-medium">Lawyer's suggested times:</p>
+                                    <p className="text-sm text-amber-700 mt-1">{apt.rescheduleNotes}</p>
+                                  </div>
+                                )}
+                                <button
+                                  onClick={() => { setRescheduleRespondModal(apt); setRescheduleNewDate(''); setRescheduleNewTime(''); }}
+                                  className="btn-primary !py-2 !px-4"
+                                >
+                                  Respond to Reschedule
+                                </button>
+                              </div>
+                            )}
+                            {apt.status === 'confirmed' && (
                               <button
-                                onClick={() => { setRescheduleRespondModal(apt); setRescheduleNewDate(''); setRescheduleNewTime(''); }}
-                                className="btn-primary !py-2 !px-4"
+                                onClick={() => handleConfirmComplete(apt.id)}
+                                className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center gap-1"
                               >
-                                Respond to Reschedule
+                                <Check className="w-4 h-4" />
+                                Mark Meeting Complete
                               </button>
+                            )}
+                            {apt.status === 'completion_pending' && !apt.userConfirmedComplete && (
+                              <div className="flex flex-col gap-2">
+                                <div className="bg-blue-50 p-3 rounded-lg text-center">
+                                  <p className="text-sm text-blue-700">Lawyer confirmed. Waiting for you to confirm.</p>
+                                </div>
+                                <button
+                                  onClick={() => handleConfirmComplete(apt.id)}
+                                  className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center gap-1"
+                                >
+                                  <Check className="w-4 h-4" />
+                                  Confirm Complete
+                                </button>
+                              </div>
+                            )}
+                            {apt.status === 'completion_pending' && apt.userConfirmedComplete && (
+                              <div className="bg-blue-50 p-3 rounded-lg text-center">
+                                <p className="text-sm text-blue-700 font-medium">Waiting for lawyer to confirm</p>
+                              </div>
                             )}
                           </div>
                         </div>
