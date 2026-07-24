@@ -133,7 +133,7 @@ export default function ChatPage() {
         identifiedIssue: data.identifiedIssue
       }]);
 
-      if (data.identifiedIssue?.specialization) {
+      if (data.identifiedIssue?.specialization && user?.role !== 'lawyer') {
         setCurrentIssue(data.identifiedIssue);
         if (data.recommendedLawyers && data.recommendedLawyers.length > 0) {
           setRecommendedLawyers(data.recommendedLawyers);
@@ -453,7 +453,7 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {currentIssue?.specialization && (
+      {currentIssue?.specialization && user?.role !== 'lawyer' && (
         <div className="bg-gradient-to-r from-secondary to-secondary-800 px-6 py-4 shrink-0">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-2 mb-3">
