@@ -445,7 +445,7 @@ const confirmMeetingComplete = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized access' });
     }
 
-    if (!['confirmed', 'completion_pending'].includes(appointment.status)) {
+    if (!['confirmed', 'ongoing', 'completion_pending'].includes(appointment.status)) {
       return res.status(400).json({ message: 'This appointment cannot be marked as completed' });
     }
 

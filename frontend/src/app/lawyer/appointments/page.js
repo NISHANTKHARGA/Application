@@ -364,12 +364,12 @@ export default function LawyerAppointmentsPage() {
                               Join Meeting
                             </a>
                           )}
-                           {apt.status === 'confirmed' && (
+                           {['confirmed', 'ongoing'].includes(apt.status) && (
                             <button
                               onClick={() => updateStatus(apt.id, 'completed')}
                               className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center gap-1"
                             >
-                              Mark Complete
+                              Mark Meeting Complete
                             </button>
                           )}
                           {apt.status === 'completion_pending' && apt.lawyerConfirmedComplete && !apt.userConfirmedComplete && (
