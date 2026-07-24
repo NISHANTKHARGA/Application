@@ -416,18 +416,18 @@ export async function POST(request) {
     const langPrompt = language === 'nepali' ? 'CRITICAL RESPONSE LANGUAGE: Your entire response must be written in the Nepali language (Devanagari script). Do not include any English words, phrases, law names, headers, or section numbers. Every word must be in Nepali.' : 'Respond in English only.';
 
     if (isGreeting(normalizedMessage)) {
-      const greetingPrompt = `You are Momo, a helpful assistant knowledgeable about Nepal's laws. The user is greeting you or making casual conversation. Respond naturally and warmly in 1-2 sentences, directly addressing what the user said. If they ask how you are, respond naturally. Identify yourself briefly as Momo. Keep it friendly and conversational. Do NOT use the legal response format. ${langPrompt}`;
+      const greetingPrompt = `You are Momo AI, a helpful assistant knowledgeable about Nepal's laws. The user is greeting you or making casual conversation. Respond naturally and warmly in 1-2 sentences, directly addressing what the user said. If they ask how you are, respond naturally. Identify yourself briefly as Momo AI. Keep it friendly and conversational. Do NOT use the legal response format. ${langPrompt}`;
       let response = await generateWithGroq(greetingPrompt, normalizedMessage, null, { temperature: 0.7, maxTokens: 200 });
       if (!response) {
         const isHowAreYou = /\b(how are you|kasto cha|k xa|k xa hjr|kata ho|kasto)\b/i.test(normalizedMessage);
         if (isHowAreYou) {
           response = language === 'nepali'
-            ? 'म ठिक छु, धन्यवाद! म Momo हुँ। तपाईंलाई कस्तो छ? के म तपाईंलाई कुनै कानूनी सहायता दिन सक्छु?'
-            : 'I am doing well, thank you! I am Momo. How are you doing? Is there anything I can assist you with?';
+            ? 'म ठिक छु, धन्यवाद! म Momo AI हुँ। तपाईंलाई कस्तो छ? के म तपाईंलाई कुनै कानूनी सहायता दिन सक्छु?'
+            : 'I am doing well, thank you! I am Momo AI. How are you doing? Is there anything I can assist you with?';
         } else {
           response = language === 'nepali'
-            ? 'नमस्ते! म Momo हुँ। के म तपाईंलाई कुनै कानूनी सहायता दिन सक्छु?'
-            : 'Hello! I am Momo. How can I help you today?';
+            ? 'नमस्ते! म Momo AI हुँ। के म तपाईंलाई कुनै कानूनी सहायता दिन सक्छु?'
+            : 'Hello! I am Momo AI. How can I help you today?';
         }
       }
       return NextResponse.json({ response, identifiedIssue: null, source: 'greeting' });
@@ -447,7 +447,7 @@ export async function POST(request) {
       ? `\n\nCRITICAL INSTRUCTION - SIMPLIFY: The user did NOT understand your previous answer. Re-read the conversation history, then explain your previous response in MUCH SIMPLER terms. Use everyday language, short sentences, and simple examples. Avoid legal jargon. Break it down step by step. Do NOT repeat the same legal format again. Just give a plain, simple re-explanation. ${langPrompt}`
       : '';
 
-    const groqPrompt = `This is an educational question about Nepal's legal system. You are Momo, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}${simplifyInstruction}
+    const groqPrompt = `This is an educational question about Nepal's legal system. You are Momo AI, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}${simplifyInstruction}
 
 MISSION: Answer the user's question with practical information about Nepal's laws. Provide specific Nepal act names and section numbers when confident. Keep responses clear and helpful.
 

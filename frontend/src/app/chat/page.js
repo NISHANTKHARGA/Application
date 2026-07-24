@@ -57,8 +57,8 @@ export default function ChatPage() {
       setFreePromptsUsed(used);
       setMessages([{
         id: 'welcome', role: 'bot', message: language === 'nepali'
-          ? 'नमस्ते! म Momo हुँ। तपाईंलाई बिना लगइन १० वटा प्रश्न सोध्न पाइन्छ। कृपया तल आफ्नो प्रश्न लेख्नुहोस्।'
-          : 'Hello! I\'m Momo. You can ask up to ' + FREE_PROMPT_LIMIT + ' questions for free without signing in. Ask me anything below!'
+          ? 'नमस्ते! म Momo AI हुँ। तपाईंलाई बिना लगइन १० वटा प्रश्न सोध्न पाइन्छ। कृपया तल आफ्नो प्रश्न लेख्नुहोस्।'
+          : 'Hello! I\'m Momo AI. You can ask up to ' + FREE_PROMPT_LIMIT + ' questions for free without signing in. Ask me anything below!'
       }]);
     }
   }, [isLoading, isAuthenticated, user, language]);
@@ -82,7 +82,7 @@ export default function ChatPage() {
       } else {
         setMessages([{
           id: 'welcome', role: 'bot', message: language === 'nepali'
-            ? 'नमस्ते! म Momo हुँ। म तपाईंलाई नेपाली कानूनको बारेमा जानकारी दिन मद्दत गर्न सक्छु। कृपया तल आफ्नो प्रश्न लेख्नुहोस्।'
+            ? 'नमस्ते! म Momo AI हुँ। म तपाईंलाई नेपाली कानूनको बारेमा जानकारी दिन मद्दत गर्न सक्छु। कृपया तल आफ्नो प्रश्न लेख्नुहोस्।'
             : 'Hello! I\'m your KanoonSathi legal assistant. I can help you with information about Nepal law, legal procedures, and your rights. Ask me anything below.'
         }]);
       }
@@ -199,7 +199,7 @@ export default function ChatPage() {
     setMessages([{
       id: 'welcome', role: 'bot',
       message: language === 'nepali'
-        ? 'नमस्ते! म Momo हुँ। म तपाईंलाई नेपाली कानूनको बारेमा जानकारी दिन मद्दत गर्न सक्छु।'
+        ? 'नमस्ते! म Momo AI हुँ। म तपाईंलाई नेपाली कानूनको बारेमा जानकारी दिन मद्दत गर्न सक्छु।'
         : 'Hello! I\'m your KanoonSathi legal assistant. I can help you with information about Nepal law, legal procedures, and your rights.'
     }]);
     toast.success('Chat cleared');
@@ -261,10 +261,10 @@ export default function ChatPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-semibold text-gray-900">Momo</h1>
+                <h1 className="text-base font-semibold text-gray-900">Momo AI</h1>
                 <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-medium rounded">Online</span>
               </div>
-              <p className="text-xs text-gray-500">Nepal law expert &bull; Instant answers</p>
+              <p className="text-xs text-gray-500">Your legal AI assistant &bull; Nepal law expert</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
