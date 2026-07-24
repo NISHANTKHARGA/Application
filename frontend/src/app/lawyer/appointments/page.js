@@ -18,6 +18,10 @@ export default function LawyerAppointmentsPage() {
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
   const [rescheduleNotes, setRescheduleNotes] = useState('');
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedSlots, setSelectedSlots] = useState([]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -62,15 +66,62 @@ export default function LawyerAppointmentsPage() {
     if (!rescheduleModal) return;
     setActionLoading(rescheduleModal.id);
     try {
-      await api.put(`/appointment/${rescheduleModal.id}/reschedule`, { notes: rescheduleNotes.trim() || undefined });
+      const allSuggestions = [];
+      if (selectedSlots.length > 0) {
+        allSuggestions.push(...selectedSlots.map(s => `${s.date} at ${s.time}`));
+      }
+      if (rescheduleNotes.trim()) {
+        allSuggestions.push(rescheduleNotes.trim());
+      }
+      const notes = allSuggestions.length > 0 ? allSuggestions.join('\n') : undefined;
+      await api.put(`/appointment/${rescheduleModal.id}/reschedule`, { notes });
       toast.success('Reschedule request sent to user');
       setRescheduleModal(null);
       setRescheduleNotes('');
+      setRescheduleDate('');
+      setSelectedSlots([]);
+      setBookedSlots([]);
       fetchAppointments();
     } catch (error) {
       toast.error('Failed to request reschedule');
     }
     setActionLoading(null);
+  };
+
+  const fetchBookedSlots = async (date) => {
+    if (!rescheduleModal || !date) return;
+    setLoadingSlots(true);
+    try {
+      const response = await api.get(`/appointment/booked-slots/${rescheduleModal.lawyerId}/${date}`);
+      setBookedSlots(response.data.bookedSlots || []);
+    } catch (error) {
+      setBookedSlots([]);
+    }
+    setLoadingSlots(false);
+  };
+
+  const generateTimeSlots = () => {
+    const duration = rescheduleModal?.duration || 30;
+    const slots = [];
+    for (let h = 9; h < 18; h++) {
+      for (let m = 0; m < 60; m += duration) {
+        const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        const booked = bookedSlots.includes(time);
+        const alreadySelected = selectedSlots.some(s => s.date === rescheduleDate && s.time === time);
+        slots.push({ time, booked, alreadySelected });
+      }
+    }
+    return slots;
+  };
+
+  const toggleSlot = (time) => {
+    if (!rescheduleDate) return;
+    const exists = selectedSlots.find(s => s.date === rescheduleDate && s.time === time);
+    if (exists) {
+      setSelectedSlots(prev => prev.filter(s => !(s.date === rescheduleDate && s.time === time)));
+    } else {
+      setSelectedSlots(prev => [...prev, { date: rescheduleDate, time }]);
+    }
   };
 
   const filteredAppointments = appointments.filter(apt => {
@@ -344,36 +395,99 @@ export default function LawyerAppointmentsPage() {
 
       {rescheduleModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 max-h-[85vh] overflow-y-auto">
             <div className="text-center mb-4">
               <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="w-8 h-8 text-amber-600" />
               </div>
               <h3 className="text-xl font-bold mb-2">Request Reschedule</h3>
-              <p className="text-gray-600">
-                Ask {rescheduleModal.user?.name} to pick a new date and time.
+              <p className="text-gray-600 text-sm">
+                Pick a date to see available slots ({rescheduleModal.duration || 30} min each). Click a slot to suggest it to {rescheduleModal.user?.name}.
               </p>
             </div>
+
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Suggested Times (optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Pick a Date</label>
+              <input
+                type="date"
+                value={rescheduleDate}
+                onChange={(e) => {
+                  setRescheduleDate(e.target.value);
+                  fetchBookedSlots(e.target.value);
+                }}
+                min={new Date().toISOString().split('T')[0]}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              />
+            </div>
+
+            {rescheduleDate && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Available Slots</label>
+                {loadingSlots ? (
+                  <div className="flex items-center gap-2 py-4 justify-center">
+                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-gray-500">Loading slots...</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {generateTimeSlots().map((slot) => (
+                      <button
+                        key={slot.time}
+                        onClick={() => !slot.booked && toggleSlot(slot.time)}
+                        disabled={slot.booked}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          slot.booked
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
+                            : slot.alreadySelected
+                              ? 'bg-primary text-white ring-2 ring-primary/30'
+                              : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                        }`}
+                      >
+                        {slot.time}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {selectedSlots.length > 0 && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Selected Slots</label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedSlots.map((s, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">
+                      {s.date} {s.time}
+                      <button onClick={() => setSelectedSlots(prev => prev.filter((_, j) => j !== i))} className="hover:text-red-500">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes (optional)</label>
               <textarea
                 value={rescheduleNotes}
                 onChange={(e) => setRescheduleNotes(e.target.value)}
-                placeholder="e.g. I'm available on Monday 10 AM, Tuesday 2 PM, or Wednesday 11 AM"
-                rows={3}
+                placeholder="Any other message for the user..."
+                rows={2}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none text-sm"
               />
             </div>
+
             <div className="flex gap-3">
               <button
                 onClick={handleReschedule}
-                disabled={actionLoading === rescheduleModal.id}
+                disabled={actionLoading === rescheduleModal.id || (selectedSlots.length === 0 && !rescheduleNotes.trim())}
                 className="flex-1 btn-primary disabled:opacity-50"
               >
                 {actionLoading === rescheduleModal.id ? 'Sending...' : 'Send Request'}
               </button>
               <button
-                onClick={() => { setRescheduleModal(null); setRescheduleNotes(''); }}
+                onClick={() => { setRescheduleModal(null); setRescheduleNotes(''); setRescheduleDate(''); setSelectedSlots([]); setBookedSlots([]); }}
                 className="flex-1 btn-outline"
               >
                 Cancel
