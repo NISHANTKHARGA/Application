@@ -90,6 +90,7 @@ export default function LawyerAppointmentsPage() {
       case 'reschedule_requested': return 'bg-amber-100 text-amber-800';
       case 'reschedule_pending': return 'bg-purple-100 text-purple-800';
       case 'completion_pending': return 'bg-blue-50 text-blue-700 border border-blue-200';
+      case 'ongoing': return 'bg-blue-100 text-blue-800 animate-pulse';
       default: return 'badge-pending';
     }
   };
@@ -156,7 +157,7 @@ export default function LawyerAppointmentsPage() {
             </div>
 
             <div className="flex gap-2 mb-6 flex-wrap">
-              {['all', 'upcoming', 'pending', 'confirmed', 'completion_pending', 'completed', 'cancelled', 'reschedule_requested', 'reschedule_pending'].map((f) => (
+              {['all', 'upcoming', 'pending', 'confirmed', 'ongoing', 'completion_pending', 'completed', 'cancelled', 'reschedule_requested', 'reschedule_pending'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -294,10 +295,17 @@ export default function LawyerAppointmentsPage() {
                               </button>
                             </div>
                           )}
-                          {apt.meetingLink && !['cancelled'].includes(apt.status) && (
+                          {apt.meetingLink && !['cancelled', 'pending'].includes(apt.status) && (
                             <a
-                              href={apt.meetingLink}
-                              target="_blank"
+                              href={apt.status === 'confirmed' ? undefined : `/video/${apt.id}`}
+                              onClick={apt.status === 'confirmed' ? (e) => {
+                                e.preventDefault();
+                                api.put(`/appointment/${apt.id}/status`, { status: 'ongoing' }).then(() => {
+                                  window.open(`/video/${apt.id}`, '_blank');
+                                  fetchAppointments();
+                                });
+                              } : undefined}
+                              target={apt.status !== 'confirmed' ? '_blank' : undefined}
                               rel="noopener noreferrer"
                               className="btn-outline !py-2 !px-4 flex items-center justify-center gap-1"
                             >

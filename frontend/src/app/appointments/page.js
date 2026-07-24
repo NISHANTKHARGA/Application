@@ -113,6 +113,7 @@ export default function AppointmentsPage() {
       case 'reschedule_requested': return 'bg-amber-100 text-amber-800';
       case 'reschedule_pending': return 'bg-purple-100 text-purple-800';
       case 'completion_pending': return 'bg-blue-50 text-blue-700 border border-blue-200';
+      case 'ongoing': return 'bg-blue-100 text-blue-800 animate-pulse';
       default: return 'badge-pending';
     }
   };
@@ -126,10 +127,10 @@ export default function AppointmentsPage() {
   }
 
   const upcomingAppointments = appointments.filter(a => 
-    (new Date(a.dateTime) >= new Date() || ['completion_pending'].includes(a.status)) && !['cancelled', 'completed'].includes(a.status)
+    (new Date(a.dateTime) >= new Date() || ['completion_pending', 'ongoing'].includes(a.status)) && !['cancelled', 'completed'].includes(a.status)
   );
   const pastAppointments = appointments.filter(a => 
-    (new Date(a.dateTime) < new Date() && !['completion_pending'].includes(a.status)) || ['cancelled', 'completed'].includes(a.status)
+    (new Date(a.dateTime) < new Date() && !['completion_pending', 'ongoing'].includes(a.status)) || ['cancelled', 'completed'].includes(a.status)
   );
 
   return (
@@ -210,10 +211,17 @@ export default function AppointmentsPage() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            {apt.meetingLink && apt.status !== 'cancelled' && (
+                            {apt.meetingLink && !['cancelled', 'pending'].includes(apt.status) && (
                               <a
-                                href={`/video/${apt.id}`}
-                                target="_blank"
+                                href={apt.status === 'confirmed' ? undefined : `/video/${apt.id}`}
+                                onClick={apt.status === 'confirmed' ? (e) => {
+                                  e.preventDefault();
+                                  api.put(`/appointment/${apt.id}/status`, { status: 'ongoing' }).then(() => {
+                                    window.open(`/video/${apt.id}`, '_blank');
+                                    fetchAppointments();
+                                  });
+                                } : undefined}
+                                target={apt.status !== 'confirmed' ? '_blank' : undefined}
                                 rel="noopener noreferrer"
                                 className="btn-primary !py-2 !px-4 flex items-center gap-1"
                               >

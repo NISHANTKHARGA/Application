@@ -194,7 +194,7 @@ const updateAppointmentStatus = async (req, res) => {
         appointment.status = 'completion_pending';
       }
     } else {
-      const validStatuses = ['pending', 'confirmed', 'cancelled', 'reschedule_requested', 'reschedule_pending'];
+      const validStatuses = ['pending', 'confirmed', 'ongoing', 'cancelled', 'reschedule_requested', 'reschedule_pending'];
       if (!validStatuses.includes(status)) {
         return res.status(400).json({ message: 'Invalid status' });
       }

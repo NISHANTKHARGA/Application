@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Scale, Video, VideoOff, Mic, MicOff, PhoneOff, MessageSquare, Users, Settings, ArrowLeft, Maximize, Copy, Check } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export default function VideoConsultationPage() {
   const params = useParams();
@@ -41,6 +42,13 @@ export default function VideoConsultationPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (appointment && appointment.status === 'pending') {
+      toast.error('Meeting not available yet. Wait for lawyer to accept.');
+      router.push(role === 'lawyer' ? '/lawyer/appointments' : '/appointments');
+    }
+  }, [appointment, role, router]);
 
   const copyMeetingLink = () => {
     if (appointment?.meetingLink) {
@@ -204,10 +212,12 @@ export default function VideoConsultationPage() {
                   <p className="text-gray-400 text-xs">Status</p>
                   <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                     appointment.status === 'confirmed' ? 'bg-green-500 text-white' :
+                    appointment.status === 'ongoing' ? 'bg-blue-500 text-white animate-pulse' :
                     appointment.status === 'pending' ? 'bg-yellow-500 text-white' :
+                    appointment.status === 'completed' ? 'bg-gray-500 text-white' :
                     'bg-gray-500 text-white'
                   }`}>
-                    {appointment.status}
+                    {appointment.status === 'ongoing' ? '● Ongoing' : appointment.status}
                   </span>
                 </div>
               </div>
