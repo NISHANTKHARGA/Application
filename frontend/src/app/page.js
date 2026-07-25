@@ -53,12 +53,12 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-8 mt-10">
                 <div>
-                  <div className="text-3xl font-bold">500+</div>
+                  <div className="text-3xl font-bold">50+</div>
                   <div className="text-sm text-gray-300">Legal Consultations</div>
                 </div>
                 <div className="w-px h-12 bg-white/20" />
                 <div>
-                  <div className="text-3xl font-bold">50+</div>
+                  <div className="text-3xl font-bold">20+</div>
                   <div className="text-sm text-gray-300">Verified Lawyers</div>
                 </div>
                 <div className="w-px h-12 bg-white/20" />
