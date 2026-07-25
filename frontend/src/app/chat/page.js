@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scale, Send, User, Users, Download, Trash2, Globe, Sparkles, ArrowRight, Bot, MessageSquare, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Scale, Send, User, Users, Download, Trash2, Globe, Sparkles, ArrowRight, Bot, MessageSquare, Lock, LogIn, UserPlus, X } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -38,6 +38,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [recommendedLawyers, setRecommendedLawyers] = useState([]);
+  const [showRecommendations, setShowRecommendations] = useState(true);
   const [currentIssue, setCurrentIssue] = useState(null);
   const [loadingLawyers, setLoadingLawyers] = useState(false);
   const [language, setLanguage] = useState('english');
@@ -453,14 +454,33 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {currentIssue?.specialization && user?.role !== 'lawyer' && (
+      {currentIssue?.specialization && user?.role !== 'lawyer' && !showRecommendations && (
+        <button
+          onClick={() => setShowRecommendations(true)}
+          className="shrink-0 mx-auto mb-2 px-4 py-2 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-full text-sm font-medium flex items-center gap-2 transition-all"
+        >
+          <Users className="w-4 h-4" />
+          {language === 'nepali' ? 'वकिलहरू फेरि हेर्नुहोस्' : 'Show Recommended Lawyers'}
+        </button>
+      )}
+
+      {currentIssue?.specialization && user?.role !== 'lawyer' && showRecommendations && (
         <div className="bg-gradient-to-r from-secondary to-secondary-800 px-6 py-4 shrink-0">
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="w-5 h-5 text-white" />
-              <h3 className="text-white font-semibold text-sm">
-                {language === 'nepali' ? 'सिफारिस गरिएका वकिलहरू' : `Recommended ${currentIssue.specialization} Lawyers`}
-              </h3>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-white" />
+                <h3 className="text-white font-semibold text-sm">
+                  {language === 'nepali' ? 'सिफारिस गरिएका वकिलहरू' : `Recommended ${currentIssue.specialization} Lawyers`}
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowRecommendations(false)}
+                className="text-white/50 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+                title={language === 'nepali' ? 'लुकाउनुहोस्' : 'Hide recommendations'}
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             {loadingLawyers ? (
               <div className="flex items-center gap-2 py-3">
