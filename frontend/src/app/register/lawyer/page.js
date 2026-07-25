@@ -117,6 +117,12 @@ export default function LawyerRegisterPage() {
       return;
     }
 
+    if (!document) {
+      setErrors({ document: 'License document is required' });
+      setLoading(false);
+      return;
+    }
+
     const data = new FormData();
     Object.keys(formData).forEach(key => {
       data.append(key, formData[key]);

@@ -182,6 +182,8 @@ const lawyerRegister = async (req, res) => {
       const mime = req.file.mimetype;
       const b64 = req.file.buffer.toString('base64');
       documentUrl = `data:${mime};base64,${b64}`;
+    } else {
+      return res.status(400).json({ message: 'License document is required' });
     }
 
     const lawyer = await Lawyer.create({
