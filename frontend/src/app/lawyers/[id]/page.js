@@ -27,6 +27,7 @@ export default function LawyerBookingPage() {
   const [chatFile, setChatFile] = useState(null);
   const [showChatOption, setShowChatOption] = useState(false);
   const [existingBookingModal, setExistingBookingModal] = useState(null);
+  const [timeConflictModal, setTimeConflictModal] = useState(null);
   const [bookedSlots, setBookedSlots] = useState([]);
 
   useEffect(() => {
@@ -137,10 +138,14 @@ export default function LawyerBookingPage() {
       if (!force) {
         const check = await api.post('/appointment/check-existing', {
           lawyerId: params.id,
-          date: selectedDate
+          dateTime: new Date(`${selectedDate}T${selectedTime}`).toISOString()
         });
         if (check.data.hasExisting) {
-          setExistingBookingModal(check.data.appointment);
+          if (check.data.sameLawyer) {
+            setExistingBookingModal(check.data.appointment);
+          } else {
+            setTimeConflictModal(check.data.appointment);
+          }
           setBooking(false);
           return;
         }
@@ -416,7 +421,7 @@ export default function LawyerBookingPage() {
               <h3 className="text-xl font-bold mb-2">Already Booked on This Date</h3>
               <p className="text-gray-600 mb-2">
                 You already have an appointment with <strong>{existingBookingModal.lawyerName}</strong> on{' '}
-                <strong>{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong>
+                <strong>{new Date(existingBookingModal.dateTime).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong>
                 {' '}at{' '}
                 <strong>{new Date(existingBookingModal.dateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</strong>.
               </p>
@@ -437,6 +442,32 @@ export default function LawyerBookingPage() {
                   Yes, Book Anyway
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {timeConflictModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Time Slot Conflict</h3>
+              <p className="text-gray-600 mb-2">
+                You already have a pending appointment with <strong>{timeConflictModal.lawyerName}</strong> at{' '}
+                <strong>{new Date(timeConflictModal.dateTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</strong> on the same day.
+              </p>
+              <p className="text-red-500 text-sm mb-6">
+                Please choose a different time slot or complete your existing appointment first.
+              </p>
+              <button
+                onClick={() => setTimeConflictModal(null)}
+                className="w-full btn-primary"
+              >
+                OK, Got It
+              </button>
             </div>
           </div>
         </div>

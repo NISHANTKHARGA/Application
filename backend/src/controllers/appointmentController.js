@@ -261,19 +261,24 @@ const requestReschedule = async (req, res) => {
 
 const checkExistingBooking = async (req, res) => {
   try {
-    const { lawyerId, date } = req.body;
+    const { lawyerId, dateTime } = req.body;
     const userId = req.user.id;
 
-    if (!lawyerId || !date) {
-      return res.status(400).json({ message: 'Lawyer ID and date are required' });
+    if (!lawyerId || !dateTime) {
+      return res.status(400).json({ message: 'Lawyer ID and dateTime are required' });
     }
 
-    const startOfDay = new Date(date);
+    const requestedTime = new Date(dateTime);
+
+    const sameTimeWindow = new Date(requestedTime.getTime() - 30 * 60 * 1000);
+    const sameTimeWindowEnd = new Date(requestedTime.getTime() + 30 * 60 * 1000);
+
+    const startOfDay = new Date(dateTime);
     startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
+    const endOfDay = new Date(dateTime);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const existing = await Appointment.findOne({
+    const sameLawyerSameDay = await Appointment.findOne({
       where: {
         userId,
         lawyerId,
@@ -283,14 +288,37 @@ const checkExistingBooking = async (req, res) => {
       include: [{ model: Lawyer, as: 'lawyer', attributes: ['name'] }]
     });
 
-    if (existing) {
+    if (sameLawyerSameDay) {
       return res.json({
         hasExisting: true,
+        sameLawyer: true,
         appointment: {
-          id: existing.id,
-          dateTime: existing.dateTime,
-          lawyerName: existing.lawyer?.name,
-          status: existing.status
+          id: sameLawyerSameDay.id,
+          dateTime: sameLawyerSameDay.dateTime,
+          lawyerName: sameLawyerSameDay.lawyer?.name,
+          status: sameLawyerSameDay.status
+        }
+      });
+    }
+
+    const differentLawyerSameTime = await Appointment.findOne({
+      where: {
+        userId,
+        dateTime: { [require('sequelize').Op.between]: [sameTimeWindow, sameTimeWindowEnd] },
+        status: 'pending'
+      },
+      include: [{ model: Lawyer, as: 'lawyer', attributes: ['name'] }]
+    });
+
+    if (differentLawyerSameTime) {
+      return res.json({
+        hasExisting: true,
+        sameLawyer: false,
+        appointment: {
+          id: differentLawyerSameTime.id,
+          dateTime: differentLawyerSameTime.dateTime,
+          lawyerName: differentLawyerSameTime.lawyer?.name,
+          status: differentLawyerSameTime.status
         }
       });
     }
