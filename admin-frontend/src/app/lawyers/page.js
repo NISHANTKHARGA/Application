@@ -1,10 +1,45 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Scale, Search, CheckCircle, XCircle, Eye, FileText, LogOut, Home, Users, Calendar, UserCheck } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import api from '@/lib/api';
+
+function dataUrlToBlobUrl(dataUrl) {
+  if (!dataUrl) return null;
+  try {
+    const [header, base64] = dataUrl.split(',');
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(base64);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
+    const blob = new Blob([array], { type: mime });
+    return URL.createObjectURL(blob);
+  } catch { return null; }
+}
+
+function DocumentViewer({ documentUrl }) {
+  const [blobUrl, setBlobUrl] = useState(null);
+
+  useEffect(() => {
+    const url = dataUrlToBlobUrl(documentUrl);
+    setBlobUrl(url);
+    return () => { if (url) URL.revokeObjectURL(url); };
+  }, [documentUrl]);
+
+  if (!documentUrl) return null;
+
+  if (documentUrl.startsWith('data:image')) {
+    return <img src={documentUrl} alt="License Document" className="w-full max-h-80 object-contain rounded-lg border border-gray-200" />;
+  }
+
+  if (blobUrl) {
+    return <iframe src={blobUrl} title="License Document" className="w-full h-96 rounded-lg border border-gray-200" />;
+  }
+
+  return <div className="flex items-center gap-2 py-4"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /><span className="text-sm text-gray-500">Loading document...</span></div>;
+}
 
 export default function AdminLawyersPage() {
   const { isAuthenticated, isLoading, logout } = useAuth();
@@ -267,18 +302,7 @@ export default function AdminLawyersPage() {
               {selectedLawyer.documentUrl && (
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 mb-2">Uploaded License Document</h4>
-                  {selectedLawyer.documentUrl.startsWith('data:image') ? (
-                    <img src={selectedLawyer.documentUrl} alt="License Document"
-                      className="w-full max-h-80 object-contain rounded-lg border border-gray-200" />
-                  ) : selectedLawyer.documentUrl.startsWith('data:application/pdf') ? (
-                    <iframe src={selectedLawyer.documentUrl} title="License Document"
-                      className="w-full h-96 rounded-lg border border-gray-200" />
-                  ) : (
-                    <a href={selectedLawyer.documentUrl} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">
-                      <FileText className="w-4 h-4" /> View Document
-                    </a>
-                  )}
+                  <DocumentViewer documentUrl={selectedLawyer.documentUrl} />
                 </div>
               )}
             </div>
