@@ -217,10 +217,10 @@ export default function AdminLawyersPage() {
                                 </>
                               )}
                               {lawyer.documentUrl && (
-                                <a href={lawyer.documentUrl} target="_blank" rel="noopener noreferrer"
+                                <button onClick={() => setSelectedLawyer(lawyer)}
                                   className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="View Document">
                                   <FileText className="w-5 h-5" />
-                                </a>
+                                </button>
                               )}
                             </div>
                           </td>

@@ -212,10 +212,10 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           {lawyer.documentUrl && (
-                            <a href={lawyer.documentUrl} target="_blank" rel="noopener noreferrer"
+                            <button onClick={() => {/* navigate to lawyers page */ window.location.href = '/lawyers';}}
                               className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="View Document">
                               <FileText className="w-5 h-5" />
-                            </a>
+                            </button>
                           )}
                           <button onClick={() => approveLawyer(lawyer.id)} disabled={actionLoading === lawyer.id}
                             className="p-2 text-green-600 hover:bg-green-50 rounded-lg disabled:opacity-50" title="Approve">
