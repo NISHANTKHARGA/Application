@@ -240,9 +240,14 @@ export default function AdminLawyersPage() {
           <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-700 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl font-bold">{selectedLawyer.name.charAt(0).toUpperCase()}</span>
-                </div>
+                {selectedLawyer.profilePicture ? (
+                  <img src={selectedLawyer.profilePicture} alt={selectedLawyer.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
+                ) : (
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-700 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xl font-bold">{selectedLawyer.name.charAt(0).toUpperCase()}</span>
+                  </div>
+                )}
                 <div>
                   <h2 className="text-xl font-bold">{selectedLawyer.name}</h2>
                   <span className={`badge ${getStatusBadge(selectedLawyer.status)}`}>{selectedLawyer.status}</span>
@@ -258,6 +263,23 @@ export default function AdminLawyersPage() {
               <div><h4 className="text-sm font-medium text-gray-500">Experience</h4><p>{selectedLawyer.experience} years</p></div>
               {selectedLawyer.bio && (
                 <div><h4 className="text-sm font-medium text-gray-500">Bio</h4><p className="text-gray-600">{selectedLawyer.bio}</p></div>
+              )}
+              {selectedLawyer.documentUrl && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">Uploaded License Document</h4>
+                  {selectedLawyer.documentUrl.startsWith('data:image') ? (
+                    <img src={selectedLawyer.documentUrl} alt="License Document"
+                      className="w-full max-h-80 object-contain rounded-lg border border-gray-200" />
+                  ) : selectedLawyer.documentUrl.startsWith('data:application/pdf') ? (
+                    <iframe src={selectedLawyer.documentUrl} title="License Document"
+                      className="w-full h-96 rounded-lg border border-gray-200" />
+                  ) : (
+                    <a href={selectedLawyer.documentUrl} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      <FileText className="w-4 h-4" /> View Document
+                    </a>
+                  )}
+                </div>
               )}
             </div>
             {selectedLawyer.status === 'pending' && (
