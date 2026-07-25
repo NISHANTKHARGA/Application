@@ -278,7 +278,7 @@ const checkExistingBooking = async (req, res) => {
         userId,
         lawyerId,
         dateTime: { [require('sequelize').Op.between]: [startOfDay, endOfDay] },
-        status: { [require('sequelize').Op.notIn]: ['cancelled'] }
+        status: 'pending'
       },
       include: [{ model: Lawyer, as: 'lawyer', attributes: ['name'] }]
     });
