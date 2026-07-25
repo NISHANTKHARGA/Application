@@ -33,6 +33,17 @@ function buildLocalFallback(message, language = 'english') {
     ? '\n\nअस्वीकरण: यो जानकारी शैक्षिक उद्देश्यका लागि मात्र हो र यसलाई पेशेवर कानूनी सल्लाहको रूपमा लिनु हुँदैन।'
     : '\n\nDisclaimer: This information is provided for educational purposes and should not be considered professional legal advice.';
 
+  if (/\b(prime minister|president|mp|minister|governor|parliament|election|political|politic|congress|maoist|parliement|balen|shah|oli|prachanda|deuba|Sher Bahadur|gagan|thapa|rajbabari|nagarik|janta|sanghiya|samajbadi|rastriya|swatantra|hamro|nepali congress|lokatantra)\b/i.test(lower)) {
+    if (isNepali) {
+      return `मलाई खेद छ, तर मेरो तालिम डाटा अद्यावधिक हुन सकेको छैन र नेपालको वर्तमान राजनीतिक अवस्थाबारे मसँग निश्चित जानकारी छैन।
+
+मेरो जानकारी पुरानो हुन सक्छ। कृपया नेपालको वर्तमान प्रधानमन्त्री, राष्ट्रपति, वा अन्य सरकारी पदाधिकारीहरूबारे जान्न नेपाल सरकारको आधिकारिक वेबसाइट (nepal.gov.np) वा विश्वसनीय समाचार स्रोतहरूमा जानुहोस्।${disclaimer}`;
+    }
+    return `I'm sorry, but my training data may not reflect the latest changes in Nepal's politics, and I don't have reliable current information about government officials.
+
+My information may be outdated. Please verify with official government sources (nepal.gov.np) or reputable news sources for the latest information on Nepal's current Prime Minister, President, or other government officials.${disclaimer}`;
+  }
+
   if (/\b(kill|murder|death|die|died|homicide|stab|shoot|poison|suffocat|strangle|assault|beat)\b/i.test(lower)) {
     if (isNepali) {
       return `सान्दर्भिक कानून (Relevant Law):
@@ -448,6 +459,12 @@ export async function POST(request) {
       : '';
 
     const groqPrompt = `This is an educational question about Nepal's legal system. You are Momo AI, a helpful assistant knowledgeable about Nepal's laws and regulations.${lawyerInstruction}${simplifyInstruction}
+
+CRITICAL: Your training data has a knowledge cutoff and may NOT reflect the latest changes in Nepal's politics, government officials, or recent legal amendments. For questions about current politicians, government positions, recent elections, or ongoing political events, you MUST:
+1. Clearly state that your information may be outdated
+2. Advise the user to verify with official government sources (nepal.gov.np) or reputable news sources
+3. Do NOT confidently state who currently holds a political position unless you are certain
+4. If asked about the current Prime Minister, President, or other officials, say: "My information may not reflect the most recent changes. Please verify with official sources or recent news for the latest information on Nepal's government."
 
 MISSION: Answer the user's question with practical information about Nepal's laws. Provide specific Nepal act names and section numbers when confident. Keep responses clear and helpful.
 
