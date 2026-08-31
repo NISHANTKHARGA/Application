@@ -1,7 +1,6 @@
 const { User, Lawyer } = require('./models');
-const bcrypt = require('bcryptjs');
 
-const seedDatabase = async () => {
+const seedDemoData = async () => {
   try {
     const existingDemoUser = await User.findOne({ where: { email: 'demo@user.com' } });
     if (!existingDemoUser) {
@@ -36,10 +35,17 @@ const seedDatabase = async () => {
       console.log('Demo lawyer already exists');
     }
 
-    console.log('Database seeding completed!');
+    return true;
   } catch (error) {
-    console.error('Error seeding database:', error);
+    console.error('Error seeding demo data:', error);
+    return false;
   }
 };
 
-seedDatabase();
+if (require.main === module) {
+  seedDemoData()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
+}
+
+module.exports = { seedDemoData };

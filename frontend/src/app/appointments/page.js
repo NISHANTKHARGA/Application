@@ -110,6 +110,7 @@ export default function AppointmentsPage() {
       case 'pending': return 'badge-pending';
       case 'completed': return 'bg-blue-100 text-blue-800';
       case 'cancelled': return 'badge-rejected';
+      case 'expired': return 'bg-gray-100 text-gray-600';
       case 'reschedule_requested': return 'bg-amber-100 text-amber-800';
       case 'reschedule_pending': return 'bg-purple-100 text-purple-800';
       case 'completion_pending': return 'bg-blue-50 text-blue-700 border border-blue-200';
@@ -127,10 +128,10 @@ export default function AppointmentsPage() {
   }
 
   const upcomingAppointments = appointments.filter(a => 
-    (new Date(a.dateTime) >= new Date() || ['completion_pending', 'ongoing'].includes(a.status)) && !['cancelled', 'completed'].includes(a.status)
+    (new Date(a.dateTime) >= new Date() || ['completion_pending', 'ongoing'].includes(a.status)) && !['cancelled', 'completed', 'expired'].includes(a.status)
   );
   const pastAppointments = appointments.filter(a => 
-    (new Date(a.dateTime) < new Date() && !['completion_pending', 'ongoing'].includes(a.status)) || ['cancelled', 'completed'].includes(a.status)
+    (new Date(a.dateTime) < new Date() && !['completion_pending', 'ongoing'].includes(a.status)) || ['cancelled', 'completed', 'expired'].includes(a.status)
   );
 
   return (
@@ -211,7 +212,7 @@ export default function AppointmentsPage() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            {apt.meetingLink && !['cancelled', 'pending'].includes(apt.status) && (
+                            {apt.meetingLink && !['cancelled', 'pending', 'expired'].includes(apt.status) && (
                               <a
                                 href={apt.status === 'confirmed' ? undefined : `/video/${apt.id}`}
                                 onClick={apt.status === 'confirmed' ? (e) => {

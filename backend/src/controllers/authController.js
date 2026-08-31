@@ -254,7 +254,6 @@ const lawyerLogin = async (req, res) => {
           email: lawyer.email,
           phone: lawyer.phone,
           specialization: lawyer.specialization,
-          profilePicture: lawyer.profilePicture,
           status: lawyer.status,
           rating: lawyer.rating,
           experience: lawyer.experience,

@@ -21,7 +21,7 @@ const getAllLawyers = async (req, res) => {
 
     const lawyers = await Lawyer.findAll({
       where: whereClause,
-      attributes: { exclude: ['password'] },
+      attributes: { exclude: ['password', 'documentUrl', 'profilePicture'] },
       order: [['rating', 'DESC'], ['createdAt', 'DESC']]
     });
 
@@ -58,7 +58,7 @@ const getPendingLawyers = async (req, res) => {
 const getLawyerById = async (req, res) => {
   try {
     const lawyer = await Lawyer.findByPk(req.params.id, {
-      attributes: { exclude: ['password'] }
+      attributes: { exclude: ['password', 'documentUrl'] }
     });
 
     if (!lawyer) {

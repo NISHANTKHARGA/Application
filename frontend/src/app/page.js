@@ -58,7 +58,7 @@ export default function Home() {
                 </div>
                 <div className="w-px h-12 bg-white/20" />
                 <div>
-                  <div className="text-3xl font-bold">20+</div>
+                  <div className="text-3xl font-bold">15+</div>
                   <div className="text-sm text-gray-300">Verified Lawyers</div>
                 </div>
                 <div className="w-px h-12 bg-white/20" />

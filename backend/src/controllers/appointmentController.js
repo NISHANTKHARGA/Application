@@ -1,6 +1,34 @@
 const { Appointment, User, Lawyer } = require('../models');
 const { sendAppointmentConfirmationEmail } = require('../services/emailService');
 const { generateMeetingLink } = require('../services/chatService');
+const { Op } = require('sequelize');
+
+const expirePendingAppointments = async () => {
+  try {
+    const now = new Date();
+    const pending = await Appointment.findAll({
+      where: { status: 'pending' },
+      attributes: ['id', 'dateTime', 'duration']
+    });
+
+    const expiredIds = [];
+    for (const apt of pending) {
+      const endTime = new Date(new Date(apt.dateTime).getTime() + (apt.duration || 30) * 60 * 1000);
+      if (endTime < now) {
+        expiredIds.push(apt.id);
+      }
+    }
+
+    if (expiredIds.length > 0) {
+      await Appointment.update(
+        { status: 'expired' },
+        { where: { id: expiredIds } }
+      );
+    }
+  } catch (e) {
+    console.error('Auto-expire error:', e?.message);
+  }
+};
 
 const bookAppointment = async (req, res) => {
   try {
@@ -86,6 +114,8 @@ const getUserAppointments = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized access' });
     }
 
+    await expirePendingAppointments();
+
     const appointments = await Appointment.findAll({
       where: { userId },
       include: [
@@ -121,6 +151,8 @@ const getLawyerAppointments = async (req, res) => {
       return res.status(400).json({ message: 'Lawyer ID is required' });
     }
 
+    await expirePendingAppointments();
+
     const appointments = await Appointment.findAll({
       where: { lawyerId },
       include: [
@@ -142,6 +174,8 @@ const getLawyerAppointments = async (req, res) => {
 
 const getAppointmentById = async (req, res) => {
   try {
+    await expirePendingAppointments();
+    
     const appointment = await Appointment.findByPk(req.params.id, {
       include: [
         { model: User, as: 'user', attributes: ['id', 'name', 'email', 'phone'] },
@@ -173,8 +207,8 @@ const updateAppointmentStatus = async (req, res) => {
     const { status, caseSummary } = req.body;
     const appointment = await Appointment.findByPk(req.params.id, {
       include: [
-        { model: User, as: 'user' },
-        { model: Lawyer, as: 'lawyer' }
+        { model: User, as: 'user', attributes: ['id', 'name', 'email', 'phone'] },
+        { model: Lawyer, as: 'lawyer', attributes: ['id', 'name', 'email', 'phone', 'specialization', 'rating'] }
       ]
     });
 
@@ -194,7 +228,7 @@ const updateAppointmentStatus = async (req, res) => {
         appointment.status = 'completion_pending';
       }
     } else {
-      const validStatuses = ['pending', 'confirmed', 'ongoing', 'cancelled', 'reschedule_requested', 'reschedule_pending'];
+      const validStatuses = ['pending', 'confirmed', 'ongoing', 'cancelled', 'expired', 'reschedule_requested', 'reschedule_pending'];
       if (!validStatuses.includes(status)) {
         return res.status(400).json({ message: 'Invalid status' });
       }
@@ -221,8 +255,8 @@ const requestReschedule = async (req, res) => {
     const { dateTime, notes } = req.body;
     const appointment = await Appointment.findByPk(req.params.id, {
       include: [
-        { model: User, as: 'user' },
-        { model: Lawyer, as: 'lawyer' }
+        { model: User, as: 'user', attributes: ['id', 'name', 'email', 'phone'] },
+        { model: Lawyer, as: 'lawyer', attributes: ['id', 'name', 'email', 'phone', 'specialization'] }
       ]
     });
 
@@ -334,7 +368,7 @@ const respondReschedule = async (req, res) => {
     const { dateTime } = req.body;
     const appointment = await Appointment.findByPk(req.params.id, {
       include: [
-        { model: Lawyer, as: 'lawyer' }
+        { model: Lawyer, as: 'lawyer', attributes: ['id', 'name', 'email', 'phone', 'specialization'] }
       ]
     });
 
@@ -370,6 +404,8 @@ const respondReschedule = async (req, res) => {
 
 const getAllAppointments = async (req, res) => {
   try {
+    await expirePendingAppointments();
+
     const appointments = await Appointment.findAll({
       include: [
         { model: User, as: 'user', attributes: ['id', 'name', 'email', 'phone'] },
@@ -408,7 +444,7 @@ const cancelAppointment = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized access' });
     }
 
-    if (['completed', 'cancelled'].includes(appointment.status)) {
+    if (['completed', 'cancelled', 'expired'].includes(appointment.status)) {
       return res.status(400).json({ message: 'Cannot cancel this appointment' });
     }
 
@@ -461,7 +497,7 @@ const confirmMeetingComplete = async (req, res) => {
   try {
     const appointment = await Appointment.findByPk(req.params.id, {
       include: [
-        { model: Lawyer, as: 'lawyer' }
+        { model: Lawyer, as: 'lawyer', attributes: ['id', 'name', 'email', 'phone', 'specialization'] }
       ]
     });
 
@@ -474,7 +510,7 @@ const confirmMeetingComplete = async (req, res) => {
     }
 
     if (!['confirmed', 'ongoing', 'completion_pending'].includes(appointment.status)) {
-      return res.status(400).json({ message: 'This appointment cannot be marked as completed' });
+      return res.status(400).json({ message: 'This appointment cannot be marked as completed or has expired' });
     }
 
     if (appointment.userConfirmedComplete) {
@@ -509,7 +545,7 @@ const rateAppointment = async (req, res) => {
     const { rating, review } = req.body;
     const appointment = await Appointment.findByPk(req.params.id, {
       include: [
-        { model: Lawyer, as: 'lawyer' }
+        { model: Lawyer, as: 'lawyer', attributes: ['id', 'name', 'email', 'rating', 'totalRatings'] }
       ]
     });
 

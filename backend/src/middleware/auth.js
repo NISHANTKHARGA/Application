@@ -18,7 +18,7 @@ const protect = async (req, res, next) => {
         });
       } else if (decoded.role === 'lawyer') {
         req.lawyer = await Lawyer.findByPk(decoded.id, {
-          attributes: { exclude: ['password'] }
+          attributes: { exclude: ['password', 'documentUrl', 'profilePicture'] }
         });
       } else if (decoded.role === 'admin') {
         req.admin = { id: decoded.id, role: 'admin' };

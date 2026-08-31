@@ -10,6 +10,23 @@ import UserNav from '@/components/UserNav';
 
 const FREE_PROMPT_LIMIT = 10;
 const STORAGE_KEY = 'kanoonsathi_free_prompts';
+const CHAT_STORAGE_KEY = 'kanoonsathi_chat_messages';
+
+function getStoredMessages() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function storeMessages(msgs) {
+  try { localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(msgs)); } catch {}
+}
+
+function clearStoredMessages() {
+  try { localStorage.removeItem(CHAT_STORAGE_KEY); } catch {}
+}
 
 const SUGGESTED_QUESTIONS = [
   'What is the divorce process in Nepal?',
@@ -34,7 +51,10 @@ function setAnonymousPromptCount(count) {
 export default function ChatPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    const stored = getStoredMessages();
+    return stored || [];
+  });
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [recommendedLawyers, setRecommendedLawyers] = useState([]);
@@ -52,20 +72,30 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
+      clearStoredMessages();
       fetchChatHistory();
     } else if (!isLoading && !isAuthenticated) {
       const used = getAnonymousPromptCount();
       setFreePromptsUsed(used);
-      setMessages([{
-        id: 'welcome', role: 'bot', message: language === 'nepali'
-          ? 'नमस्ते! म Momo AI हुँ। तपाईंलाई बिना लगइन १० वटा प्रश्न सोध्न पाइन्छ। कृपया तल आफ्नो प्रश्न लेख्नुहोस्।'
-          : 'Hello! I\'m Momo AI. You can ask up to ' + FREE_PROMPT_LIMIT + ' questions for free without signing in. Ask me anything below!'
-      }]);
+      const stored = getStoredMessages();
+      if (!stored || stored.length === 0) {
+        setMessages([{
+          id: 'welcome', role: 'bot', message: language === 'nepali'
+            ? 'नमस्ते! म Momo AI हुँ। तपाईंलाई बिना लगइन १० वटा प्रश्न सोध्न पाइन्छ। कृपया तल आफ्नो प्रश्न लेख्नुहोस्।'
+            : 'Hello! I\'m Momo AI. You can ask up to ' + FREE_PROMPT_LIMIT + ' questions for free without signing in. Ask me anything below!'
+        }]);
+      }
     }
   }, [isLoading, isAuthenticated, user, language]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      storeMessages(messages);
+    }
   }, [messages]);
 
   const stripMarkdown = (text) => text.replace(/\*{1,2}/g, '');
@@ -197,6 +227,7 @@ export default function ChatPage() {
   const clearChat = async () => {
     if (!confirm('Clear this conversation?')) return;
     try { await api.delete('/chat'); } catch { /* ok */ }
+    clearStoredMessages();
     setMessages([{
       id: 'welcome', role: 'bot',
       message: language === 'nepali'

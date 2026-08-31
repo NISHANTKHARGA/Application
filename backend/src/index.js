@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+let seedDemoData = null;
+try { ({ seedDemoData } = require('./seed')); } catch (e) { console.error('Seed module load error:', e?.message); }
+
 let sequelize = null;
 let sequelizeInitError = null;
 let authRoutes, lawyerRoutes, appointmentRoutes, chatRoutes, dateConverterRoutes;
@@ -79,6 +82,9 @@ app.use(async (req, res, next) => {
       await fixSchema();
       dbReady = true;
       console.log('Database synced');
+      if (seedDemoData) {
+        try { await seedDemoData(); } catch (e) { console.error('Auto-seed error:', e?.message); }
+      }
     } catch (e) {
       dbError = e?.message || 'DB sync failed';
       console.error('DB sync error:', dbError);
@@ -168,6 +174,9 @@ if (!process.env.VERCEL) {
         await sequelize.sync({ force: false });
         dbReady = true;
         console.log('Database synced');
+        if (seedDemoData) {
+          try { await seedDemoData(); } catch (e) { console.error('Auto-seed error:', e?.message); }
+        }
       } catch (e) {
         console.error('DB init error:', e?.message);
       }
