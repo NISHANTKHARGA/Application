@@ -21,7 +21,7 @@ const getAllLawyers = async (req, res) => {
 
     const lawyers = await Lawyer.findAll({
       where: whereClause,
-      attributes: { exclude: ['password', 'documentUrl', 'profilePicture'] },
+      attributes: { exclude: ['password', 'documentUrl'] },
       order: [['rating', 'DESC'], ['createdAt', 'DESC']]
     });
 
@@ -257,7 +257,7 @@ const getLawyersBySpecialization = async (req, res) => {
           ]
         }
       },
-      attributes: ['id', 'name', 'email', 'phone', 'specialization', 'experience', 'rating', 'bio', 'status', 'createdAt']
+      attributes: ['id', 'name', 'email', 'phone', 'specialization', 'experience', 'rating', 'bio', 'profilePicture', 'status', 'createdAt']
     });
 
     res.json({
